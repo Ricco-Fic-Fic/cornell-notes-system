@@ -119,28 +119,24 @@
             setIsProcessing(true);
             
             try {
-             const response = await fetch("/api/claude-proxy", {
+              const response = await fetch("/api/claude-proxy", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-  courseConfig: courseConfig,
-  cornellData: cornellData,
-  uploadedImages: uploadedImages
-});
+                  courseConfig: courseConfig,
+                  cornellData: cornellData,
+                  uploadedImages: uploadedImages
+                })
+              });
 
               if (!response.ok) {
                 throw new Error(`Erreur API: ${response.status}`);
               }
 
               const data = await response.json();
-              let responseText = data.content[0].text;
-              
-              responseText = responseText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-              
-              const parsedSummary = JSON.parse(responseText);
-              setSummary(parsedSummary);
+              setSummary(data);
               setCurrentStep(2);
               
             } catch (error) {
@@ -312,7 +308,7 @@
         <div class="cornell-sidebar">
             <div class="sidebar-section">
                 <div class="sidebar-title">Mots-clés</div>
-                ${summary.concepts_cles.map(concept => `<div>• ${concept}</div>`).join('')}
+                ${summary.concepts_cles ? summary.concepts_cles.map(concept => `<div>• ${concept}</div>`).join('') : '<div>-</div>'}
             </div>
             
             <div class="sidebar-section">
@@ -434,7 +430,7 @@
                   
                   {/* Instructions workflow */}
                   <div className="bg-yellow-100 border-2 border-yellow-300 rounded-lg p-4 mb-6 max-w-5xl mx-auto">
-                    <h3 className="text-lg font-bold text-yellow-800 mb-3">🎯 Système Autonome GitHub Pages</h3>
+                    <h3 className="text-lg font-bold text-yellow-800 mb-3">🎯 Système Autonome Vercel</h3>
                     <div className="grid md:grid-cols-2 gap-4 text-left">
                       <div className="bg-white p-3 rounded border">
                         <h4 className="font-bold text-blue-800 mb-2">✅ Avantages</h4>
@@ -458,7 +454,7 @@
                   </div>
 
                   <div className="flex justify-center space-x-4 flex-wrap">
-                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✅ Hébergé sur GitHub Pages</span>
+                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✅ Hébergé sur Vercel</span>
                     <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">✅ API IA Intégrée</span>
                     <button
                       onClick={resetAll}
@@ -599,7 +595,7 @@
                             <div className="text-blue-800 text-sm">
                               <strong>📊 Status :</strong><br/>
                               Images uploadées : {uploadedImages.length}<br/>
-                              {uploadedImages.length > 0 ? '✅ Intégration automatique dans le PDF' : '📝 Hébergé sur GitHub Pages - Accès 24/7'}
+                              {uploadedImages.length > 0 ? '✅ Intégration automatique dans le PDF' : '📝 Hébergé sur Vercel - Accès 24/7'}
                             </div>
                           </div>
                         </div>
@@ -737,7 +733,7 @@
                         <div className="grid grid-cols-3 border-2 border-gray-400 mb-4 min-h-40">
                           <div className="bg-yellow-200 p-4 border-r-2 border-gray-400">
                             <div className="font-bold text-xs mb-2">Mots-clés</div>
-                            <div className="text-xs">{summary.concepts_cles.slice(0, 4).join(', ')}</div>
+                            <div className="text-xs">{summary.concepts_cles ? summary.concepts_cles.slice(0, 4).join(', ') : '-'}</div>
                             <div className="font-bold text-xs mt-3 mb-1">Formules</div>
                             <div className="text-xs">{summary.formules_lois?.[0]?.expression || '-'}</div>
                           </div>
@@ -779,7 +775,7 @@
                               <li>Résumé IA structuré</li>
                               <li>{uploadedImages.length} image(s) intégrée(s)</li>
                               <li>Format PDF-ready</li>
-                              <li>Hébergé sur GitHub Pages 24/7</li>
+                              <li>Hébergé sur Vercel 24/7</li>
                             </ul>
                           </div>
                         </div>
