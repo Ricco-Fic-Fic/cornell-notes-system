@@ -125,87 +125,10 @@
                   "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                  model: "claude-sonnet-4-20250514",
-                  max_tokens: 2500,
-                  messages: [
-                    {
-                      role: "user",
-                      content: `Tu es un assistant expert en méthode Cornell et synthèse académique.
-
-INFORMATIONS DU COURS :
-- Matière : ${courseConfig.subject}
-- Chapitre ${courseConfig.chapterNumber} : ${courseConfig.chapter}
-- Date : ${courseConfig.date}
-- Professeur : ${courseConfig.professor}
-
-NOTES CORNELL À ANALYSER :
-
-📝 NOTES PRINCIPALES :
-${cornellData.notes_principales}
-
-🔑 MOTS-CLÉS :
-${cornellData.mots_cles}
-
-🧮 FORMULES :
-${cornellData.formules}
-
-👨‍🏫 NOMS D'AUTEUR/SCIENTIFIQUES :
-${cornellData.noms_auteurs}
-
-📅 DATES IMPORTANTES :
-${cornellData.dates_importantes}
-
-❓ DOUTES ET QUESTIONNEMENTS :
-${cornellData.doutes_questions}
-
-📄 RÉSUMÉ PERSONNEL :
-${cornellData.resume_personnel}
-
-🖼️ IMAGES DISPONIBLES : ${uploadedImages.length} image(s) uploadée(s)
-
-MISSION : Génère un résumé structuré optimisé pour révisions, respectant la méthode Cornell.
-
-RÉPONDS UNIQUEMENT AVEC LE JSON VALIDE - RIEN D'AUTRE :
-{
-  "resume_executif": "Synthèse globale du chapitre en 3-4 phrases claires",
-  "concepts_cles": ["concept1", "concept2", "concept3"],
-  "definitions": [
-    {"terme": "terme1", "definition": "définition claire et précise"},
-    {"terme": "terme2", "definition": "définition claire et précise"}
-  ],
-  "formules_lois": [
-    {"nom": "Nom de la formule/loi", "expression": "Expression mathématique", "description": "Utilisation"}
-  ],
-  "personnages_dates": [
-    {"nom": "Nom du scientifique/auteur", "contribution": "Ce qu'il a apporté", "date": "Époque/date"}
-  ],
-  "chronologie": [
-    {"periode": "Époque/Date", "evenement": "Événement important"}
-  ],
-  "exemples_applications": [
-    {"contexte": "Situation d'application", "explication": "Comment ça marche"}
-  ],
-  "questions_revision": [
-    {"niveau": "facile", "question": "Question de base", "indice": "Aide pour répondre"},
-    {"niveau": "moyen", "question": "Question intermédiaire", "indice": "Aide"},
-    {"niveau": "difficile", "question": "Question complexe", "indice": "Aide"}
-  ],
-  "points_attention": [
-    "Erreur courante à éviter",
-    "Piège fréquent en exercice"
-  ],
-  "liens_conceptuels": [
-    "Relation entre concept A et concept B",
-    "Lien avec chapitre précédent/suivant"
-  ],
-  "schemas_detectes": [
-    {"sujet": "fission nucléaire", "description": "Schéma de la réaction en chaîne"}
-  ]
-}`
-                    }
-                  ]
-                })
-              });
+  courseConfig: courseConfig,
+  cornellData: cornellData,
+  uploadedImages: uploadedImages
+});
 
               if (!response.ok) {
                 throw new Error(`Erreur API: ${response.status}`);
