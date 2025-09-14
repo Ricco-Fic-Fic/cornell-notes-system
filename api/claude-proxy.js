@@ -140,7 +140,7 @@ RÉPONDS UNIQUEMENT AVEC LE JSON VALIDE - RIEN D'AUTRE :
     console.log("⚙️ ÉTAPE 4 : Préparation de la requête API");
     
     const requestBody = {
-      model: "claude-3-5-sonnet-20241022",
+      model: "claude-3-sonnet-20240229",
       max_tokens: 2500,
       messages: [
         {
