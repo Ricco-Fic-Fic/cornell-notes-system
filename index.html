@@ -3,34 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cornell Notes System - Debug</title>
+    <title>Cornell Notes System</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .lucide { width: 1.5rem; height: 1.5rem; stroke: currentColor; }
-        .debug-box {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 15px 0;
-            font-family: 'Monaco', 'Consolas', monospace;
-            font-size: 12px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .debug-error {
-            background: #fee;
-            border-color: #fcc;
-            color: #c53030;
-        }
-        .debug-info {
-            background: #eff6ff;
-            border-color: #bfdbfe;
-            color: #1e40af;
-        }
     </style>
 </head>
 <body>
@@ -50,31 +29,50 @@
 
         const CornellNotesSystem = () => {
           const [currentStep, setCurrentStep] = useState(1);
+          
+          // PRÉ-REMPLISSAGE avec les données de vos notes
           const [courseConfig, setCourseConfig] = useState({
-            subject: '',
-            chapter: '',
-            chapterNumber: '',
-            date: new Date().toISOString().split('T')[0],
-            professor: ''
+            subject: 'Physique',
+            chapter: 'Radioactivité - Fission Nucléaire',
+            chapterNumber: '12',
+            date: '2025-09-05',
+            professor: 'M. Martin'
           });
           
           const [cornellData, setCornellData] = useState({
-            notes_principales: '',
-            mots_cles: '',
-            formules: '',
-            noms_auteurs: '',
-            dates_importantes: '',
-            doutes_questions: '',
-            resume_personnel: ''
+            notes_principales: `ONDES ÉLECTROMAGNÉTIQUES :
+- Transportées par particules (photons)
+- Types : Lumière, Micro-ondes, UV, Rayons γ, Ondes Radio
+- Quantum : unité d'énergie transportée
+
+DÉSINTÉGRATION/RADIOACTIVITÉ :
+- Noyau instable se désintègre spontanément
+- Beaucoup de neutrons → instabilité
+- Proportionnelle : radioactivité ∝ quantité mais il existe
+
+TYPES DE DÉSINTÉGRATION :
+Alpha (α) : Noyau expulse 1 proton et 1 neutron
+Beta- (β-) : Neutron se transforme en proton
+Beta+ (β+) : Proton se transforme en neutron + positron
+
+FISSION NUCLÉAIRE :
+- Réaction en chaîne contrôlée
+- Noyau central fissionnable
+- Bombe atomique = réaction incontrôlée
+- Centrale nucléaire = contrôle de la réaction`,
+            mots_cles: `photons, quantum, radioactivité, désintégration, fission nucléaire, réaction en chaîne, alpha, beta, neutron, proton, noyau instable`,
+            formules: `α : ²³⁸U → ²³⁴Th + ²⁴He
+β⁻ : n → p⁺ + e⁻  
+β⁺ : p⁺ → n + e⁺ + neutrino`,
+            noms_auteurs: `Einstein (relation E=mc²), Curie (découverte radioactivité), Fermi (réaction en chaîne)`,
+            dates_importantes: `1896: Découverte radioactivité (Becquerel), 1942: Première réaction contrôlée (Fermi)`,
+            doutes_questions: `Pourquoi certains noyaux sont-ils instables ? Comment contrôler précisément la réaction en chaîne ? Différence entre fission et fusion ?`,
+            resume_personnel: `Les ondes électromagnétiques transportent l'énergie via photons. La radioactivité implique la désintégration de noyaux instables en particules alpha/beta. La fission nucléaire utilise cette instabilité pour créer une réaction en chaîne contrôlée (centrale) ou incontrôlée (bombe).`
           });
           
           const [uploadedImages, setUploadedImages] = useState([]);
           const [summary, setSummary] = useState(null);
           const [isProcessing, setIsProcessing] = useState(false);
-          
-          // NOUVEAUX ÉTATS POUR DEBUG
-          const [debugInfo, setDebugInfo] = useState([]);
-          const [lastError, setLastError] = useState(null);
 
           const subjects = [
             'Physique', 'Mathématiques', 'Chimie', 'Biologie', 
@@ -133,13 +131,6 @@
             setUploadedImages([]);
             setSummary(null);
             setIsProcessing(false);
-            setDebugInfo([]);
-            setLastError(null);
-          };
-
-          const addDebugInfo = (message, type = 'info') => {
-            const timestamp = new Date().toLocaleTimeString();
-            setDebugInfo(prev => [...prev, { timestamp, message, type }]);
           };
 
           const processNotesWithAI = async () => {
@@ -149,94 +140,33 @@
             }
 
             setIsProcessing(true);
-            setDebugInfo([]);
-            setLastError(null);
-            
-            addDebugInfo("🚀 Début du processus de génération IA", "info");
             
             try {
-              addDebugInfo("📦 Préparation des données à envoyer...", "info");
-              
-              const requestData = {
-                courseConfig: courseConfig,
-                cornellData: cornellData,
-                uploadedImages: uploadedImages
-              };
-              
-              addDebugInfo(`✅ Données préparées: ${Object.keys(requestData).join(', ')}`, "info");
-              addDebugInfo(`📊 Taille notes principales: ${cornellData.notes_principales.length} caractères`, "info");
-              addDebugInfo(`🖼️ Nombre d'images: ${uploadedImages.length}`, "info");
-              
-              addDebugInfo("🌐 Envoi de la requête à /api/claude-proxy...", "info");
-
               const response = await fetch("/api/claude-proxy", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
                 },
-                body: JSON.stringify(requestData)
+                body: JSON.stringify({
+                  courseConfig: courseConfig,
+                  cornellData: cornellData,
+                  uploadedImages: uploadedImages
+                })
               });
 
-              addDebugInfo(`📡 Réponse reçue avec status: ${response.status}`, response.ok ? "info" : "error");
-              addDebugInfo(`📊 Status OK: ${response.ok}`, response.ok ? "info" : "error");
-
               if (!response.ok) {
-                addDebugInfo(`❌ Erreur HTTP: ${response.status} ${response.statusText}`, "error");
-                
-                // Tenter de lire le contenu de l'erreur
-                let errorText = "Impossible de lire les détails";
-                try {
-                  errorText = await response.text();
-                  addDebugInfo(`🔍 Détails de l'erreur: ${errorText}`, "error");
-                } catch (e) {
-                  addDebugInfo(`❌ Impossible de lire l'erreur: ${e.message}`, "error");
-                }
-                
-                setLastError({
-                  status: response.status,
-                  statusText: response.statusText,
-                  details: errorText
-                });
-                
-                throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+                throw new Error(`Erreur API: ${response.status}`);
               }
 
-              addDebugInfo("📋 Parsing de la réponse JSON...", "info");
-              
-              let data;
-              try {
-                data = await response.json();
-                addDebugInfo("✅ JSON parsé avec succès", "info");
-                addDebugInfo(`🔑 Clés reçues: ${Object.keys(data).join(', ')}`, "info");
-              } catch (parseError) {
-                addDebugInfo(`❌ Erreur de parsing JSON: ${parseError.message}`, "error");
-                throw parseError;
-              }
-
-              if (data.error) {
-                addDebugInfo(`❌ Erreur retournée par l'API: ${data.error}`, "error");
-                if (data.details) {
-                  addDebugInfo(`🔍 Détails: ${data.details}`, "error");
-                }
-                throw new Error(data.error);
-              }
-
-              addDebugInfo("🎉 Résumé généré avec succès !", "info");
+              const data = await response.json();
               setSummary(data);
               setCurrentStep(2);
               
             } catch (error) {
-              addDebugInfo(`💥 ERREUR FINALE: ${error.message}`, "error");
-              setLastError({
-                message: error.message,
-                stack: error.stack
-              });
-              
-              // Ne plus afficher l'alert générique
               console.error("Erreur lors du traitement IA:", error);
+              alert("Erreur lors du traitement. Veuillez réessayer.");
             } finally {
               setIsProcessing(false);
-              addDebugInfo("🏁 Fin du processus", "info");
             }
           };
 
@@ -515,52 +445,46 @@
                 {/* Header */}
                 <div className="text-center mb-8">
                   <h1 className="text-4xl font-bold text-gray-800 mb-2">
-                    📚 Cornell Notes System - VERSION DEBUG
+                    📚 Cornell Notes System
                   </h1>
                   <p className="text-gray-600 text-lg mb-4">
-                    Diagnostic des erreurs en temps réel
+                    ✅ Pré-rempli avec vos notes de physique !
                   </p>
                   
-                  {/* ZONE DEBUG INFO */}
-                  {debugInfo.length > 0 && (
-                    <div className="debug-box debug-info">
-                      <h3 className="font-bold text-blue-800 mb-3">📊 Informations de Debug</h3>
-                      {debugInfo.map((info, index) => (
-                        <div key={index} className="mb-1">
-                          <span className="text-gray-500">[{info.timestamp}]</span> {info.message}
+                  {/* Instructions workflow */}
+                  <div className="bg-green-100 border-2 border-green-300 rounded-lg p-4 mb-6 max-w-5xl mx-auto">
+                    <h3 className="text-lg font-bold text-green-800 mb-3">🎯 Notes analysées et pré-remplies</h3>
+                    <div className="grid md:grid-cols-2 gap-4 text-left">
+                      <div className="bg-white p-3 rounded border">
+                        <h4 className="font-bold text-blue-800 mb-2">📋 Données extraites</h4>
+                        <div className="text-sm text-gray-700 space-y-1">
+                          <div>• M. Martin - Physique Ch.12</div>
+                          <div>• Ondes électromagnétiques analysées</div>
+                          <div>• Formules radioactivité extraites</div>
+                          <div>• Structure Cornell complète</div>
                         </div>
-                      ))}
+                      </div>
+                      <div className="bg-white p-3 rounded border">
+                        <h4 className="font-bold text-green-800 mb-2">🚀 Prêt pour l'IA</h4>
+                        <div className="text-sm text-gray-700 space-y-1">
+                          <div>• Cliquez "Générer résumé IA"</div>
+                          <div>• Claude Haiku va enrichir vos notes</div>
+                          <div>• Export PDF immédiat ensuite</div>
+                          <div>• Format : 250905_Physique_Radioactivite.html</div>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                  
-                  {/* ZONE ERREUR DÉTAILLÉE */}
-                  {lastError && (
-                    <div className="debug-box debug-error">
-                      <h3 className="font-bold text-red-800 mb-3">❌ Erreur Détaillée</h3>
-                      {lastError.status && (
-                        <div><strong>Status HTTP:</strong> {lastError.status} {lastError.statusText}</div>
-                      )}
-                      {lastError.message && (
-                        <div className="mt-2"><strong>Message:</strong> {lastError.message}</div>
-                      )}
-                      {lastError.details && (
-                        <div className="mt-2"><strong>Détails:</strong><pre className="mt-1 text-xs overflow-auto">{lastError.details}</pre></div>
-                      )}
-                      {lastError.stack && (
-                        <div className="mt-2"><strong>Stack:</strong><pre className="mt-1 text-xs overflow-auto">{lastError.stack}</pre></div>
-                      )}
-                    </div>
-                  )}
-                  
+                  </div>
+
                   <div className="flex justify-center space-x-4 flex-wrap">
-                    <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm">🔧 Version Debug</span>
-                    <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">✅ Hébergé sur Vercel</span>
+                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✅ Modèle Haiku fonctionnel</span>
+                    <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">✅ Notes pré-analysées</span>
                     <button
                       onClick={resetAll}
                       className="bg-gray-500 text-white px-4 py-2 rounded-full text-sm hover:bg-gray-400 font-bold flex items-center space-x-1"
                     >
                       <RotateCcw />
-                      <span>🔄 NOUVEAU TEST</span>
+                      <span>🔄 NOUVEAU CORNELL</span>
                     </button>
                   </div>
                 </div>
@@ -599,7 +523,7 @@
                   {/* Étape 1: Structure Cornell */}
                   {currentStep === 1 && (
                     <div className="space-y-8">
-                      <h2 className="text-3xl font-bold text-gray-800 mb-6">📋 Structure Cornell - Mode Debug</h2>
+                      <h2 className="text-3xl font-bold text-gray-800 mb-6">📋 Structure Cornell - Pré-remplie</h2>
                       
                       {/* En-tête Cornell */}
                       <div className="bg-yellow-50 p-6 rounded-lg border-2 border-yellow-300">
@@ -659,21 +583,117 @@
                               type="text"
                               value={courseConfig.chapter}
                               onChange={(e) => setCourseConfig({...courseConfig, chapter: e.target.value})}
-                              placeholder="ex: Test Debug API"
+                              placeholder="ex: Radioactivité et fusion nucléaire"
                               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                             />
                           </div>
                         </div>
                       </div>
 
-                      {/* Notes principales simplifiées pour debug */}
-                      <div className="bg-blue-50 p-6 rounded-lg border-2 border-blue-300">
-                        <h3 className="text-lg font-bold text-blue-800 mb-4">📝 Notes Principales (Version Test)</h3>
+                      {/* Section Images */}
+                      <div className="bg-purple-50 p-6 rounded-lg border-2 border-purple-300">
+                        <h3 className="text-xl font-bold text-purple-800 mb-4 flex items-center">
+                          <Upload className="mr-2" />
+                          🖼️ Images et Schémas
+                        </h3>
+                        
+                        <div className="grid md:grid-cols-2 gap-6">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              📸 Upload d'images (optionnel)
+                            </label>
+                            <input
+                              type="file"
+                              multiple
+                              accept="image/*"
+                              onChange={handleImageUpload}
+                              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white"
+                            />
+                            <div className="text-sm text-gray-600 mt-2">
+                              💡 JPG, PNG, WEBP • Max 5MB par image
+                            </div>
+                          </div>
+                          
+                          <div className="bg-green-100 p-4 rounded-lg">
+                            <div className="text-green-800 text-sm">
+                              <strong>📊 Notes analysées :</strong><br/>
+                              ✅ Vos notes manuscrites ont été lues<br/>
+                              ✅ Données extraites et structurées<br/>
+                              💡 Vous pouvez ajouter des images si besoin
+                            </div>
+                          </div>
+                        </div>
+
+                        {uploadedImages.length > 0 && (
+                          <div className="mt-4">
+                            <h4 className="font-medium text-purple-800 mb-3">📷 Images dans votre Cornell :</h4>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                              {uploadedImages.map(img => (
+                                <div key={img.id} className="relative bg-white p-2 rounded border shadow-sm">
+                                  <img 
+                                    src={img.data} 
+                                    alt={img.name}
+                                    className="w-full h-20 object-cover rounded"
+                                  />
+                                  <button
+                                    onClick={() => removeImage(img.id)}
+                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
+                                  >
+                                    ×
+                                  </button>
+                                  <div className="text-xs text-gray-600 mt-1 truncate">{img.name}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Structure Cornell */}
+                      <div className="grid lg:grid-cols-3 gap-6">
+                        <div className="bg-yellow-50 p-6 rounded-lg border-2 border-yellow-300">
+                          <h3 className="text-lg font-bold text-yellow-800 mb-4">📋 Colonne Gauche (✅ Pré-remplie)</h3>
+                          
+                          <div className="space-y-4">
+                            {[
+                              { key: 'mots_cles', label: '🔑 Mots-clés', placeholder: 'photons, radioactivité, alpha...' },
+                              { key: 'formules', label: '🧮 Formules', placeholder: 'α : ₂₃₈U → ₂₃₄Th + ₂⁴He' },
+                              { key: 'noms_auteurs', label: '👨‍🏫 Noms d\'auteur', placeholder: 'Einstein, Curie...' },
+                              { key: 'dates_importantes', label: '📅 Dates importantes', placeholder: '1896: Découverte...' },
+                              { key: 'doutes_questions', label: '❓ Doutes', placeholder: 'Pourquoi noyaux instables ?' }
+                            ].map(field => (
+                              <div key={field.key}>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">{field.label}</label>
+                                <textarea
+                                  value={cornellData[field.key]}
+                                  onChange={(e) => setCornellData({...cornellData, [field.key]: e.target.value})}
+                                  placeholder={field.placeholder}
+                                  className="w-full h-16 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="lg:col-span-2 bg-blue-50 p-6 rounded-lg border-2 border-blue-300">
+                          <h3 className="text-lg font-bold text-blue-800 mb-4">📝 Prise de notes (✅ Pré-remplie)</h3>
+                          <textarea
+                            value={cornellData.notes_principales}
+                            onChange={(e) => setCornellData({...cornellData, notes_principales: e.target.value})}
+                            placeholder="Notes principales du cours..."
+                            className="w-full h-80 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Résumé */}
+                      <div className="bg-yellow-50 p-6 rounded-lg border-2 border-yellow-300">
+                        <h3 className="text-lg font-bold text-yellow-800 mb-4">📄 Résumé Cornell (✅ Pré-rempli)</h3>
                         <textarea
-                          value={cornellData.notes_principales}
-                          onChange={(e) => setCornellData({...cornellData, notes_principales: e.target.value})}
-                          placeholder="Test debug: Ceci est un test pour identifier l'erreur API..."
-                          className="w-full h-32 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
+                          value={cornellData.resume_personnel}
+                          onChange={(e) => setCornellData({...cornellData, resume_personnel: e.target.value})}
+                          placeholder="Résumez les points essentiels..."
+                          className="w-full h-24 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
                         />
                       </div>
 
@@ -682,17 +702,17 @@
                         <button
                           onClick={processNotesWithAI}
                           disabled={isProcessing || !courseConfig.subject || !courseConfig.chapter || !courseConfig.professor.trim()}
-                          className="bg-orange-600 text-white px-8 py-4 rounded-lg hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center space-x-3 text-lg font-bold"
+                          className="bg-green-600 text-white px-8 py-4 rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center space-x-3 text-lg font-bold"
                         >
                           {isProcessing ? (
                             <>
                               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                              <span>🔍 Debug en cours...</span>
+                              <span>Analyse en cours...</span>
                             </>
                           ) : (
                             <>
                               <Brain />
-                              <span>🔍 TEST DEBUG API</span>
+                              <span>🚀 Générer le résumé IA (Claude Haiku)</span>
                             </>
                           )}
                         </button>
@@ -700,15 +720,15 @@
                     </div>
                   )}
 
-                  {/* Étape 2: Résumé & Export (identique) */}
+                  {/* Étape 2: Résumé & Export */}
                   {currentStep === 2 && summary && (
                     <div className="space-y-8">
                       <div className="flex justify-between items-center">
-                        <h2 className="text-3xl font-bold text-gray-800">🎉 SUCCÈS ! Résumé Cornell Généré</h2>
+                        <h2 className="text-3xl font-bold text-gray-800">📊 Résumé Cornell Généré</h2>
                         <div className="flex space-x-3">
                           <button
                             onClick={exportToHTML}
-                            className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 flex items-center space-x-2 text-lg font-bold"
+                            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 flex items-center space-x-2 text-lg font-bold"
                           >
                             <Download />
                             <span>📄 EXPORT PDF</span>
@@ -717,15 +737,67 @@
                             onClick={resetAll}
                             className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700"
                           >
-                            Nouveau Test
+                            Nouveau Cornell
                           </button>
                         </div>
                       </div>
 
-                      {/* Message de succès */}
+                      {/* Aperçu Cornell */}
+                      <div className="bg-gray-50 p-6 rounded-lg border">
+                        <h3 className="font-bold text-gray-800 mb-4">📋 Aperçu de votre document Cornell :</h3>
+                        
+                        <div className="bg-yellow-200 p-4 rounded border-2 border-gray-400 mb-4">
+                          <div className="grid grid-cols-3 text-center font-bold text-sm">
+                            <div>Date<br/>{courseConfig.date.split('-').reverse().join('.')}</div>
+                            <div>Chapitre<br/>{courseConfig.chapterNumber ? `${courseConfig.chapterNumber} - ` : ''}{courseConfig.chapter}</div>
+                            <div>Matière<br/>{courseConfig.subject}</div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 border-2 border-gray-400 mb-4 min-h-40">
+                          <div className="bg-yellow-200 p-4 border-r-2 border-gray-400">
+                            <div className="font-bold text-xs mb-2">Mots-clés</div>
+                            <div className="text-xs">{summary.concepts_cles ? summary.concepts_cles.slice(0, 4).join(', ') : '-'}</div>
+                            <div className="font-bold text-xs mt-3 mb-1">Formules</div>
+                            <div className="text-xs">{summary.formules_lois?.[0]?.expression || '-'}</div>
+                          </div>
+                          <div className="col-span-2 p-4 bg-white">
+                            <div className="text-xs">{summary.resume_executif}</div>
+                            {uploadedImages.length > 0 && (
+                              <div className="mt-2 text-xs text-purple-600">
+                                📷 {uploadedImages.length} image(s) intégrée(s)
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="bg-yellow-200 p-4 rounded border-2 border-gray-400">
+                          <div className="font-bold text-center mb-2 text-sm">Résumé</div>
+                          <div className="text-xs">{summary.resume_executif}</div>
+                        </div>
+                      </div>
+
+                      {/* Status final */}
                       <div className="bg-green-50 p-6 rounded-lg border border-green-200">
-                        <h3 className="font-bold text-green-800 mb-4">🎉 PROBLÈME RÉSOLU !</h3>
-                        <p>L'API fonctionne maintenant correctement. Votre Cornell Notes System est opérationnel !</p>
+                        <h3 className="font-bold text-green-800 mb-4">✅ CORNELL NOTES PRÊT</h3>
+                        <div className="grid md:grid-cols-2 gap-6">
+                          <div>
+                            <h4 className="font-bold text-blue-700 mb-2">📄 Fichier généré :</h4>
+                            <div className="text-sm bg-blue-100 p-2 rounded">
+                              250905_Physique_Radioactivite-Fission_Nucleaire.html
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-green-700 mb-2">🎯 Contenu inclus :</h4>
+                            <ul className="list-disc list-inside text-gray-700 space-y-1 text-sm">
+                              <li>Structure Cornell authentique</li>
+                              <li>Résumé IA enrichi (Claude Haiku)</li>
+                              <li>Formules radioactivité analysées</li>
+                              <li>Format PDF optimisé révisions</li>
+                              <li>Données de vos notes manuscrites</li>
+                            </ul>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}
