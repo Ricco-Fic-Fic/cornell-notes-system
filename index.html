@@ -10,6 +10,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .lucide { width: 1.5rem; height: 1.5rem; stroke: currentColor; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-shadow { box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .cornell-yellow { background: #f7c948; }
+        .animate-pulse-slow { animation: pulse 3s infinite; }
     </style>
 </head>
 <body>
@@ -18,56 +22,33 @@
     <script type="text/babel">
         const { useState } = React;
 
-        // Icônes Lucide simplifiées
-        const BookOpen = () => <span className="lucide">📚</span>;
+        // Icônes simplifiées
         const Brain = () => <span className="lucide">🧠</span>;
         const Download = () => <span className="lucide">📄</span>;
-        const ArrowRight = () => <span className="lucide">→</span>;
         const Upload = () => <span className="lucide">📤</span>;
         const RotateCcw = () => <span className="lucide">🔄</span>;
         const FileText = () => <span className="lucide">📝</span>;
+        const Sparkles = () => <span className="lucide">✨</span>;
+        const CheckCircle = () => <span className="lucide">✅</span>;
 
         const CornellNotesSystem = () => {
           const [currentStep, setCurrentStep] = useState(1);
-          
-          // PRÉ-REMPLISSAGE avec les données de vos notes
           const [courseConfig, setCourseConfig] = useState({
-            subject: 'Physique',
-            chapter: 'Radioactivité - Fission Nucléaire',
-            chapterNumber: '12',
-            date: '2025-09-05',
-            professor: 'M. Martin'
+            subject: '',
+            chapter: '',
+            chapterNumber: '',
+            date: new Date().toISOString().split('T')[0],
+            professor: ''
           });
           
           const [cornellData, setCornellData] = useState({
-            notes_principales: `ONDES ÉLECTROMAGNÉTIQUES :
-- Transportées par particules (photons)
-- Types : Lumière, Micro-ondes, UV, Rayons γ, Ondes Radio
-- Quantum : unité d'énergie transportée
-
-DÉSINTÉGRATION/RADIOACTIVITÉ :
-- Noyau instable se désintègre spontanément
-- Beaucoup de neutrons → instabilité
-- Proportionnelle : radioactivité ∝ quantité mais il existe
-
-TYPES DE DÉSINTÉGRATION :
-Alpha (α) : Noyau expulse 1 proton et 1 neutron
-Beta- (β-) : Neutron se transforme en proton
-Beta+ (β+) : Proton se transforme en neutron + positron
-
-FISSION NUCLÉAIRE :
-- Réaction en chaîne contrôlée
-- Noyau central fissionnable
-- Bombe atomique = réaction incontrôlée
-- Centrale nucléaire = contrôle de la réaction`,
-            mots_cles: `photons, quantum, radioactivité, désintégration, fission nucléaire, réaction en chaîne, alpha, beta, neutron, proton, noyau instable`,
-            formules: `α : ²³⁸U → ²³⁴Th + ²⁴He
-β⁻ : n → p⁺ + e⁻  
-β⁺ : p⁺ → n + e⁺ + neutrino`,
-            noms_auteurs: `Einstein (relation E=mc²), Curie (découverte radioactivité), Fermi (réaction en chaîne)`,
-            dates_importantes: `1896: Découverte radioactivité (Becquerel), 1942: Première réaction contrôlée (Fermi)`,
-            doutes_questions: `Pourquoi certains noyaux sont-ils instables ? Comment contrôler précisément la réaction en chaîne ? Différence entre fission et fusion ?`,
-            resume_personnel: `Les ondes électromagnétiques transportent l'énergie via photons. La radioactivité implique la désintégration de noyaux instables en particules alpha/beta. La fission nucléaire utilise cette instabilité pour créer une réaction en chaîne contrôlée (centrale) ou incontrôlée (bombe).`
+            notes_principales: '',
+            mots_cles: '',
+            formules: '',
+            noms_auteurs: '',
+            dates_importantes: '',
+            doutes_questions: '',
+            resume_personnel: ''
           });
           
           const [uploadedImages, setUploadedImages] = useState([]);
@@ -91,7 +72,7 @@ FISSION NUCLÉAIRE :
           const handleImageUpload = (event) => {
             const files = Array.from(event.target.files);
             files.forEach(file => {
-              if (file.type.startsWith('image/')) {
+              if (file.type.startsWith('image/') && file.size <= 5 * 1024 * 1024) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
                   setUploadedImages(prev => [...prev, {
@@ -102,6 +83,8 @@ FISSION NUCLÉAIRE :
                   }]);
                 };
                 reader.readAsDataURL(file);
+              } else if (file.size > 5 * 1024 * 1024) {
+                alert(`Image "${file.name}" trop lourde. Maximum 5MB par image.`);
               }
             });
           };
@@ -135,7 +118,7 @@ FISSION NUCLÉAIRE :
 
           const processNotesWithAI = async () => {
             if (!cornellData.notes_principales.trim() && !cornellData.resume_personnel.trim()) {
-              alert('Veuillez remplir au moins les notes principales ou le résumé.');
+              alert('Veuillez remplir au moins les notes principales ou le résumé personnel.');
               return;
             }
 
@@ -164,7 +147,7 @@ FISSION NUCLÉAIRE :
               
             } catch (error) {
               console.error("Erreur lors du traitement IA:", error);
-              alert("Erreur lors du traitement. Veuillez réessayer.");
+              alert("Erreur lors du traitement. Veuillez vérifier votre connexion et réessayer.");
             } finally {
               setIsProcessing(false);
             }
@@ -430,7 +413,13 @@ FISSION NUCLÉAIRE :
               document.body.removeChild(a);
               URL.revokeObjectURL(url);
               
-              alert(`✅ Fichier HTML téléchargé : ${fileName}\n📄 Images intégrées : ${uploadedImages.length}\n\n📋 Pour obtenir un PDF :\n1. Ouvrez le fichier dans votre navigateur\n2. Cmd+P (Mac) ou Ctrl+P (PC)\n3. Sélectionnez "Enregistrer au format PDF"`);
+              // Animation de succès
+              const button = event.target;
+              const originalText = button.innerHTML;
+              button.innerHTML = '<span class="text-green-400">✅ Téléchargé !</span>';
+              setTimeout(() => {
+                button.innerHTML = originalText;
+              }, 2000);
               
             } catch (error) {
               console.error('Erreur lors de l\'export:', error);
@@ -438,198 +427,219 @@ FISSION NUCLÉAIRE :
             }
           };
 
+          const fillExampleData = () => {
+            setCourseConfig({
+              subject: 'Physique',
+              chapter: 'Radioactivité - Fission Nucléaire',
+              chapterNumber: '12',
+              date: '2025-09-05',
+              professor: 'M. Martin'
+            });
+            setCornellData({
+              notes_principales: `ONDES ÉLECTROMAGNÉTIQUES :
+- Transportées par particules (photons)
+- Types : Lumière, Micro-ondes, UV, Rayons γ, Ondes Radio
+- Quantum : unité d'énergie transportée
+
+DÉSINTÉGRATION/RADIOACTIVITÉ :
+- Noyau instable se désintègre spontanément
+- Beaucoup de neutrons → instabilité
+- Proportionnelle : radioactivité ∝ quantité
+
+TYPES DE DÉSINTÉGRATION :
+Alpha (α) : Noyau expulse 1 proton et 1 neutron
+Beta- (β-) : Neutron se transforme en proton
+Beta+ (β+) : Proton se transforme en neutron + positron
+
+FISSION NUCLÉAIRE :
+- Réaction en chaîne contrôlée
+- Centrale nucléaire vs Bombe atomique`,
+              mots_cles: `photons, quantum, radioactivité, désintégration, fission nucléaire, réaction en chaîne, alpha, beta, neutron, proton`,
+              formules: `α : ²³⁸U → ²³⁴Th + ²⁴He
+β⁻ : n → p⁺ + e⁻  
+β⁺ : p⁺ → n + e⁺ + neutrino`,
+              noms_auteurs: `Einstein (E=mc²), Curie (découverte radioactivité), Fermi (réaction en chaîne)`,
+              dates_importantes: `1896: Découverte radioactivité (Becquerel), 1942: Première réaction contrôlée (Fermi)`,
+              doutes_questions: `Pourquoi certains noyaux sont-ils instables ? Comment contrôler la réaction en chaîne ?`,
+              resume_personnel: `Les ondes électromagnétiques transportent l'énergie via photons. La radioactivité implique la désintégration de noyaux instables. La fission nucléaire utilise cette instabilité pour créer une réaction en chaîne contrôlée (centrale) ou incontrôlée (bombe).`
+            });
+          };
+
+          const isFormValid = courseConfig.subject && courseConfig.chapter && courseConfig.professor.trim() && 
+                             (cornellData.notes_principales.trim() || cornellData.resume_personnel.trim());
+
           return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-              <div className="max-w-6xl mx-auto">
-                
-                {/* Header */}
-                <div className="text-center mb-8">
-                  <h1 className="text-4xl font-bold text-gray-800 mb-2">
-                    📚 Cornell Notes System
-                  </h1>
-                  <p className="text-gray-600 text-lg mb-4">
-                    ✅ Pré-rempli avec vos notes de physique !
-                  </p>
-                  
-                  {/* Instructions workflow */}
-                  <div className="bg-green-100 border-2 border-green-300 rounded-lg p-4 mb-6 max-w-5xl mx-auto">
-                    <h3 className="text-lg font-bold text-green-800 mb-3">🎯 Notes analysées et pré-remplies</h3>
-                    <div className="grid md:grid-cols-2 gap-4 text-left">
-                      <div className="bg-white p-3 rounded border">
-                        <h4 className="font-bold text-blue-800 mb-2">📋 Données extraites</h4>
-                        <div className="text-sm text-gray-700 space-y-1">
-                          <div>• M. Martin - Physique Ch.12</div>
-                          <div>• Ondes électromagnétiques analysées</div>
-                          <div>• Formules radioactivité extraites</div>
-                          <div>• Structure Cornell complète</div>
-                        </div>
-                      </div>
-                      <div className="bg-white p-3 rounded border">
-                        <h4 className="font-bold text-green-800 mb-2">🚀 Prêt pour l'IA</h4>
-                        <div className="text-sm text-gray-700 space-y-1">
-                          <div>• Cliquez "Générer résumé IA"</div>
-                          <div>• Claude Haiku va enrichir vos notes</div>
-                          <div>• Export PDF immédiat ensuite</div>
-                          <div>• Format : 250905_Physique_Radioactivite.html</div>
-                        </div>
-                      </div>
+            <div className="min-h-screen bg-gray-50">
+              {/* Header moderne */}
+              <div className="gradient-bg text-white">
+                <div className="max-w-7xl mx-auto px-4 py-8">
+                  <div className="text-center">
+                    <h1 className="text-4xl font-bold mb-2">
+                      📚 Cornell Notes System
+                    </h1>
+                    <p className="text-xl opacity-90 mb-6">
+                      Transformez vos notes en documents PDF professionnels
+                    </p>
+                    <div className="flex justify-center space-x-4 flex-wrap">
+                      <span className="bg-white bg-opacity-20 px-4 py-2 rounded-full text-sm font-medium">
+                        ✨ IA Intégrée
+                      </span>
+                      <span className="bg-white bg-opacity-20 px-4 py-2 rounded-full text-sm font-medium">
+                        📄 Export PDF
+                      </span>
+                      <span className="bg-white bg-opacity-20 px-4 py-2 rounded-full text-sm font-medium">
+                        🚀 Autonome 24/7
+                      </span>
                     </div>
                   </div>
-
-                  <div className="flex justify-center space-x-4 flex-wrap">
-                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✅ Modèle Haiku fonctionnel</span>
-                    <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">✅ Notes pré-analysées</span>
-                    <button
-                      onClick={resetAll}
-                      className="bg-gray-500 text-white px-4 py-2 rounded-full text-sm hover:bg-gray-400 font-bold flex items-center space-x-1"
-                    >
-                      <RotateCcw />
-                      <span>🔄 NOUVEAU CORNELL</span>
-                    </button>
-                  </div>
                 </div>
+              </div>
 
-                {/* Progress */}
-                <div className="flex justify-center mb-8">
-                  <div className="flex items-center space-x-8">
-                    <div className={`flex flex-col items-center ${currentStep === 1 ? 'text-blue-600' : currentStep > 1 ? 'text-green-600' : 'text-gray-400'}`}>
-                      <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-2 ${
-                        currentStep === 1 ? 'bg-blue-100 border-2 border-blue-600' : 
-                        currentStep > 1 ? 'bg-green-100 border-2 border-green-600' : 
-                        'bg-gray-100 border-2 border-gray-300'
+              <div className="max-w-6xl mx-auto px-4 py-8">
+                
+                {/* Progress indicator */}
+                <div className="mb-8">
+                  <div className="flex items-center justify-center space-x-8">
+                    <div className={`flex flex-col items-center ${currentStep >= 1 ? 'text-blue-600' : 'text-gray-400'}`}>
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
+                        currentStep >= 1 ? 'bg-blue-100 border-2 border-blue-600' : 'bg-gray-100 border-2 border-gray-300'
                       }`}>
                         <FileText />
                       </div>
-                      <span className="font-medium">Structure Cornell</span>
+                      <span className="text-sm font-medium">Structure</span>
                     </div>
                     
-                    <ArrowRight className={currentStep > 1 ? 'text-green-400' : 'text-gray-300'} />
+                    <div className={`w-16 h-1 rounded transition-all duration-300 ${
+                      currentStep >= 2 ? 'bg-blue-600' : 'bg-gray-300'
+                    }`}></div>
                     
-                    <div className={`flex flex-col items-center ${currentStep === 2 ? 'text-blue-600' : 'text-gray-400'}`}>
-                      <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-2 ${
-                        currentStep === 2 ? 'bg-blue-100 border-2 border-blue-600' : 
-                        'bg-gray-100 border-2 border-gray-300'
+                    <div className={`flex flex-col items-center ${currentStep >= 2 ? 'text-green-600' : 'text-gray-400'}`}>
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
+                        currentStep >= 2 ? 'bg-green-100 border-2 border-green-600' : 'bg-gray-100 border-2 border-gray-300'
                       }`}>
-                        <Brain />
+                        {currentStep >= 2 ? <CheckCircle /> : <Brain />}
                       </div>
-                      <span className="font-medium">Résumé IA & Export</span>
+                      <span className="text-sm font-medium">Export</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Main Content */}
-                <div className="bg-white rounded-xl shadow-lg p-8">
+                {/* Main Card */}
+                <div className="bg-white rounded-2xl card-shadow overflow-hidden">
                   
                   {/* Étape 1: Structure Cornell */}
                   {currentStep === 1 && (
-                    <div className="space-y-8">
-                      <h2 className="text-3xl font-bold text-gray-800 mb-6">📋 Structure Cornell - Pré-remplie</h2>
+                    <div className="p-8">
+                      <div className="text-center mb-8">
+                        <h2 className="text-3xl font-bold text-gray-800 mb-2">📋 Configuration Cornell</h2>
+                        <p className="text-gray-600">Remplissez les informations du cours et structurez vos notes</p>
+                      </div>
                       
-                      {/* En-tête Cornell */}
-                      <div className="bg-yellow-50 p-6 rounded-lg border-2 border-yellow-300">
-                        <h3 className="text-xl font-bold text-yellow-800 mb-4">📋 En-tête : Date | Numéro + Nom du Chapitre | Matière</h3>
-                        <div className="grid md:grid-cols-3 gap-6">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">📅 Date *</label>
-                            <input
-                              type="date"
-                              value={courseConfig.date}
-                              onChange={(e) => setCourseConfig({...courseConfig, date: e.target.value})}
-                              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            />
-                          </div>
-                          
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">📚 Matière *</label>
-                            <select
-                              value={courseConfig.subject}
-                              onChange={(e) => setCourseConfig({...courseConfig, subject: e.target.value})}
-                              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            >
-                              <option value="">Sélectionner</option>
-                              {subjects.map(subject => (
-                                <option key={subject} value={subject}>{subject}</option>
-                              ))}
-                            </select>
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">👨‍🏫 Professeur *</label>
-                            <input
-                              type="text"
-                              value={courseConfig.professor}
-                              onChange={(e) => setCourseConfig({...courseConfig, professor: e.target.value})}
-                              placeholder="Nom du professeur"
-                              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            />
-                          </div>
+                      {/* Quick action */}
+                      <div className="text-center mb-8">
+                        <button
+                          onClick={fillExampleData}
+                          className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors"
+                        >
+                          <Sparkles className="inline mr-2" />
+                          Remplir avec exemple (Physique)
+                        </button>
+                      </div>
+                      
+                      {/* Configuration du cours */}
+                      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">📅 Date</label>
+                          <input
+                            type="date"
+                            value={courseConfig.date}
+                            onChange={(e) => setCourseConfig({...courseConfig, date: e.target.value})}
+                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
                         </div>
                         
-                        <div className="grid md:grid-cols-2 gap-6 mt-6">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">🔢 Numéro Chapitre</label>
-                            <input
-                              type="text"
-                              value={courseConfig.chapterNumber}
-                              onChange={(e) => setCourseConfig({...courseConfig, chapterNumber: e.target.value})}
-                              placeholder="ex: 25"
-                              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            />
-                          </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">📚 Matière</label>
+                          <select
+                            value={courseConfig.subject}
+                            onChange={(e) => setCourseConfig({...courseConfig, subject: e.target.value})}
+                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          >
+                            <option value="">Choisir...</option>
+                            {subjects.map(subject => (
+                              <option key={subject} value={subject}>{subject}</option>
+                            ))}
+                          </select>
+                        </div>
 
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">📖 Nom du Chapitre *</label>
-                            <input
-                              type="text"
-                              value={courseConfig.chapter}
-                              onChange={(e) => setCourseConfig({...courseConfig, chapter: e.target.value})}
-                              placeholder="ex: Radioactivité et fusion nucléaire"
-                              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            />
-                          </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">👨‍🏫 Professeur</label>
+                          <input
+                            type="text"
+                            value={courseConfig.professor}
+                            onChange={(e) => setCourseConfig({...courseConfig, professor: e.target.value})}
+                            placeholder="Nom du professeur"
+                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">🔢 N° Chapitre</label>
+                          <input
+                            type="text"
+                            value={courseConfig.chapterNumber}
+                            onChange={(e) => setCourseConfig({...courseConfig, chapterNumber: e.target.value})}
+                            placeholder="ex: 12"
+                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
                         </div>
                       </div>
 
-                      {/* Section Images */}
-                      <div className="bg-purple-50 p-6 rounded-lg border-2 border-purple-300">
-                        <h3 className="text-xl font-bold text-purple-800 mb-4 flex items-center">
+                      {/* Nom du chapitre */}
+                      <div className="mb-8">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">📖 Nom du Chapitre</label>
+                        <input
+                          type="text"
+                          value={courseConfig.chapter}
+                          onChange={(e) => setCourseConfig({...courseConfig, chapter: e.target.value})}
+                          placeholder="ex: Radioactivité - Fission Nucléaire"
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+
+                      {/* Upload d'images */}
+                      <div className="bg-purple-50 rounded-xl p-6 mb-8">
+                        <h3 className="text-lg font-semibold text-purple-800 mb-4 flex items-center">
                           <Upload className="mr-2" />
-                          🖼️ Images et Schémas
+                          Images et Schémas (optionnel)
                         </h3>
                         
                         <div className="grid md:grid-cols-2 gap-6">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              📸 Upload d'images (optionnel)
-                            </label>
                             <input
                               type="file"
                               multiple
                               accept="image/*"
                               onChange={handleImageUpload}
-                              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white"
+                              className="w-full p-3 border-2 border-dashed border-purple-300 rounded-lg hover:border-purple-400 transition-colors"
                             />
                             <div className="text-sm text-gray-600 mt-2">
                               💡 JPG, PNG, WEBP • Max 5MB par image
                             </div>
                           </div>
                           
-                          <div className="bg-green-100 p-4 rounded-lg">
-                            <div className="text-green-800 text-sm">
-                              <strong>📊 Notes analysées :</strong><br/>
-                              ✅ Vos notes manuscrites ont été lues<br/>
-                              ✅ Données extraites et structurées<br/>
-                              💡 Vous pouvez ajouter des images si besoin
-                            </div>
+                          <div className="text-purple-700 text-sm">
+                            <strong>📊 Images uploadées : {uploadedImages.length}</strong><br/>
+                            Les images seront automatiquement intégrées dans votre Cornell PDF final.
                           </div>
                         </div>
 
                         {uploadedImages.length > 0 && (
-                          <div className="mt-4">
-                            <h4 className="font-medium text-purple-800 mb-3">📷 Images dans votre Cornell :</h4>
+                          <div className="mt-6">
+                            <h4 className="font-medium text-purple-800 mb-3">📷 Vos images :</h4>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                               {uploadedImages.map(img => (
-                                <div key={img.id} className="relative bg-white p-2 rounded border shadow-sm">
+                                <div key={img.id} className="relative bg-white p-2 rounded-lg border shadow-sm">
                                   <img 
                                     src={img.data} 
                                     alt={img.name}
@@ -637,7 +647,7 @@ FISSION NUCLÉAIRE :
                                   />
                                   <button
                                     onClick={() => removeImage(img.id)}
-                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
+                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600 transition-colors"
                                   >
                                     ×
                                   </button>
@@ -650,153 +660,188 @@ FISSION NUCLÉAIRE :
                       </div>
 
                       {/* Structure Cornell */}
-                      <div className="grid lg:grid-cols-3 gap-6">
-                        <div className="bg-yellow-50 p-6 rounded-lg border-2 border-yellow-300">
-                          <h3 className="text-lg font-bold text-yellow-800 mb-4">📋 Colonne Gauche (✅ Pré-remplie)</h3>
+                      <div className="grid lg:grid-cols-4 gap-6 mb-8">
+                        <div className="lg:col-span-1 cornell-yellow rounded-xl p-6">
+                          <h3 className="text-lg font-semibold text-gray-800 mb-6">📋 Colonne Cornell</h3>
                           
                           <div className="space-y-4">
                             {[
-                              { key: 'mots_cles', label: '🔑 Mots-clés', placeholder: 'photons, radioactivité, alpha...' },
-                              { key: 'formules', label: '🧮 Formules', placeholder: 'α : ₂₃₈U → ₂₃₄Th + ₂⁴He' },
-                              { key: 'noms_auteurs', label: '👨‍🏫 Noms d\'auteur', placeholder: 'Einstein, Curie...' },
-                              { key: 'dates_importantes', label: '📅 Dates importantes', placeholder: '1896: Découverte...' },
-                              { key: 'doutes_questions', label: '❓ Doutes', placeholder: 'Pourquoi noyaux instables ?' }
+                              { key: 'mots_cles', label: '🔑 Mots-clés', placeholder: 'photons, radioactivité...' },
+                              { key: 'formules', label: '🧮 Formules', placeholder: 'α : ²³⁸U → ²³⁴Th + ²⁴He' },
+                              { key: 'noms_auteurs', label: '👨‍🏫 Scientifiques', placeholder: 'Einstein, Curie...' },
+                              { key: 'dates_importantes', label: '📅 Dates clés', placeholder: '1896: Découverte...' },
+                              { key: 'doutes_questions', label: '❓ Questions', placeholder: 'Pourquoi...?' }
                             ].map(field => (
                               <div key={field.key}>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">{field.label}</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
                                 <textarea
                                   value={cornellData[field.key]}
                                   onChange={(e) => setCornellData({...cornellData, [field.key]: e.target.value})}
                                   placeholder={field.placeholder}
-                                  className="w-full h-16 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
+                                  className="w-full h-16 p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                                 />
                               </div>
                             ))}
                           </div>
                         </div>
 
-                        <div className="lg:col-span-2 bg-blue-50 p-6 rounded-lg border-2 border-blue-300">
-                          <h3 className="text-lg font-bold text-blue-800 mb-4">📝 Prise de notes (✅ Pré-remplie)</h3>
+                        <div className="lg:col-span-3 bg-blue-50 rounded-xl p-6">
+                          <h3 className="text-lg font-semibold text-blue-800 mb-4">📝 Notes Principales</h3>
                           <textarea
                             value={cornellData.notes_principales}
                             onChange={(e) => setCornellData({...cornellData, notes_principales: e.target.value})}
-                            placeholder="Notes principales du cours..."
-                            className="w-full h-80 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
+                            placeholder="Notez ici le contenu principal de votre cours..."
+                            className="w-full h-64 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                           />
                         </div>
                       </div>
 
                       {/* Résumé */}
-                      <div className="bg-yellow-50 p-6 rounded-lg border-2 border-yellow-300">
-                        <h3 className="text-lg font-bold text-yellow-800 mb-4">📄 Résumé Cornell (✅ Pré-rempli)</h3>
+                      <div className="cornell-yellow rounded-xl p-6 mb-8">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4">📄 Résumé Personnel</h3>
                         <textarea
                           value={cornellData.resume_personnel}
                           onChange={(e) => setCornellData({...cornellData, resume_personnel: e.target.value})}
-                          placeholder="Résumez les points essentiels..."
-                          className="w-full h-24 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
+                          placeholder="Résumez les points essentiels en quelques lignes..."
+                          className="w-full h-20 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                         />
                       </div>
 
-                      {/* Bouton de traitement */}
-                      <div className="flex justify-center">
+                      {/* Actions */}
+                      <div className="flex justify-center space-x-4">
+                        <button
+                          onClick={resetAll}
+                          className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                        >
+                          <RotateCcw className="inline mr-2" />
+                          Réinitialiser
+                        </button>
+                        
                         <button
                           onClick={processNotesWithAI}
-                          disabled={isProcessing || !courseConfig.subject || !courseConfig.chapter || !courseConfig.professor.trim()}
-                          className="bg-green-600 text-white px-8 py-4 rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center space-x-3 text-lg font-bold"
+                          disabled={!isFormValid || isProcessing}
+                          className={`px-8 py-3 rounded-lg font-medium transition-all duration-300 ${
+                            isFormValid && !isProcessing
+                              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transform hover:scale-105'
+                              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          }`}
                         >
                           {isProcessing ? (
                             <>
-                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                              <span>Analyse en cours...</span>
+                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white inline mr-2"></div>
+                              Analyse IA en cours...
                             </>
                           ) : (
                             <>
-                              <Brain />
-                              <span>🚀 Générer le résumé IA (Claude Haiku)</span>
+                              <Brain className="inline mr-2" />
+                              Générer avec IA
                             </>
                           )}
                         </button>
                       </div>
+
+                      {!isFormValid && (
+                        <div className="text-center mt-4">
+                          <p className="text-sm text-gray-500">
+                            Remplissez au minimum : Matière, Chapitre, Professeur et Notes principales (ou Résumé)
+                          </p>
+                        </div>
+                      )}
                     </div>
                   )}
 
                   {/* Étape 2: Résumé & Export */}
                   {currentStep === 2 && summary && (
-                    <div className="space-y-8">
-                      <div className="flex justify-between items-center">
-                        <h2 className="text-3xl font-bold text-gray-800">📊 Résumé Cornell Généré</h2>
-                        <div className="flex space-x-3">
-                          <button
-                            onClick={exportToHTML}
-                            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 flex items-center space-x-2 text-lg font-bold"
-                          >
-                            <Download />
-                            <span>📄 EXPORT PDF</span>
-                          </button>
-                          <button
-                            onClick={resetAll}
-                            className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700"
-                          >
-                            Nouveau Cornell
-                          </button>
-                        </div>
+                    <div className="p-8">
+                      <div className="text-center mb-8">
+                        <h2 className="text-3xl font-bold text-green-800 mb-2">🎉 Cornell Notes Généré !</h2>
+                        <p className="text-gray-600">Votre document est prêt pour l'export PDF</p>
                       </div>
 
-                      {/* Aperçu Cornell */}
-                      <div className="bg-gray-50 p-6 rounded-lg border">
-                        <h3 className="font-bold text-gray-800 mb-4">📋 Aperçu de votre document Cornell :</h3>
+                      {/* Actions d'export */}
+                      <div className="flex justify-center space-x-4 mb-8">
+                        <button
+                          onClick={exportToHTML}
+                          className="bg-gradient-to-r from-green-600 to-blue-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-green-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 flex items-center space-x-3"
+                        >
+                          <Download />
+                          <span>📄 Télécharger PDF</span>
+                        </button>
                         
-                        <div className="bg-yellow-200 p-4 rounded border-2 border-gray-400 mb-4">
-                          <div className="grid grid-cols-3 text-center font-bold text-sm">
-                            <div>Date<br/>{courseConfig.date.split('-').reverse().join('.')}</div>
-                            <div>Chapitre<br/>{courseConfig.chapterNumber ? `${courseConfig.chapterNumber} - ` : ''}{courseConfig.chapter}</div>
-                            <div>Matière<br/>{courseConfig.subject}</div>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-3 border-2 border-gray-400 mb-4 min-h-40">
-                          <div className="bg-yellow-200 p-4 border-r-2 border-gray-400">
-                            <div className="font-bold text-xs mb-2">Mots-clés</div>
-                            <div className="text-xs">{summary.concepts_cles ? summary.concepts_cles.slice(0, 4).join(', ') : '-'}</div>
-                            <div className="font-bold text-xs mt-3 mb-1">Formules</div>
-                            <div className="text-xs">{summary.formules_lois?.[0]?.expression || '-'}</div>
-                          </div>
-                          <div className="col-span-2 p-4 bg-white">
-                            <div className="text-xs">{summary.resume_executif}</div>
-                            {uploadedImages.length > 0 && (
-                              <div className="mt-2 text-xs text-purple-600">
-                                📷 {uploadedImages.length} image(s) intégrée(s)
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="bg-yellow-200 p-4 rounded border-2 border-gray-400">
-                          <div className="font-bold text-center mb-2 text-sm">Résumé</div>
-                          <div className="text-xs">{summary.resume_executif}</div>
-                        </div>
+                        <button
+                          onClick={resetAll}
+                          className="bg-gray-600 text-white px-6 py-4 rounded-xl hover:bg-gray-700 transition-colors"
+                        >
+                          <RotateCcw className="inline mr-2" />
+                          Nouveau Cornell
+                        </button>
                       </div>
 
-                      {/* Status final */}
-                      <div className="bg-green-50 p-6 rounded-lg border border-green-200">
-                        <h3 className="font-bold text-green-800 mb-4">✅ CORNELL NOTES PRÊT</h3>
-                        <div className="grid md:grid-cols-2 gap-6">
-                          <div>
-                            <h4 className="font-bold text-blue-700 mb-2">📄 Fichier généré :</h4>
-                            <div className="text-sm bg-blue-100 p-2 rounded">
-                              250905_Physique_Radioactivite-Fission_Nucleaire.html
+                      {/* Aperçu du document */}
+                      <div className="bg-gray-50 rounded-xl p-6 border-2 border-gray-200">
+                        <h3 className="font-bold text-gray-800 mb-6 text-center">📋 Aperçu de votre Cornell Notes</h3>
+                        
+                        {/* Mini Cornell preview */}
+                        <div className="max-w-2xl mx-auto">
+                          <div className="cornell-yellow p-3 rounded-t-lg border-2 border-gray-400 border-b-0">
+                            <div className="grid grid-cols-3 text-center font-bold text-sm">
+                              <div>📅 {courseConfig.date.split('-').reverse().join('.')}</div>
+                              <div>📖 {courseConfig.chapterNumber ? `${courseConfig.chapterNumber} - ` : ''}{courseConfig.chapter}</div>
+                              <div>📚 {courseConfig.subject}</div>
                             </div>
                           </div>
-                          <div>
-                            <h4 className="font-bold text-green-700 mb-2">🎯 Contenu inclus :</h4>
-                            <ul className="list-disc list-inside text-gray-700 space-y-1 text-sm">
-                              <li>Structure Cornell authentique</li>
-                              <li>Résumé IA enrichi (Claude Haiku)</li>
-                              <li>Formules radioactivité analysées</li>
-                              <li>Format PDF optimisé révisions</li>
-                              <li>Données de vos notes manuscrites</li>
-                            </ul>
+
+                          <div className="grid grid-cols-3 border-2 border-gray-400 border-t-0 min-h-32">
+                            <div className="cornell-yellow p-3 border-r-2 border-gray-400">
+                              <div className="font-bold text-xs mb-2">🔑 Concepts clés</div>
+                              <div className="text-xs">{summary.concepts_cles ? summary.concepts_cles.slice(0, 3).join(', ') + '...' : '-'}</div>
+                            </div>
+                            <div className="col-span-2 p-3 bg-white">
+                              <div className="text-xs">{summary.resume_executif ? summary.resume_executif.substring(0, 150) + '...' : '-'}</div>
+                              {uploadedImages.length > 0 && (
+                                <div className="mt-2 text-xs text-purple-600">
+                                  📷 {uploadedImages.length} image(s) intégrée(s)
+                                </div>
+                              )}
+                            </div>
                           </div>
+
+                          <div className="cornell-yellow p-3 rounded-b-lg border-2 border-gray-400 border-t-0">
+                            <div className="font-bold text-center mb-1 text-sm">📄 Résumé</div>
+                            <div className="text-xs">{summary.resume_executif ? summary.resume_executif.substring(0, 100) + '...' : '-'}</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Informations du fichier */}
+                      <div className="mt-8 grid md:grid-cols-2 gap-6">
+                        <div className="bg-blue-50 p-6 rounded-xl">
+                          <h4 className="font-bold text-blue-700 mb-3">📄 Fichier généré</h4>
+                          <div className="text-sm bg-white p-3 rounded border font-mono">
+                            {(() => {
+                              const dateParts = courseConfig.date.split('-');
+                              const dateFormatted = dateParts[0].slice(-2) + dateParts[1] + dateParts[2];
+                              const cleanChapter = removeAccents(courseConfig.chapter).replace(/\s+/g, '_').replace(/[<>:"/\\|?*]/g, '');
+                              return `${dateFormatted}_${courseConfig.subject}_${cleanChapter}.html`;
+                            })()}
+                          </div>
+                        </div>
+                        
+                        <div className="bg-green-50 p-6 rounded-xl">
+                          <h4 className="font-bold text-green-700 mb-3">🎯 Contenu enrichi</h4>
+                          <ul className="text-sm space-y-1">
+                            <li>• Structure Cornell authentique</li>
+                            <li>• Résumé IA optimisé</li>
+                            <li>• {uploadedImages.length} image(s) intégrée(s)</li>
+                            <li>• Prêt pour impression PDF</li>
+                          </ul>
+                        </div>
+                      </div>
+
+                      {/* Instructions PDF */}
+                      <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                        <div className="text-center text-sm text-yellow-800">
+                          <strong>💡 Pour obtenir un PDF :</strong> Ouvrez le fichier téléchargé → Ctrl+P (PC) ou Cmd+P (Mac) → "Enregistrer au format PDF"
                         </div>
                       </div>
                     </div>
