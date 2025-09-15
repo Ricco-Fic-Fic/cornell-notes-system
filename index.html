@@ -10,10 +10,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .lucide { width: 1.5rem; height: 1.5rem; stroke: currentColor; }
-        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .card-shadow { box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .cornell-yellow { background: #f7c948; }
-        .animate-pulse-slow { animation: pulse 3s infinite; }
     </style>
 </head>
 <body>
@@ -22,17 +18,23 @@
     <script type="text/babel">
         const { useState } = React;
 
-        // Icônes simplifiées
+        // Icônes Lucide simplifiées
+        const BookOpen = () => <span className="lucide">📚</span>;
         const Brain = () => <span className="lucide">🧠</span>;
         const Download = () => <span className="lucide">📄</span>;
+        const ArrowRight = () => <span className="lucide">→</span>;
         const Upload = () => <span className="lucide">📤</span>;
         const RotateCcw = () => <span className="lucide">🔄</span>;
         const FileText = () => <span className="lucide">📝</span>;
-        const Sparkles = () => <span className="lucide">✨</span>;
-        const CheckCircle = () => <span className="lucide">✅</span>;
+        const Camera = () => <span className="lucide">📸</span>;
+        const Eye = () => <span className="lucide">👁️</span>;
 
         const CornellNotesSystem = () => {
           const [currentStep, setCurrentStep] = useState(1);
+          const [ocrStep, setOcrStep] = useState(false);
+          const [isAnalyzing, setIsAnalyzing] = useState(false);
+          const [analysisResult, setAnalysisResult] = useState(null);
+          
           const [courseConfig, setCourseConfig] = useState({
             subject: '',
             chapter: '',
@@ -69,10 +71,73 @@
               .replace(/[Œ]/g, "OE");
           };
 
+          // NOUVELLE FONCTION OCR
+          const analyzeImageWithOCR = async (file) => {
+            setIsAnalyzing(true);
+            
+            try {
+              // Convertir image en base64
+              const base64Data = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                  const base64 = reader.result.split(",")[1];
+                  resolve(base64);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+              });
+
+              // Appel API Claude Vision
+              const response = await fetch("/api/claude-vision", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  imageData: base64Data,
+                  imageType: file.type
+                })
+              });
+
+              if (!response.ok) {
+                throw new Error(`Erreur API: ${response.status}`);
+              }
+
+              const ocrResult = await response.json();
+              
+              // Pré-remplir automatiquement les champs
+              setCourseConfig({
+                ...courseConfig,
+                subject: ocrResult.courseConfig.subject || courseConfig.subject,
+                chapter: ocrResult.courseConfig.chapter || courseConfig.chapter,
+                chapterNumber: ocrResult.courseConfig.chapterNumber || courseConfig.chapterNumber,
+                professor: ocrResult.courseConfig.professor !== 'Non spécifié' 
+                  ? ocrResult.courseConfig.professor 
+                  : courseConfig.professor
+              });
+              
+              setCornellData({
+                ...cornellData,
+                ...ocrResult.cornellData
+              });
+              
+              setAnalysisResult(ocrResult);
+              setOcrStep(false);
+              
+              alert(`✅ Analyse terminée ! Confiance: ${ocrResult.confidence}\n📝 Formulaire pré-rempli automatiquement.\n🔍 Vérifiez et corrigez si nécessaire.`);
+              
+            } catch (error) {
+              console.error("Erreur analyse OCR:", error);
+              alert("Erreur lors de l'analyse. Veuillez réessayer.");
+            } finally {
+              setIsAnalyzing(false);
+            }
+          };
+
           const handleImageUpload = (event) => {
             const files = Array.from(event.target.files);
             files.forEach(file => {
-              if (file.type.startsWith('image/') && file.size <= 5 * 1024 * 1024) {
+              if (file.type.startsWith('image/')) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
                   setUploadedImages(prev => [...prev, {
@@ -83,8 +148,6 @@
                   }]);
                 };
                 reader.readAsDataURL(file);
-              } else if (file.size > 5 * 1024 * 1024) {
-                alert(`Image "${file.name}" trop lourde. Maximum 5MB par image.`);
               }
             });
           };
@@ -95,6 +158,8 @@
 
           const resetAll = () => {
             setCurrentStep(1);
+            setOcrStep(false);
+            setAnalysisResult(null);
             setCourseConfig({
               subject: '',
               chapter: '',
@@ -118,7 +183,7 @@
 
           const processNotesWithAI = async () => {
             if (!cornellData.notes_principales.trim() && !cornellData.resume_personnel.trim()) {
-              alert('Veuillez remplir au moins les notes principales ou le résumé personnel.');
+              alert('Veuillez remplir au moins les notes principales ou le résumé.');
               return;
             }
 
@@ -147,7 +212,7 @@
               
             } catch (error) {
               console.error("Erreur lors du traitement IA:", error);
-              alert("Erreur lors du traitement. Veuillez vérifier votre connexion et réessayer.");
+              alert("Erreur lors du traitement. Veuillez réessayer.");
             } finally {
               setIsProcessing(false);
             }
@@ -398,6 +463,7 @@
     <div class="footer">
         📄 Document généré par Cornell Notes System • ${new Date().toLocaleDateString('fr-FR')}<br>
         🎯 Optimisé pour révisions efficaces • Prof: ${courseConfig.professor}
+        ${analysisResult ? `<br>🤖 Analysé par Claude Vision (${analysisResult.confidence} confiance)` : ''}
     </div>
 </body>
 </html>`;
@@ -413,13 +479,7 @@
               document.body.removeChild(a);
               URL.revokeObjectURL(url);
               
-              // Animation de succès
-              const button = event.target;
-              const originalText = button.innerHTML;
-              button.innerHTML = '<span class="text-green-400">✅ Téléchargé !</span>';
-              setTimeout(() => {
-                button.innerHTML = originalText;
-              }, 2000);
+              alert(`✅ Fichier HTML téléchargé : ${fileName}\n📄 Images intégrées : ${uploadedImages.length}\n${analysisResult ? `🤖 Analyse OCR: ${analysisResult.confidence} confiance\n` : ''}\n📋 Pour obtenir un PDF :\n1. Ouvrez le fichier dans votre navigateur\n2. Cmd+P (Mac) ou Ctrl+P (PC)\n3. Sélectionnez "Enregistrer au format PDF"`);
               
             } catch (error) {
               console.error('Erreur lors de l\'export:', error);
@@ -427,219 +487,280 @@
             }
           };
 
-          const fillExampleData = () => {
-            setCourseConfig({
-              subject: 'Physique',
-              chapter: 'Radioactivité - Fission Nucléaire',
-              chapterNumber: '12',
-              date: '2025-09-05',
-              professor: 'M. Martin'
-            });
-            setCornellData({
-              notes_principales: `ONDES ÉLECTROMAGNÉTIQUES :
-- Transportées par particules (photons)
-- Types : Lumière, Micro-ondes, UV, Rayons γ, Ondes Radio
-- Quantum : unité d'énergie transportée
-
-DÉSINTÉGRATION/RADIOACTIVITÉ :
-- Noyau instable se désintègre spontanément
-- Beaucoup de neutrons → instabilité
-- Proportionnelle : radioactivité ∝ quantité
-
-TYPES DE DÉSINTÉGRATION :
-Alpha (α) : Noyau expulse 1 proton et 1 neutron
-Beta- (β-) : Neutron se transforme en proton
-Beta+ (β+) : Proton se transforme en neutron + positron
-
-FISSION NUCLÉAIRE :
-- Réaction en chaîne contrôlée
-- Centrale nucléaire vs Bombe atomique`,
-              mots_cles: `photons, quantum, radioactivité, désintégration, fission nucléaire, réaction en chaîne, alpha, beta, neutron, proton`,
-              formules: `α : ²³⁸U → ²³⁴Th + ²⁴He
-β⁻ : n → p⁺ + e⁻  
-β⁺ : p⁺ → n + e⁺ + neutrino`,
-              noms_auteurs: `Einstein (E=mc²), Curie (découverte radioactivité), Fermi (réaction en chaîne)`,
-              dates_importantes: `1896: Découverte radioactivité (Becquerel), 1942: Première réaction contrôlée (Fermi)`,
-              doutes_questions: `Pourquoi certains noyaux sont-ils instables ? Comment contrôler la réaction en chaîne ?`,
-              resume_personnel: `Les ondes électromagnétiques transportent l'énergie via photons. La radioactivité implique la désintégration de noyaux instables. La fission nucléaire utilise cette instabilité pour créer une réaction en chaîne contrôlée (centrale) ou incontrôlée (bombe).`
-            });
-          };
-
-          const isFormValid = courseConfig.subject && courseConfig.chapter && courseConfig.professor.trim() && 
-                             (cornellData.notes_principales.trim() || cornellData.resume_personnel.trim());
-
           return (
-            <div className="min-h-screen bg-gray-50">
-              {/* Header moderne */}
-              <div className="gradient-bg text-white">
-                <div className="max-w-7xl mx-auto px-4 py-8">
-                  <div className="text-center">
-                    <h1 className="text-4xl font-bold mb-2">
-                      📚 Cornell Notes System
-                    </h1>
-                    <p className="text-xl opacity-90 mb-6">
-                      Transformez vos notes en documents PDF professionnels
-                    </p>
-                    <div className="flex justify-center space-x-4 flex-wrap">
-                      <span className="bg-white bg-opacity-20 px-4 py-2 rounded-full text-sm font-medium">
-                        ✨ IA Intégrée
-                      </span>
-                      <span className="bg-white bg-opacity-20 px-4 py-2 rounded-full text-sm font-medium">
-                        📄 Export PDF
-                      </span>
-                      <span className="bg-white bg-opacity-20 px-4 py-2 rounded-full text-sm font-medium">
-                        🚀 Autonome 24/7
-                      </span>
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+              <div className="max-w-6xl mx-auto">
+                
+                {/* Header avec OCR */}
+                <div className="text-center mb-8">
+                  <h1 className="text-4xl font-bold text-gray-800 mb-2">
+                    📚 Cornell Notes System
+                  </h1>
+                  <div className="flex justify-center items-center space-x-2 mb-4">
+                    <span className="text-lg text-gray-600">Transformez vos notes manuscrites en documents PDF structurés</span>
+                    <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-bold">🤖 + OCR Auto</span>
+                  </div>
+                  
+                  {/* Instructions workflow avec OCR */}
+                  <div className="bg-gradient-to-r from-purple-100 to-yellow-100 border-2 border-purple-300 rounded-lg p-4 mb-6 max-w-5xl mx-auto">
+                    <h3 className="text-lg font-bold text-purple-800 mb-3">🚀 Nouveau Workflow Automatisé</h3>
+                    <div className="grid md:grid-cols-3 gap-4 text-left">
+                      <div className="bg-white p-3 rounded border">
+                        <h4 className="font-bold text-purple-800 mb-2">🤖 Analyse OCR</h4>
+                        <div className="text-sm text-gray-700 space-y-1">
+                          <div>• Upload notes manuscrites GoodNotes</div>
+                          <div>• Claude Vision analyse automatiquement</div>
+                          <div>• Pré-remplissage formulaire Cornell</div>
+                          <div>• Gain de temps : 10 min → 1 min</div>
+                        </div>
+                      </div>
+                      <div className="bg-white p-3 rounded border">
+                        <h4 className="font-bold text-blue-800 mb-2">✏️ Validation</h4>
+                        <div className="text-sm text-gray-700 space-y-1">
+                          <div>• Vérification résultats OCR</div>
+                          <div>• Corrections si nécessaire</div>
+                          <div>• Ajout images complémentaires</div>
+                          <div>• Génération résumé IA</div>
+                        </div>
+                      </div>
+                      <div className="bg-white p-3 rounded border">
+                        <h4 className="font-bold text-green-800 mb-2">📄 Export</h4>
+                        <div className="text-sm text-gray-700 space-y-1">
+                          <div>• Structure Cornell authentique</div>
+                          <div>• Format PDF professionnel</div>
+                          <div>• Optimisé pour révisions</div>
+                          <div>• Classement automatique</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              <div className="max-w-6xl mx-auto px-4 py-8">
-                
-                {/* Progress indicator */}
-                <div className="mb-8">
-                  <div className="flex items-center justify-center space-x-8">
-                    <div className={`flex flex-col items-center ${currentStep >= 1 ? 'text-blue-600' : 'text-gray-400'}`}>
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
-                        currentStep >= 1 ? 'bg-blue-100 border-2 border-blue-600' : 'bg-gray-100 border-2 border-gray-300'
+                  <div className="flex justify-center space-x-4 flex-wrap">
+                    <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">🤖 Claude Vision OCR</span>
+                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✅ Hébergé Vercel</span>
+                    <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">✅ ~13€/an total</span>
+                    <button
+                      onClick={resetAll}
+                      className="bg-gray-500 text-white px-4 py-2 rounded-full text-sm hover:bg-gray-400 font-bold flex items-center space-x-1"
+                    >
+                      <RotateCcw />
+                      <span>🔄 NOUVEAU CORNELL</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Progress avec OCR */}
+                <div className="flex justify-center mb-8">
+                  <div className="flex items-center space-x-6">
+                    <div className={`flex flex-col items-center ${ocrStep ? 'text-purple-600' : 'text-gray-400'}`}>
+                      <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-2 ${
+                        ocrStep ? 'bg-purple-100 border-2 border-purple-600' : 'bg-gray-100 border-2 border-gray-300'
+                      }`}>
+                        <Camera />
+                      </div>
+                      <span className="font-medium text-sm">Analyse OCR</span>
+                    </div>
+                    
+                    <ArrowRight className={analysisResult ? 'text-green-400' : 'text-gray-300'} />
+                    
+                    <div className={`flex flex-col items-center ${currentStep === 1 ? 'text-blue-600' : currentStep > 1 ? 'text-green-600' : 'text-gray-400'}`}>
+                      <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-2 ${
+                        currentStep === 1 ? 'bg-blue-100 border-2 border-blue-600' : 
+                        currentStep > 1 ? 'bg-green-100 border-2 border-green-600' : 
+                        'bg-gray-100 border-2 border-gray-300'
                       }`}>
                         <FileText />
                       </div>
-                      <span className="text-sm font-medium">Structure</span>
+                      <span className="font-medium text-sm">Structure Cornell</span>
                     </div>
                     
-                    <div className={`w-16 h-1 rounded transition-all duration-300 ${
-                      currentStep >= 2 ? 'bg-blue-600' : 'bg-gray-300'
-                    }`}></div>
+                    <ArrowRight className={currentStep > 1 ? 'text-green-400' : 'text-gray-300'} />
                     
-                    <div className={`flex flex-col items-center ${currentStep >= 2 ? 'text-green-600' : 'text-gray-400'}`}>
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
-                        currentStep >= 2 ? 'bg-green-100 border-2 border-green-600' : 'bg-gray-100 border-2 border-gray-300'
+                    <div className={`flex flex-col items-center ${currentStep === 2 ? 'text-blue-600' : 'text-gray-400'}`}>
+                      <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-2 ${
+                        currentStep === 2 ? 'bg-blue-100 border-2 border-blue-600' : 
+                        'bg-gray-100 border-2 border-gray-300'
                       }`}>
-                        {currentStep >= 2 ? <CheckCircle /> : <Brain />}
+                        <Brain />
                       </div>
-                      <span className="text-sm font-medium">Export</span>
+                      <span className="font-medium text-sm">Résumé IA & Export</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Main Card */}
-                <div className="bg-white rounded-2xl card-shadow overflow-hidden">
+                {/* Main Content */}
+                <div className="bg-white rounded-xl shadow-lg p-8">
                   
-                  {/* Étape 1: Structure Cornell */}
-                  {currentStep === 1 && (
-                    <div className="p-8">
-                      <div className="text-center mb-8">
-                        <h2 className="text-3xl font-bold text-gray-800 mb-2">📋 Configuration Cornell</h2>
-                        <p className="text-gray-600">Remplissez les informations du cours et structurez vos notes</p>
-                      </div>
+                  {/* Section selon l'état */}
+                  {!ocrStep && currentStep === 1 && (
+                    <div className="space-y-8">
                       
-                      {/* Quick action */}
-                      <div className="text-center mb-8">
-                        <button
-                          onClick={fillExampleData}
-                          className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors"
-                        >
-                          <Sparkles className="inline mr-2" />
-                          Remplir avec exemple (Physique)
-                        </button>
-                      </div>
-                      
-                      {/* Configuration du cours */}
-                      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">📅 Date</label>
-                          <input
-                            type="date"
-                            value={courseConfig.date}
-                            onChange={(e) => setCourseConfig({...courseConfig, date: e.target.value})}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
+                      {/* Choix du mode de saisie */}
+                      <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-6 rounded-lg border-2 border-purple-300">
+                        <h3 className="text-xl font-bold text-purple-800 mb-4">
+                          🚀 Choisissez votre méthode de saisie
+                        </h3>
+                        <p className="text-gray-700 mb-6">
+                          Analysez automatiquement vos notes manuscrites ou saisissez manuellement dans le formulaire Cornell
+                        </p>
+                        
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <button
+                            onClick={() => setOcrStep(true)}
+                            className="bg-gradient-to-r from-purple-600 to-purple-700 text-white p-6 rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all transform hover:scale-105"
+                          >
+                            <div className="flex items-center justify-center mb-3">
+                              <Camera />
+                            </div>
+                            <h4 className="font-bold text-lg mb-2">🤖 Analyse OCR Automatique</h4>
+                            <p className="text-sm text-purple-100">
+                              Upload vos notes GoodNotes → Analyse automatique → Pré-remplissage instantané
+                            </p>
+                            <div className="mt-3 bg-purple-500 text-xs px-3 py-1 rounded-full inline-block">
+                              ⚡ Recommandé - Gain de temps
+                            </div>
+                          </button>
+                          
+                          <button
+                            onClick={() => setOcrStep(false)}
+                            className="bg-gray-500 text-white p-6 rounded-lg hover:bg-gray-600 transition-all"
+                          >
+                            <div className="flex items-center justify-center mb-3">
+                              <FileText />
+                            </div>
+                            <h4 className="font-bold text-lg mb-2">✏️ Saisie Manuelle</h4>
+                            <p className="text-sm text-gray-200">
+                              Remplissez directement le formulaire Cornell classique
+                            </p>
+                            <div className="mt-3 bg-gray-400 text-xs px-3 py-1 rounded-full inline-block">
+                              📝 Méthode traditionnelle
+                            </div>
+                          </button>
                         </div>
                         
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">📚 Matière</label>
-                          <select
-                            value={courseConfig.subject}
-                            onChange={(e) => setCourseConfig({...courseConfig, subject: e.target.value})}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          >
-                            <option value="">Choisir...</option>
-                            {subjects.map(subject => (
-                              <option key={subject} value={subject}>{subject}</option>
-                            ))}
-                          </select>
-                        </div>
+                        {analysisResult && (
+                          <div className="mt-6 p-4 bg-green-100 border border-green-300 rounded-lg">
+                            <div className="flex items-center">
+                              <Eye className="mr-2 text-green-600" />
+                              <span className="font-bold text-green-800">✅ Analyse OCR terminée</span>
+                              <span className="ml-2 bg-green-200 text-green-800 px-2 py-1 rounded text-sm">
+                                Confiance: {analysisResult.confidence}
+                              </span>
+                            </div>
+                            <p className="text-green-700 text-sm mt-2">
+                              Formulaire pré-rempli avec les données extraites. Vous pouvez maintenant vérifier et ajuster si nécessaire.
+                            </p>
+                          </div>
+                        )}
+                      </div>
 
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">👨‍🏫 Professeur</label>
-                          <input
-                            type="text"
-                            value={courseConfig.professor}
-                            onChange={(e) => setCourseConfig({...courseConfig, professor: e.target.value})}
-                            placeholder="Nom du professeur"
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
+                      {/* Formulaire Cornell normal */}
+                      <h2 className="text-3xl font-bold text-gray-800 mb-6">📋 Structure Cornell</h2>
+                      
+                      {/* Configuration cours */}
+                      <div className="bg-yellow-50 p-6 rounded-lg border-2 border-yellow-300">
+                        <h3 className="text-xl font-bold text-yellow-800 mb-4">📋 En-tête : Date | Numéro + Nom du Chapitre | Matière</h3>
+                        <div className="grid md:grid-cols-3 gap-6">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">📅 Date *</label>
+                            <input
+                              type="date"
+                              value={courseConfig.date}
+                              onChange={(e) => setCourseConfig({...courseConfig, date: e.target.value})}
+                              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">📚 Matière *</label>
+                            <select
+                              value={courseConfig.subject}
+                              onChange={(e) => setCourseConfig({...courseConfig, subject: e.target.value})}
+                              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="">Sélectionner</option>
+                              {subjects.map(subject => (
+                                <option key={subject} value={subject}>{subject}</option>
+                              ))}
+                            </select>
+                          </div>
 
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">🔢 N° Chapitre</label>
-                          <input
-                            type="text"
-                            value={courseConfig.chapterNumber}
-                            onChange={(e) => setCourseConfig({...courseConfig, chapterNumber: e.target.value})}
-                            placeholder="ex: 12"
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">👨‍🏫 Professeur *</label>
+                            <input
+                              type="text"
+                              value={courseConfig.professor}
+                              onChange={(e) => setCourseConfig({...courseConfig, professor: e.target.value})}
+                              placeholder="Nom du professeur"
+                              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="grid md:grid-cols-2 gap-6 mt-6">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">🔢 Numéro Chapitre</label>
+                            <input
+                              type="text"
+                              value={courseConfig.chapterNumber}
+                              onChange={(e) => setCourseConfig({...courseConfig, chapterNumber: e.target.value})}
+                              placeholder="ex: 25"
+                              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">📖 Nom du Chapitre *</label>
+                            <input
+                              type="text"
+                              value={courseConfig.chapter}
+                              onChange={(e) => setCourseConfig({...courseConfig, chapter: e.target.value})}
+                              placeholder="ex: Radioactivité et fusion nucléaire"
+                              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
                         </div>
                       </div>
 
-                      {/* Nom du chapitre */}
-                      <div className="mb-8">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">📖 Nom du Chapitre</label>
-                        <input
-                          type="text"
-                          value={courseConfig.chapter}
-                          onChange={(e) => setCourseConfig({...courseConfig, chapter: e.target.value})}
-                          placeholder="ex: Radioactivité - Fission Nucléaire"
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-
-                      {/* Upload d'images */}
-                      <div className="bg-purple-50 rounded-xl p-6 mb-8">
-                        <h3 className="text-lg font-semibold text-purple-800 mb-4 flex items-center">
+                      {/* Section Images classique */}
+                      <div className="bg-purple-50 p-6 rounded-lg border-2 border-purple-300">
+                        <h3 className="text-xl font-bold text-purple-800 mb-4 flex items-center">
                           <Upload className="mr-2" />
-                          Images et Schémas (optionnel)
+                          🖼️ Images et Schémas Complémentaires
                         </h3>
                         
                         <div className="grid md:grid-cols-2 gap-6">
                           <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              📸 Upload d'images (optionnel)
+                            </label>
                             <input
                               type="file"
                               multiple
                               accept="image/*"
                               onChange={handleImageUpload}
-                              className="w-full p-3 border-2 border-dashed border-purple-300 rounded-lg hover:border-purple-400 transition-colors"
+                              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white"
                             />
                             <div className="text-sm text-gray-600 mt-2">
                               💡 JPG, PNG, WEBP • Max 5MB par image
                             </div>
                           </div>
                           
-                          <div className="text-purple-700 text-sm">
-                            <strong>📊 Images uploadées : {uploadedImages.length}</strong><br/>
-                            Les images seront automatiquement intégrées dans votre Cornell PDF final.
+                          <div className="bg-blue-100 p-4 rounded-lg">
+                            <div className="text-blue-800 text-sm">
+                              <strong>📊 Status :</strong><br/>
+                              Images uploadées : {uploadedImages.length}<br/>
+                              {uploadedImages.length > 0 ? '✅ Intégration automatique dans le PDF' : '📝 Section pour images complémentaires'}
+                            </div>
                           </div>
                         </div>
 
                         {uploadedImages.length > 0 && (
-                          <div className="mt-6">
-                            <h4 className="font-medium text-purple-800 mb-3">📷 Vos images :</h4>
+                          <div className="mt-4">
+                            <h4 className="font-medium text-purple-800 mb-3">📷 Images dans votre Cornell :</h4>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                               {uploadedImages.map(img => (
-                                <div key={img.id} className="relative bg-white p-2 rounded-lg border shadow-sm">
+                                <div key={img.id} className="relative bg-white p-2 rounded border shadow-sm">
                                   <img 
                                     src={img.data} 
                                     alt={img.name}
@@ -647,7 +768,7 @@ FISSION NUCLÉAIRE :
                                   />
                                   <button
                                     onClick={() => removeImage(img.id)}
-                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600 transition-colors"
+                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
                                   >
                                     ×
                                   </button>
@@ -660,188 +781,229 @@ FISSION NUCLÉAIRE :
                       </div>
 
                       {/* Structure Cornell */}
-                      <div className="grid lg:grid-cols-4 gap-6 mb-8">
-                        <div className="lg:col-span-1 cornell-yellow rounded-xl p-6">
-                          <h3 className="text-lg font-semibold text-gray-800 mb-6">📋 Colonne Cornell</h3>
+                      <div className="grid lg:grid-cols-3 gap-6">
+                        <div className="bg-yellow-50 p-6 rounded-lg border-2 border-yellow-300">
+                          <h3 className="text-lg font-bold text-yellow-800 mb-4">📋 Colonne Gauche</h3>
                           
                           <div className="space-y-4">
                             {[
-                              { key: 'mots_cles', label: '🔑 Mots-clés', placeholder: 'photons, radioactivité...' },
-                              { key: 'formules', label: '🧮 Formules', placeholder: 'α : ²³⁸U → ²³⁴Th + ²⁴He' },
-                              { key: 'noms_auteurs', label: '👨‍🏫 Scientifiques', placeholder: 'Einstein, Curie...' },
-                              { key: 'dates_importantes', label: '📅 Dates clés', placeholder: '1896: Découverte...' },
-                              { key: 'doutes_questions', label: '❓ Questions', placeholder: 'Pourquoi...?' }
+                              { key: 'mots_cles', label: '🔑 Mots-clés', placeholder: 'photons, radioactivité, alpha...' },
+                              { key: 'formules', label: '🧮 Formules', placeholder: 'α : ₂₃₈U → ₂₃₄Th + ₂⁴He' },
+                              { key: 'noms_auteurs', label: '👨‍🏫 Noms d\'auteur', placeholder: 'Einstein, Curie...' },
+                              { key: 'dates_importantes', label: '📅 Dates importantes', placeholder: '1896: Découverte...' },
+                              { key: 'doutes_questions', label: '❓ Doutes', placeholder: 'Pourquoi noyaux instables ?' }
                             ].map(field => (
                               <div key={field.key}>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">{field.label}</label>
                                 <textarea
                                   value={cornellData[field.key]}
                                   onChange={(e) => setCornellData({...cornellData, [field.key]: e.target.value})}
                                   placeholder={field.placeholder}
-                                  className="w-full h-16 p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                  className="w-full h-16 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
                                 />
                               </div>
                             ))}
                           </div>
                         </div>
 
-                        <div className="lg:col-span-3 bg-blue-50 rounded-xl p-6">
-                          <h3 className="text-lg font-semibold text-blue-800 mb-4">📝 Notes Principales</h3>
+                        <div className="lg:col-span-2 bg-blue-50 p-6 rounded-lg border-2 border-blue-300">
+                          <h3 className="text-lg font-bold text-blue-800 mb-4">📝 Prise de notes</h3>
                           <textarea
                             value={cornellData.notes_principales}
                             onChange={(e) => setCornellData({...cornellData, notes_principales: e.target.value})}
-                            placeholder="Notez ici le contenu principal de votre cours..."
-                            className="w-full h-64 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                            placeholder="Notes principales du cours..."
+                            className="w-full h-80 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
                           />
                         </div>
                       </div>
 
                       {/* Résumé */}
-                      <div className="cornell-yellow rounded-xl p-6 mb-8">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-4">📄 Résumé Personnel</h3>
+                      <div className="bg-yellow-50 p-6 rounded-lg border-2 border-yellow-300">
+                        <h3 className="text-lg font-bold text-yellow-800 mb-4">📄 Résumé Cornell</h3>
                         <textarea
                           value={cornellData.resume_personnel}
                           onChange={(e) => setCornellData({...cornellData, resume_personnel: e.target.value})}
-                          placeholder="Résumez les points essentiels en quelques lignes..."
-                          className="w-full h-20 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                          placeholder="Résumez les points essentiels..."
+                          className="w-full h-24 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
                         />
                       </div>
 
-                      {/* Actions */}
-                      <div className="flex justify-center space-x-4">
-                        <button
-                          onClick={resetAll}
-                          className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                        >
-                          <RotateCcw className="inline mr-2" />
-                          Réinitialiser
-                        </button>
-                        
+                      {/* Bouton génération */}
+                      <div className="flex justify-center">
                         <button
                           onClick={processNotesWithAI}
-                          disabled={!isFormValid || isProcessing}
-                          className={`px-8 py-3 rounded-lg font-medium transition-all duration-300 ${
-                            isFormValid && !isProcessing
-                              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transform hover:scale-105'
-                              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                          }`}
+                          disabled={isProcessing || !courseConfig.subject || !courseConfig.chapter || !courseConfig.professor.trim()}
+                          className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center space-x-3 text-lg font-bold"
                         >
                           {isProcessing ? (
                             <>
-                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white inline mr-2"></div>
-                              Analyse IA en cours...
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                              <span>Analyse en cours...</span>
                             </>
                           ) : (
                             <>
-                              <Brain className="inline mr-2" />
-                              Générer avec IA
+                              <Brain />
+                              <span>🚀 Générer le résumé IA</span>
                             </>
                           )}
                         </button>
                       </div>
+                    </div>
+                  )}
 
-                      {!isFormValid && (
-                        <div className="text-center mt-4">
-                          <p className="text-sm text-gray-500">
-                            Remplissez au minimum : Matière, Chapitre, Professeur et Notes principales (ou Résumé)
+                  {/* Interface OCR */}
+                  {ocrStep && (
+                    <div className="space-y-8">
+                      <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-6 rounded-lg border-2 border-purple-300">
+                        <h2 className="text-3xl font-bold text-purple-800 mb-6">🤖 Analyse OCR Automatique</h2>
+                        
+                        <div className="bg-white p-6 rounded-lg border border-purple-200 mb-6">
+                          <h3 className="text-lg font-bold text-purple-700 mb-4">📸 Upload vos notes manuscrites</h3>
+                          <p className="text-gray-600 mb-4">
+                            Sélectionnez vos photos ou PDF de notes GoodNotes. Claude Vision va analyser et extraire automatiquement le contenu pour pré-remplir votre Cornell.
                           </p>
+                          
+                          <input
+                            type="file"
+                            accept="image/*,.pdf"
+                            onChange={(e) => {
+                              if (e.target.files[0]) {
+                                analyzeImageWithOCR(e.target.files[0]);
+                              }
+                            }}
+                            className="w-full p-4 border-2 border-dashed border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 bg-purple-50 hover:bg-purple-100 transition-colors"
+                          />
+                          
+                          <div className="mt-4 text-sm text-gray-600">
+                            <p>📋 <strong>Formats acceptés :</strong> JPG, PNG, WEBP, PDF</p>
+                            <p>⚡ <strong>Analyse automatique :</strong> Extraction texte + Structure Cornell</p>
+                            <p>🎯 <strong>Résultat :</strong> Formulaire pré-rempli à 80%</p>
+                          </div>
                         </div>
-                      )}
+                        
+                        {isAnalyzing && (
+                          <div className="bg-purple-100 p-6 rounded-lg border border-purple-300 text-center">
+                            <div className="flex justify-center mb-4">
+                              <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-purple-600"></div>
+                            </div>
+                            <h3 className="text-lg font-bold text-purple-800 mb-2">🤖 Claude Vision en action...</h3>
+                            <div className="space-y-2 text-purple-700">
+                              <p>📖 Lecture du texte manuscrit</p>
+                              <p>🔍 Identification des éléments Cornell</p>
+                              <p>⚙️ Structuration automatique des données</p>
+                            </div>
+                            <div className="mt-4 text-sm text-purple-600">
+                              Veuillez patienter 10-20 secondes...
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className="flex space-x-4">
+                          <button
+                            onClick={() => setOcrStep(false)}
+                            className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 flex items-center space-x-2"
+                          >
+                            <ArrowRight className="rotate-180" />
+                            <span>← Retour à la saisie manuelle</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   )}
 
                   {/* Étape 2: Résumé & Export */}
                   {currentStep === 2 && summary && (
-                    <div className="p-8">
-                      <div className="text-center mb-8">
-                        <h2 className="text-3xl font-bold text-green-800 mb-2">🎉 Cornell Notes Généré !</h2>
-                        <p className="text-gray-600">Votre document est prêt pour l'export PDF</p>
-                      </div>
-
-                      {/* Actions d'export */}
-                      <div className="flex justify-center space-x-4 mb-8">
-                        <button
-                          onClick={exportToHTML}
-                          className="bg-gradient-to-r from-green-600 to-blue-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-green-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 flex items-center space-x-3"
-                        >
-                          <Download />
-                          <span>📄 Télécharger PDF</span>
-                        </button>
-                        
-                        <button
-                          onClick={resetAll}
-                          className="bg-gray-600 text-white px-6 py-4 rounded-xl hover:bg-gray-700 transition-colors"
-                        >
-                          <RotateCcw className="inline mr-2" />
-                          Nouveau Cornell
-                        </button>
-                      </div>
-
-                      {/* Aperçu du document */}
-                      <div className="bg-gray-50 rounded-xl p-6 border-2 border-gray-200">
-                        <h3 className="font-bold text-gray-800 mb-6 text-center">📋 Aperçu de votre Cornell Notes</h3>
-                        
-                        {/* Mini Cornell preview */}
-                        <div className="max-w-2xl mx-auto">
-                          <div className="cornell-yellow p-3 rounded-t-lg border-2 border-gray-400 border-b-0">
-                            <div className="grid grid-cols-3 text-center font-bold text-sm">
-                              <div>📅 {courseConfig.date.split('-').reverse().join('.')}</div>
-                              <div>📖 {courseConfig.chapterNumber ? `${courseConfig.chapterNumber} - ` : ''}{courseConfig.chapter}</div>
-                              <div>📚 {courseConfig.subject}</div>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-3 border-2 border-gray-400 border-t-0 min-h-32">
-                            <div className="cornell-yellow p-3 border-r-2 border-gray-400">
-                              <div className="font-bold text-xs mb-2">🔑 Concepts clés</div>
-                              <div className="text-xs">{summary.concepts_cles ? summary.concepts_cles.slice(0, 3).join(', ') + '...' : '-'}</div>
-                            </div>
-                            <div className="col-span-2 p-3 bg-white">
-                              <div className="text-xs">{summary.resume_executif ? summary.resume_executif.substring(0, 150) + '...' : '-'}</div>
-                              {uploadedImages.length > 0 && (
-                                <div className="mt-2 text-xs text-purple-600">
-                                  📷 {uploadedImages.length} image(s) intégrée(s)
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="cornell-yellow p-3 rounded-b-lg border-2 border-gray-400 border-t-0">
-                            <div className="font-bold text-center mb-1 text-sm">📄 Résumé</div>
-                            <div className="text-xs">{summary.resume_executif ? summary.resume_executif.substring(0, 100) + '...' : '-'}</div>
-                          </div>
+                    <div className="space-y-8">
+                      <div className="flex justify-between items-center">
+                        <h2 className="text-3xl font-bold text-gray-800">📊 Résumé Cornell Généré</h2>
+                        <div className="flex space-x-3">
+                          <button
+                            onClick={exportToHTML}
+                            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 flex items-center space-x-2 text-lg font-bold"
+                          >
+                            <Download />
+                            <span>📄 EXPORT PDF</span>
+                          </button>
+                          <button
+                            onClick={resetAll}
+                            className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700"
+                          >
+                            Nouveau Cornell
+                          </button>
                         </div>
                       </div>
 
-                      {/* Informations du fichier */}
-                      <div className="mt-8 grid md:grid-cols-2 gap-6">
-                        <div className="bg-blue-50 p-6 rounded-xl">
-                          <h4 className="font-bold text-blue-700 mb-3">📄 Fichier généré</h4>
-                          <div className="text-sm bg-white p-3 rounded border font-mono">
-                            {(() => {
-                              const dateParts = courseConfig.date.split('-');
-                              const dateFormatted = dateParts[0].slice(-2) + dateParts[1] + dateParts[2];
-                              const cleanChapter = removeAccents(courseConfig.chapter).replace(/\s+/g, '_').replace(/[<>:"/\\|?*]/g, '');
-                              return `${dateFormatted}_${courseConfig.subject}_${cleanChapter}.html`;
-                            })()}
+                      {/* Aperçu Cornell */}
+                      <div className="bg-gray-50 p-6 rounded-lg border">
+                        <h3 className="font-bold text-gray-800 mb-4">📋 Aperçu de votre document Cornell :</h3>
+                        
+                        <div className="bg-yellow-200 p-4 rounded border-2 border-gray-400 mb-4">
+                          <div className="grid grid-cols-3 text-center font-bold text-sm">
+                            <div>Date<br/>{courseConfig.date.split('-').reverse().join('.')}</div>
+                            <div>Chapitre<br/>{courseConfig.chapterNumber ? `${courseConfig.chapterNumber} - ` : ''}{courseConfig.chapter}</div>
+                            <div>Matière<br/>{courseConfig.subject}</div>
                           </div>
                         </div>
-                        
-                        <div className="bg-green-50 p-6 rounded-xl">
-                          <h4 className="font-bold text-green-700 mb-3">🎯 Contenu enrichi</h4>
-                          <ul className="text-sm space-y-1">
-                            <li>• Structure Cornell authentique</li>
-                            <li>• Résumé IA optimisé</li>
-                            <li>• {uploadedImages.length} image(s) intégrée(s)</li>
-                            <li>• Prêt pour impression PDF</li>
-                          </ul>
+
+                        <div className="grid grid-cols-3 border-2 border-gray-400 mb-4 min-h-40">
+                          <div className="bg-yellow-200 p-4 border-r-2 border-gray-400">
+                            <div className="font-bold text-xs mb-2">Mots-clés</div>
+                            <div className="text-xs">{summary.concepts_cles ? summary.concepts_cles.slice(0, 4).join(', ') : '-'}</div>
+                            <div className="font-bold text-xs mt-3 mb-1">Formules</div>
+                            <div className="text-xs">{summary.formules_lois?.[0]?.expression || '-'}</div>
+                          </div>
+                          <div className="col-span-2 p-4 bg-white">
+                            <div className="text-xs">{summary.resume_executif}</div>
+                            {analysisResult && (
+                              <div className="mt-2 text-xs text-purple-600">
+                                🤖 Analysé par Claude Vision ({analysisResult.confidence} confiance)
+                              </div>
+                            )}
+                            {uploadedImages.length > 0 && (
+                              <div className="mt-2 text-xs text-purple-600">
+                                📷 {uploadedImages.length} image(s) intégrée(s)
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="bg-yellow-200 p-4 rounded border-2 border-gray-400">
+                          <div className="font-bold text-center mb-2 text-sm">Résumé</div>
+                          <div className="text-xs">{summary.resume_executif}</div>
                         </div>
                       </div>
 
-                      {/* Instructions PDF */}
-                      <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-                        <div className="text-center text-sm text-yellow-800">
-                          <strong>💡 Pour obtenir un PDF :</strong> Ouvrez le fichier téléchargé → Ctrl+P (PC) ou Cmd+P (Mac) → "Enregistrer au format PDF"
+                      {/* Status final avec mention OCR */}
+                      <div className="bg-green-50 p-6 rounded-lg border border-green-200">
+                        <h3 className="font-bold text-green-800 mb-4">✅ CORNELL NOTES PRÊT</h3>
+                        <div className="grid md:grid-cols-2 gap-6">
+                          <div>
+                            <h4 className="font-bold text-blue-700 mb-2">📄 Fichier généré :</h4>
+                            <div className="text-sm bg-blue-100 p-2 rounded font-mono">
+                              {(() => {
+                                const dateParts = courseConfig.date.split('-');
+                                const dateFormatted = dateParts[0].slice(-2) + dateParts[1] + dateParts[2];
+                                const cleanChapter = removeAccents(courseConfig.chapter).replace(/\s+/g, '_').replace(/[<>:"/\\|?*]/g, '');
+                                return `${dateFormatted}_${courseConfig.subject}_${cleanChapter}.html`;
+                              })()}
+                            </div>
+                            {analysisResult && (
+                              <div className="mt-2 text-sm text-purple-700">
+                                🤖 Généré à partir d'analyse OCR automatique
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-green-700 mb-2">🎯 Contenu inclus :</h4>
+                            <ul className="list-disc list-inside text-gray-700 space-y-1 text-sm">
+                              <li>Structure Cornell authentique</li>
+                              <li>Résumé IA structuré</li>
+                              <li>{analysisResult ? "Analyse OCR intégrée" : "Saisie manuelle validée"}</li>
+                              <li>{uploadedImages.length} image(s) intégrée(s)</li>
+                              <li>Format PDF-ready</li>
+                              <li>Hébergé sur Vercel 24/7</li>
+                            </ul>
+                          </div>
                         </div>
                       </div>
                     </div>
