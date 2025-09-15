@@ -1,4 +1,5 @@
 export default async function handler(req, res) {
+  // Configuration CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -7,58 +8,70 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
   
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Méthode non autorisée' });
+  }
+  
   try {
-    console.log('🚀 Début analyse OCR réelle');
-    
-    const { imageData, fileName } = req.body;
+    // Extraction de l'image base64
+    const { imageData } = req.body;
     
     if (!imageData) {
-      return res.status(400).json({ error: 'Aucune image fournie' });
+      throw new Error('Aucune image fournie');
     }
     
-    // Nettoyer les données base64
-    const base64Data = imageData.includes(',') ? imageData.split(',')[1] : imageData;
+    // Nettoyage des données base64
+    const base64Data = imageData.replace(/^data:image\/[a-z]+;base64,/, '');
     
-    // Déterminer le type MIME
-    let mimeType = 'image/jpeg';
-    if (imageData.includes('data:image/png')) mimeType = 'image/png';
-    if (imageData.includes('data:image/webp')) mimeType = 'image/webp';
-    
-    console.log('📸 Image reçue:', fileName, 'Type:', mimeType);
-    
-    // Prompt pour analyse Cornell
-    const prompt = `Analyse cette image de notes manuscrites et extrait les informations suivantes pour créer un document Cornell.
+    // Prompt OCR optimisé pour notes manuscrites françaises
+    const prompt = `Tu es un expert en analyse OCR de notes manuscrites académiques françaises.
 
-INSTRUCTIONS :
-1. Lis attentivement tout le texte manuscrit visible
-2. Identifie la matière/discipline (Physique, Maths, Chimie, etc.)
-3. Trouve le sujet principal ou titre du chapitre
-4. Extrais les mots-clés importants, termes techniques
-5. Repère toutes les formules mathématiques/scientifiques
-6. Note les noms de scientifiques, auteurs mentionnés
-7. Identifie les dates importantes
-8. Résume le contenu principal des notes
+MISSION : Analyser cette image de notes manuscrites et extraire les informations pour créer un document Cornell.
 
-Réponds UNIQUEMENT avec ce JSON valide :
+INSTRUCTIONS SPÉCIFIQUES :
+1. Lis attentivement TOUT le texte manuscrit visible
+2. Identifie le contenu scientifique (formules, concepts, définitions)
+3. Détecte la matière (Physique, Chimie, Maths, etc.)
+4. Trouve le chapitre/sujet principal
+5. Extrais les mots-clés techniques importants
+
+FORMAT DE RÉPONSE OBLIGATOIRE - JSON STRICT :
 {
+  "confidence": [score de 0 à 100 sur la qualité de lecture],
   "courseConfig": {
-    "subject": "matière détectée",
-    "chapter": "sujet/chapitre principal",
-    "professor": "",
-    "chapterNumber": ""
+    "subject": "[matière détectée ou 'Non détecté']",
+    "chapter": "[chapitre/sujet principal ou 'Analyse du contenu manuscrit']",
+    "chapterNumber": "[numéro si visible ou '']",
+    "professor": "[nom professeur si visible ou 'Non spécifié']"
   },
   "cornellData": {
-    "mots_cles": "mots-clés importants séparés par virgules",
-    "formules": "toutes les formules et équations trouvées",
-    "noms_auteurs": "noms de scientifiques/auteurs mentionnés",
-    "dates_importantes": "dates et périodes importantes",
-    "notes_principales": "contenu principal des notes manuscrites",
-    "resume_personnel": "résumé synthétique du contenu"
+    "mots_cles": "[mots-clés scientifiques séparés par des virgules]",
+    "formules": "[toutes les formules mathématiques/chimiques/physiques visibles]",
+    "noms_auteurs": "[noms de scientifiques ou auteurs mentionnés]",
+    "dates_importantes": "[dates historiques ou chronologie]",
+    "doutes_questions": "[questions ou points d'interrogation dans les notes]",
+    "notes_principales": "[résumé structuré de TOUT le contenu des notes manuscrites]",
+    "resume_personnel": "[synthèse du sujet principal en 2-3 phrases]"
   },
-  "confidence": 85
-}`;
+  "analysis_details": {
+    "detected_language": "français",
+    "content_type": "[type de contenu: cours, exercices, définitions, etc.]",
+    "handwriting_quality": "[qualité écriture: excellente/bonne/moyenne/difficile]",
+    "extraction_notes": "[observations sur la lecture des notes]"
+  }
+}
 
-    // Appel API Anthropic avec image
+RÈGLES IMPORTANTES :
+- Si tu ne peux pas lire une partie, indique "Illisible" plutôt que d'inventer
+- Privilégie la précision à la quantité
+- Concentre-toi sur les éléments techniques et scientifiques
+- Si c'est de la physique, cherche les formules, unités, lois
+- Si c'est des maths, cherche les équations, théorèmes
+- Garde le niveau de confiance réaliste (50-80% pour manuscrit)
+
+ANALYSE L'IMAGE MAINTENANT :`;
+
+    // Appel à Claude Vision
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -68,22 +81,22 @@ Réponds UNIQUEMENT avec ce JSON valide :
       },
       body: JSON.stringify({
         model: "claude-3-sonnet-20240229",
-        max_tokens: 1500,
+        max_tokens: 2000,
         messages: [
           {
             role: "user",
             content: [
               {
+                type: "text",
+                text: prompt
+              },
+              {
                 type: "image",
                 source: {
                   type: "base64",
-                  media_type: mimeType,
+                  media_type: "image/jpeg",
                   data: base64Data
                 }
-              },
-              {
-                type: "text",
-                text: prompt
               }
             ]
           }
@@ -91,69 +104,89 @@ Réponds UNIQUEMENT avec ce JSON valide :
       })
     });
 
-    console.log('📡 Réponse API status:', response.status);
-
     if (!response.ok) {
-      console.error('❌ Erreur API:', response.status);
-      // Fallback avec données par défaut
-      return res.status(200).json({
-        courseConfig: {
-          subject: "Non détecté",
-          chapter: "Analyse en cours...",
-          professor: "",
-          chapterNumber: ""
-        },
-        cornellData: {
-          mots_cles: "analyse, en cours",
-          formules: "",
-          noms_auteurs: "",
-          dates_importantes: "",
-          notes_principales: "Erreur lors de l'analyse - veuillez saisir manuellement",
-          resume_personnel: "Analyse OCR échouée"
-        },
-        confidence: 20
-      });
+      const errorDetails = await response.text();
+      console.error("Erreur API Claude Vision:", response.status, errorDetails);
+      throw new Error(`Erreur API Claude Vision: ${response.status}`);
     }
 
     const data = await response.json();
     let responseText = data.content[0].text;
     
-    console.log('📝 Réponse brute:', responseText.substring(0, 200));
-    
-    // Nettoyer la réponse
+    // Nettoyage de la réponse JSON
     responseText = responseText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     
     try {
-      const extractedData = JSON.parse(responseText);
-      console.log('✅ Analyse OCR réussie');
-      return res.status(200).json(extractedData);
+      const ocrResult = JSON.parse(responseText);
+      
+      // Validation des données essentielles
+      if (!ocrResult.confidence) ocrResult.confidence = 30;
+      if (!ocrResult.courseConfig) ocrResult.courseConfig = {};
+      if (!ocrResult.cornellData) ocrResult.cornellData = {};
+      
+      // Valeurs par défaut si extraction échoue
+      if (!ocrResult.courseConfig.subject) ocrResult.courseConfig.subject = "Non détecté";
+      if (!ocrResult.courseConfig.chapter) ocrResult.courseConfig.chapter = "Analyse du contenu manuscrit";
+      if (!ocrResult.courseConfig.professor) ocrResult.courseConfig.professor = "Non spécifié";
+      
+      return res.status(200).json(ocrResult);
+      
     } catch (parseError) {
-      console.error('❌ Erreur parsing JSON:', parseError);
-      // Fallback si le JSON n'est pas parfait
+      console.error("Erreur parsing JSON OCR:", parseError);
+      
+      // Fallback si le JSON est malformé
       return res.status(200).json({
+        confidence: 25,
         courseConfig: {
-          subject: "Analyse partielle",
-          chapter: "Contenu détecté",
-          professor: "",
-          chapterNumber: ""
+          subject: "Analyse en cours",
+          chapter: "Contenu détecté mais extraction partielle",
+          chapterNumber: "",
+          professor: "Non spécifié"
         },
         cornellData: {
-          mots_cles: "analyse, partielle",
-          formules: "",
+          mots_cles: "analyse, contenu manuscrit",
+          formules: "Formules détectées mais illisibles",
           noms_auteurs: "",
           dates_importantes: "",
-          notes_principales: responseText.substring(0, 500),
-          resume_personnel: "Analyse partielle - vérifiez et complétez"
+          doutes_questions: "Vérifier qualité de l'image pour améliorer extraction",
+          notes_principales: "Contenu manuscrit détecté. Qualité d'image ou écriture rend l'extraction difficile. Recommandation : saisie manuelle ou image plus nette.",
+          resume_personnel: "Document manuscrit analysé avec extraction partielle des informations."
         },
-        confidence: 50
+        analysis_details: {
+          detected_language: "français",
+          content_type: "notes manuscrites",
+          handwriting_quality: "difficile à lire",
+          extraction_notes: "Image analysée mais extraction limitée - essayer avec image plus nette"
+        }
       });
     }
     
   } catch (error) {
-    console.error("❌ Erreur complète:", error);
-    return res.status(500).json({ 
-      error: "Erreur lors de l'analyse OCR", 
-      details: error.message
+    console.error("Erreur dans claude-vision:", error);
+    
+    return res.status(200).json({
+      confidence: 10,
+      courseConfig: {
+        subject: "Erreur d'analyse",
+        chapter: "Erreur lors de l'analyse - veuillez saisir manuellement",
+        chapterNumber: "",
+        professor: "Non disponible"
+      },
+      cornellData: {
+        mots_cles: "erreur, analyse",
+        formules: "",
+        noms_auteurs: "",
+        dates_importantes: "",
+        doutes_questions: "Problème technique lors de l'analyse OCR",
+        notes_principales: "Erreur lors de l'analyse automatique. Veuillez utiliser la saisie manuelle ou réessayer avec une image différente.",
+        resume_personnel: "Analyse OCR échouée - saisie manuelle recommandée."
+      },
+      analysis_details: {
+        detected_language: "français",
+        content_type: "erreur",
+        handwriting_quality: "non analysable",
+        extraction_notes: "Erreur technique : " + error.message
+      }
     });
   }
 }
