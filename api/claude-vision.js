@@ -23,17 +23,23 @@ export default async function handler(req, res) {
     // Nettoyage des données base64
     const base64Data = imageData.replace(/^data:image\/[a-z]+;base64,/, '');
     
-    // Prompt OCR optimisé pour notes manuscrites françaises
-    const prompt = `Tu es un expert en analyse OCR de notes manuscrites académiques françaises.
+    // Prompt OCR universel pour toutes matières académiques
+    const prompt = `Tu es un expert en analyse OCR de notes manuscrites académiques françaises, spécialisé dans TOUTES les matières scolaires et universitaires.
 
 MISSION : Analyser cette image de notes manuscrites et extraire les informations pour créer un document Cornell.
 
-INSTRUCTIONS SPÉCIFIQUES :
+INSTRUCTIONS UNIVERSELLES :
 1. Lis attentivement TOUT le texte manuscrit visible
-2. Identifie le contenu scientifique (formules, concepts, définitions)
-3. Détecte la matière (Physique, Chimie, Maths, etc.)
-4. Trouve le chapitre/sujet principal
-5. Extrais les mots-clés techniques importants
+2. Identifie automatiquement la matière (Physique, Maths, Français, Droit, Comptabilité, Histoire, Philosophie, etc.)
+3. Adapte l'extraction selon le type de contenu détecté
+4. Extrais les éléments pertinents selon la matière :
+   - SCIENCES : formules, équations, unités, lois
+   - DROIT : articles, jurisprudence, définitions juridiques
+   - COMPTABILITÉ : comptes, écritures, ratios
+   - FRANÇAIS/LITTÉRATURE : citations, auteurs, figures de style
+   - HISTOIRE : dates, personnages, événements
+   - PHILOSOPHIE : concepts, arguments, philosophes
+   - LANGUES : vocabulaire, grammaire, expressions
 
 FORMAT DE RÉPONSE OBLIGATOIRE - JSON STRICT :
 {
@@ -61,13 +67,19 @@ FORMAT DE RÉPONSE OBLIGATOIRE - JSON STRICT :
   }
 }
 
-RÈGLES IMPORTANTES :
+RÈGLES UNIVERSELLES :
 - Si tu ne peux pas lire une partie, indique "Illisible" plutôt que d'inventer
-- Privilégie la précision à la quantité
-- Concentre-toi sur les éléments techniques et scientifiques
-- Si c'est de la physique, cherche les formules, unités, lois
-- Si c'est des maths, cherche les équations, théorèmes
+- Privilégie la précision à la quantité  
+- Adapte l'extraction selon la matière détectée :
+  * SCIENCES : formules, unités, lois, expériences
+  * DROIT : articles, jurisprudence, procédures
+  * COMPTABILITÉ : comptes, écritures, bilans
+  * LITTÉRATURE : citations, auteurs, mouvements
+  * HISTOIRE : dates, personnages, contextes
+  * LANGUES : vocabulaire, grammaire, conjugaisons
+  * PHILOSOPHIE : concepts, arguments, penseurs
 - Garde le niveau de confiance réaliste (50-80% pour manuscrit)
+- Extrais les éléments les plus importants pour révisions
 
 ANALYSE L'IMAGE MAINTENANT :`;
 
