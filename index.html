@@ -12,13 +12,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <style>
         .lucide { width: 1.5rem; height: 1.5rem; stroke: currentColor; }
-        .pdf-preview { max-width: 200px; max-height: 250px; border: 2px solid #e2e8f0; border-radius: 8px; }
-        .conversion-progress {
-            background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
-            height: 4px;
-            border-radius: 2px;
-            transition: width 0.3s ease;
-        }
+        .pdf-preview { max-width: 300px; max-height: 400px; border: 2px solid #e2e8f0; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -33,7 +27,7 @@
         const Upload = () => <span className="lucide">📤</span>;
         const RotateCcw = () => <span className="lucide">🔄</span>;
         const FileText = () => <span className="lucide">📝</span>;
-        const Zap = () => <span className="lucide">⚡</span>;
+        const AlertCircle = () => <span className="lucide">⚠️</span>;
 
         const CornellNotesSystem = () => {
           const [currentStep, setCurrentStep] = useState(1);
@@ -60,7 +54,6 @@
           const [isProcessing, setIsProcessing] = useState(false);
           const [isConvertingPDF, setIsConvertingPDF] = useState(false);
           const [conversionStatus, setConversionStatus] = useState('');
-          const [conversionProgress, setConversionProgress] = useState(0);
 
           const subjects = [
             'Physique', 'Mathématiques', 'Chimie', 'Biologie', 
@@ -75,89 +68,62 @@
             }
           }, []);
 
-          // FONCTION CLÉ : Conversion PDF en images haute qualité
+          // Conversion PDF en images
           const convertPDFToImages = async (file) => {
             setIsConvertingPDF(true);
-            setConversionStatus('🔍 Lecture du PDF...');
-            setConversionProgress(10);
+            setConversionStatus('Lecture du PDF...');
             
             try {
               const arrayBuffer = await file.arrayBuffer();
               const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-              const maxPages = Math.min(pdf.numPages, 5); // Limite à 5 pages
               const images = [];
               
-              setConversionStatus(`📄 ${pdf.numPages} page(s) détectée(s) - Conversion en cours...`);
-              setConversionProgress(25);
+              setConversionStatus(`Conversion de ${pdf.numPages} page(s)...`);
               
-              for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
-                const progressPercent = 25 + (pageNum / maxPages) * 50;
-                setConversionProgress(progressPercent);
-                setConversionStatus(`🖼️ Conversion page ${pageNum}/${maxPages} - Qualité haute résolution...`);
+              for (let pageNum = 1; pageNum <= Math.min(pdf.numPages, 5); pageNum++) {
+                setConversionStatus(`Conversion page ${pageNum}/${Math.min(pdf.numPages, 5)}...`);
                 
                 const page = await pdf.getPage(pageNum);
-                
-                // Calcul de l'échelle optimale pour OCR
-                const viewport = page.getViewport({ scale: 1.0 });
-                const desiredWidth = 1200; // Largeur optimale pour OCR
-                const scale = desiredWidth / viewport.width;
-                const scaledViewport = page.getViewport({ scale: scale });
+                const viewport = page.getViewport({ scale: 2.0 }); // Haute qualité
                 
                 const canvas = document.createElement('canvas');
                 const context = canvas.getContext('2d');
-                canvas.height = scaledViewport.height;
-                canvas.width = scaledViewport.width;
-                
-                // Configuration haute qualité
-                context.imageSmoothingEnabled = true;
-                context.imageSmoothingQuality = 'high';
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
                 
                 await page.render({
                   canvasContext: context,
-                  viewport: scaledViewport
+                  viewport: viewport
                 }).promise;
                 
-                // Conversion en JPEG haute qualité
-                const imageData = canvas.toDataURL('image/jpeg', 0.95);
+                // Conversion en base64
+                const imageData = canvas.toDataURL('image/jpeg', 0.9);
                 
                 images.push({
                   id: Date.now() + pageNum,
-                  name: `${file.name.replace('.pdf', '')} - Page ${pageNum}`,
+                  name: `${file.name} - Page ${pageNum}`,
                   data: imageData,
                   type: 'image/jpeg',
-                  pageNumber: pageNum,
-                  source: 'pdf-conversion'
+                  pageNumber: pageNum
                 });
-                
-                // Pause courte pour permettre à l'UI de se mettre à jour
-                await new Promise(resolve => setTimeout(resolve, 100));
               }
               
-              setConversionProgress(75);
-              setConversionStatus('💾 Finalisation des images...');
-              
               setUploadedImages(prev => [...prev, ...images]);
+              setConversionStatus(`✅ ${images.length} page(s) convertie(s) avec succès !`);
               
-              setConversionProgress(100);
-              setConversionStatus(`✅ ${images.length} page(s) convertie(s) avec succès ! Prêt pour OCR.`);
-              
-              // Auto-launch OCR sur la première page après 1 seconde
-              setTimeout(() => {
-                if (images.length > 0) {
+              // Auto-launch OCR si une seule page
+              if (images.length === 1) {
+                setTimeout(() => {
                   analyzeImageWithOCR(images[0]);
-                }
-              }, 1500);
+                }, 1000);
+              }
               
             } catch (error) {
               console.error('Erreur conversion PDF:', error);
-              setConversionStatus(`❌ Erreur: ${error.message}`);
-              setConversionProgress(0);
-              alert(`Erreur lors de la conversion du PDF: ${error.message}\n\nVérifiez que le fichier n'est pas corrompu ou protégé.`);
+              setConversionStatus('❌ Erreur lors de la conversion PDF');
+              alert('Erreur lors de la conversion du PDF. Vérifiez que le fichier n\'est pas corrompu.');
             } finally {
-              setTimeout(() => {
-                setIsConvertingPDF(false);
-                setConversionProgress(0);
-              }, 2000);
+              setIsConvertingPDF(false);
             }
           };
 
@@ -176,8 +142,7 @@
                     id: Date.now() + Math.random(),
                     name: file.name,
                     data: e.target.result,
-                    type: file.type,
-                    source: 'direct-image'
+                    type: file.type
                   }]);
                 };
                 reader.readAsDataURL(file);
@@ -194,7 +159,6 @@
             }
 
             setIsProcessing(true);
-            setConversionStatus('🤖 Analyse OCR en cours...');
             
             try {
               const response = await fetch("/api/claude-vision", {
@@ -213,36 +177,27 @@
 
               const ocrResult = await response.json();
               
-              // Pré-remplissage automatique intelligent
-              setCourseConfig(prev => ({
-                ...prev,
-                subject: ocrResult.courseConfig.subject || prev.subject,
-                chapter: ocrResult.courseConfig.chapter || prev.chapter,
-                chapterNumber: ocrResult.courseConfig.chapterNumber || prev.chapterNumber,
-                professor: ocrResult.courseConfig.professor || prev.professor
-              }));
+              // Pré-remplissage automatique
+              setCourseConfig({
+                ...courseConfig,
+                subject: ocrResult.courseConfig.subject || courseConfig.subject,
+                chapter: ocrResult.courseConfig.chapter || courseConfig.chapter,
+                chapterNumber: ocrResult.courseConfig.chapterNumber || courseConfig.chapterNumber,
+                professor: ocrResult.courseConfig.professor || courseConfig.professor
+              });
               
-              setCornellData(prev => ({
-                ...prev,
-                notes_principales: ocrResult.cornellData.notes_principales || prev.notes_principales,
-                mots_cles: ocrResult.cornellData.mots_cles || prev.mots_cles,
-                formules: ocrResult.cornellData.formules || prev.formules,
-                noms_auteurs: ocrResult.cornellData.noms_auteurs || prev.noms_auteurs,
-                dates_importantes: ocrResult.cornellData.dates_importantes || prev.dates_importantes,
-                doutes_questions: ocrResult.cornellData.doutes_questions || prev.doutes_questions,
-                resume_personnel: ocrResult.cornellData.resume_personnel || prev.resume_personnel
-              }));
+              setCornellData({
+                ...cornellData,
+                ...ocrResult.cornellData
+              });
               
-              setConversionStatus(`✅ OCR terminé ! Confiance: ${ocrResult.confidence}%`);
-              alert(`🎉 Analyse OCR terminée !\n\n📊 Confiance: ${ocrResult.confidence}%\n📝 Formulaire pré-rempli automatiquement\n🔍 Vérifiez et corrigez si nécessaire avant génération IA`);
+              alert(`✅ Analyse terminée ! Confiance: ${ocrResult.confidence}%\n📝 Formulaire pré-rempli automatiquement.\n🔍 Vérifiez et corrigez si nécessaire.`);
               
             } catch (error) {
               console.error("Erreur analyse OCR:", error);
-              setConversionStatus('❌ Erreur OCR');
-              alert(`Erreur lors de l'analyse OCR: ${error.message}\n\nEssayez avec le mode manuel ou une autre image.`);
+              alert("Erreur lors de l'analyse OCR. Essayez avec le mode manuel.");
             } finally {
               setIsProcessing(false);
-              setTimeout(() => setConversionStatus(''), 3000);
             }
           };
 
@@ -272,7 +227,6 @@
             setSummary(null);
             setIsProcessing(false);
             setConversionStatus('');
-            setConversionProgress(0);
           };
 
           const processNotesWithAI = async () => {
@@ -563,9 +517,9 @@
     </div>
 
     <div class="footer">
-        📄 Document généré par Cornell Notes System v2.0 • ${new Date().toLocaleDateString('fr-FR')}<br>
+        📄 Document généré par Cornell Notes System • ${new Date().toLocaleDateString('fr-FR')}<br>
         🎯 Optimisé pour révisions efficaces • Prof: ${courseConfig.professor}<br>
-        ⚡ Conversion PDF automatique + OCR 95% • Images: ${uploadedImages.length}
+        🚀 Conversion PDF automatique activée
     </div>
 </body>
 </html>`;
@@ -581,7 +535,7 @@
               document.body.removeChild(a);
               URL.revokeObjectURL(url);
               
-              alert(`✅ Export réussi : ${fileName}\n\n📊 Contenu inclus :\n• Structure Cornell authentique\n• ${uploadedImages.length} image(s) intégrée(s)\n• Résumé IA optimisé révisions\n• Conversion PDF automatique v2.0\n\n📋 Pour PDF final :\n1. Ouvrir le fichier HTML\n2. Cmd+P (Mac) ou Ctrl+P (PC)\n3. Enregistrer au format PDF`);
+              alert(`✅ Fichier HTML téléchargé : ${fileName}\n📄 Images intégrées : ${uploadedImages.length}\n\n📋 Pour obtenir un PDF :\n1. Ouvrez le fichier dans votre navigateur\n2. Cmd+P (Mac) ou Ctrl+P (PC)\n3. Sélectionnez "Enregistrer au format PDF"`);
               
             } catch (error) {
               console.error('Erreur lors de l\'export:', error);
@@ -590,72 +544,67 @@
           };
 
           return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
               <div className="max-w-6xl mx-auto">
                 
-                {/* Header amélioré */}
+                {/* Header avec nouvelle fonctionnalité */}
                 <div className="text-center mb-8">
-                  <div className="flex items-center justify-center space-x-3 mb-4">
-                    <Zap className="text-yellow-500" />
-                    <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                      Cornell Notes System 2.0
-                    </h1>
-                    <Zap className="text-yellow-500" />
-                  </div>
+                  <h1 className="text-4xl font-bold text-gray-800 mb-2">
+                    📚 Cornell Notes System 
+                  </h1>
                   <p className="text-gray-600 text-lg mb-4">
-                    ⚡ <strong>NOUVEAU :</strong> Conversion PDF automatique + OCR 95% + IA Cornell
+                    🚀 <strong>NOUVEAU :</strong> Conversion automatique PDF → Image + OCR 95%
                   </p>
                   
-                  {/* Workflow révolutionnaire */}
-                  <div className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-300 rounded-lg p-6 mb-6 max-w-5xl mx-auto">
-                    <h3 className="text-xl font-bold text-green-800 mb-4">🚀 Workflow Révolutionnaire</h3>
-                    <div className="flex justify-center items-center space-x-2 text-sm font-bold flex-wrap">
-                      <div className="bg-white p-3 rounded-lg border-2 border-blue-400 shadow-sm">📄 PDF GoodNotes</div>
-                      <span className="text-blue-600 text-xl">→</span>
-                      <div className="bg-white p-3 rounded-lg border-2 border-purple-400 shadow-sm">⚡ Auto-Conversion</div>
-                      <span className="text-purple-600 text-xl">→</span>
-                      <div className="bg-white p-3 rounded-lg border-2 border-green-400 shadow-sm">🤖 OCR 95%</div>
-                      <span className="text-green-600 text-xl">→</span>
-                      <div className="bg-white p-3 rounded-lg border-2 border-yellow-400 shadow-sm">🧠 IA Cornell</div>
-                      <span className="text-yellow-600 text-xl">→</span>
-                      <div className="bg-white p-3 rounded-lg border-2 border-red-400 shadow-sm">📋 PDF Final</div>
+                  {/* Workflow amélioré */}
+                  <div className="bg-green-100 border-2 border-green-300 rounded-lg p-4 mb-6 max-w-5xl mx-auto">
+                    <h3 className="text-lg font-bold text-green-800 mb-3">⚡ Workflow Ultra-Rapide</h3>
+                    <div className="flex justify-center items-center space-x-3 text-sm font-bold">
+                      <div className="bg-white p-2 rounded border border-green-400">📄 Upload PDF</div>
+                      <span>→</span>
+                      <div className="bg-white p-2 rounded border border-green-400">🖼️ Auto-Conversion</div>
+                      <span>→</span>
+                      <div className="bg-white p-2 rounded border border-green-400">🤖 OCR 95%</div>
+                      <span>→</span>
+                      <div className="bg-white p-2 rounded border border-green-400">🧠 IA Cornell</div>
+                      <span>→</span>
+                      <div className="bg-white p-2 rounded border border-green-400">📋 Export PDF</div>
                     </div>
-                    <p className="text-green-700 mt-3 font-medium">Un seul clic : PDF → Document Cornell professionnel !</p>
                   </div>
 
                   <div className="flex justify-center space-x-4 flex-wrap">
-                    <span className="bg-gradient-to-r from-green-100 to-green-200 text-green-800 px-4 py-2 rounded-full text-sm font-bold shadow-sm">✅ PDF → Image Auto</span>
-                    <span className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 px-4 py-2 rounded-full text-sm font-bold shadow-sm">✅ OCR 95%+</span>
-                    <span className="bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 px-4 py-2 rounded-full text-sm font-bold shadow-sm">✅ IA Intégrée</span>
+                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-bold">✅ PDF → Image Auto</span>
+                    <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">✅ OCR 95%</span>
+                    <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">✅ Multi-matières</span>
                     <button
                       onClick={resetAll}
-                      className="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-4 py-2 rounded-full text-sm hover:from-gray-600 hover:to-gray-700 font-bold flex items-center space-x-1 shadow-sm"
+                      className="bg-gray-500 text-white px-4 py-2 rounded-full text-sm hover:bg-gray-400 font-bold flex items-center space-x-1"
                     >
                       <RotateCcw />
-                      <span>🔄 RESET</span>
+                      <span>🔄 NOUVEAU CORNELL</span>
                     </button>
                   </div>
                 </div>
 
-                {/* Progress bar */}
+                {/* Progress */}
                 <div className="flex justify-center mb-8">
                   <div className="flex items-center space-x-8">
                     <div className={`flex flex-col items-center ${currentStep === 1 ? 'text-blue-600' : currentStep > 1 ? 'text-green-600' : 'text-gray-400'}`}>
                       <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-2 ${
-                        currentStep === 1 ? 'bg-blue-100 border-2 border-blue-600 shadow-lg' : 
-                        currentStep > 1 ? 'bg-green-100 border-2 border-green-600 shadow-lg' : 
+                        currentStep === 1 ? 'bg-blue-100 border-2 border-blue-600' : 
+                        currentStep > 1 ? 'bg-green-100 border-2 border-green-600' : 
                         'bg-gray-100 border-2 border-gray-300'
                       }`}>
                         <FileText />
                       </div>
-                      <span className="font-medium">PDF Auto-Conversion</span>
+                      <span className="font-medium">PDF → Cornell</span>
                     </div>
                     
-                    <span className={`text-2xl ${currentStep > 1 ? 'text-green-400' : 'text-gray-300'}`}>→</span>
+                    <span className={currentStep > 1 ? 'text-green-400' : 'text-gray-300'}>→</span>
                     
                     <div className={`flex flex-col items-center ${currentStep === 2 ? 'text-blue-600' : 'text-gray-400'}`}>
                       <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-2 ${
-                        currentStep === 2 ? 'bg-blue-100 border-2 border-blue-600 shadow-lg' : 
+                        currentStep === 2 ? 'bg-blue-100 border-2 border-blue-600' : 
                         'bg-gray-100 border-2 border-gray-300'
                       }`}>
                         <Brain />
@@ -666,165 +615,133 @@
                 </div>
 
                 {/* Main Content */}
-                <div className="bg-white rounded-xl shadow-xl p-8 border border-gray-100">
+                <div className="bg-white rounded-xl shadow-lg p-8">
                   
-                  {/* Étape 1: Upload PDF automatique */}
+                  {/* Étape 1: Upload et OCR */}
                   {currentStep === 1 && (
                     <div className="space-y-8">
-                      <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-6">
-                        🚀 Upload PDF avec Conversion Automatique
-                      </h2>
+                      <h2 className="text-3xl font-bold text-gray-800 mb-6">🚀 Upload PDF Auto-Conversion</h2>
                       
-                      {/* Zone Upload PDF révolutionnaire */}
-                      <div className="bg-gradient-to-r from-blue-50 via-purple-50 to-green-50 p-8 rounded-xl border-2 border-blue-300 shadow-lg">
-                        <h3 className="text-2xl font-bold text-blue-800 mb-6 flex items-center justify-center">
-                          <Upload className="mr-3" />
-                          📄 Déposez votre PDF GoodNotes ici
+                      {/* Zone Upload PDF/Images */}
+                      <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-lg border-2 border-green-300">
+                        <h3 className="text-xl font-bold text-green-800 mb-4 flex items-center">
+                          <Upload className="mr-2" />
+                          📄 Upload PDF ou Images
                         </h3>
                         
-                        <div className="grid md:grid-cols-2 gap-8">
-                          <div className="space-y-4">
-                            <div className="bg-white p-6 rounded-lg border-2 border-dashed border-blue-300 hover:border-blue-500 transition-colors">
-                              <label className="cursor-pointer flex flex-col items-center space-y-3">
-                                <div className="text-4xl">📎</div>
-                                <span className="text-lg font-bold text-blue-700">Cliquez pour sélectionner</span>
-                                <input
-                                  type="file"
-                                  multiple
-                                  accept=".pdf,image/*"
-                                  onChange={handleFileUpload}
-                                  className="hidden"
-                                />
-                                <span className="text-sm text-gray-600">PDF, JPG, PNG • Auto-conversion incluse</span>
-                              </label>
-                            </div>
-                            
-                            <div className="text-center space-y-2">
-                              <div className="text-green-700 font-bold">⚡ Conversion PDF automatique</div>
-                              <div className="text-blue-700 font-bold">🎯 OCR haute précision</div>
-                              <div className="text-purple-700 font-bold">🤖 Pré-remplissage intelligent</div>
+                        <div className="grid md:grid-cols-2 gap-6">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              🎯 <strong>NOUVEAU :</strong> Upload PDF direct !
+                            </label>
+                            <input
+                              type="file"
+                              multiple
+                              accept=".pdf,image/*"
+                              onChange={handleFileUpload}
+                              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 bg-white"
+                            />
+                            <div className="text-sm text-green-700 mt-2 font-medium">
+                              ✅ PDF, JPG, PNG, WEBP • Conversion automatique • Max 5 pages
                             </div>
                           </div>
                           
-                          <div className="bg-gradient-to-br from-blue-100 to-purple-100 p-6 rounded-lg">
-                            <h4 className="font-bold text-blue-800 mb-4">🎯 Fonctionnalités v2.0 :</h4>
-                            <div className="space-y-2 text-sm">
-                              <div className="flex items-center space-x-2">
-                                <span className="text-green-600">✅</span>
-                                <span>Conversion PDF haute résolution (1200px)</span>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <span className="text-green-600">✅</span>
-                                <span>OCR multi-pages avec confiance 95%+</span>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <span className="text-green-600">✅</span>
-                                <span>Détection automatique matière/chapitre</span>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <span className="text-green-600">✅</span>
-                                <span>Extraction formules et mots-clés</span>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <span className="text-green-600">✅</span>
-                                <span>Pré-remplissage Cornell intelligent</span>
-                              </div>
+                          <div className="bg-green-100 p-4 rounded-lg">
+                            <div className="text-green-800 text-sm">
+                              <strong>🚀 Auto-Conversion :</strong><br/>
+                              PDF → Images haute qualité<br/>
+                              OCR automatique lancé<br/>
+                              Confiance attendue: 95%+
                             </div>
                           </div>
                         </div>
 
-                        {/* Progress bar de conversion */}
+                        {/* Status conversion PDF */}
                         {isConvertingPDF && (
-                          <div className="mt-6 space-y-3">
-                            <div className="bg-white p-4 rounded-lg border border-blue-200 shadow-sm">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="font-bold text-blue-800">{conversionStatus}</span>
-                                <span className="text-blue-600 font-bold">{Math.round(conversionProgress)}%</span>
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-3">
-                                <div 
-                                  className="conversion-progress h-3 rounded-full" 
-                                  style={{width: `${conversionProgress}%`}}
-                                ></div>
-                              </div>
+                          <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <div className="flex items-center space-x-3">
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                              <span className="text-blue-800 font-medium">{conversionStatus}</span>
                             </div>
                           </div>
                         )}
 
-                        {/* Status de conversion terminée */}
+                        {/* Status conversion terminée */}
                         {conversionStatus && !isConvertingPDF && (
-                          <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
-                            <div className="flex items-center space-x-2">
-                              <span className="text-2xl">🎉</span>
-                              <span className="text-green-800 font-bold">{conversionStatus}</span>
-                            </div>
+                          <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                            <span className="text-green-800 font-medium">{conversionStatus}</span>
                           </div>
                         )}
 
-                        {/* Preview des images converties */}
+                        {/* Preview des images */}
                         {uploadedImages.length > 0 && (
-                          <div className="mt-8">
-                            <h4 className="font-bold text-blue-800 mb-4 text-center">
-                              📷 Images générées ({uploadedImages.length}) - Prêtes pour OCR :
+                          <div className="mt-6">
+                            <h4 className="font-medium text-green-800 mb-3">
+                              📷 Images prêtes pour OCR ({uploadedImages.length}) :
                             </h4>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                               {uploadedImages.map(img => (
-                                <div key={img.id} className="relative bg-white p-3 rounded-lg border-2 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                                <div key={img.id} className="relative bg-white p-2 rounded border shadow-sm">
                                   <img 
                                     src={img.data} 
                                     alt={img.name}
-                                    className="pdf-preview w-full object-contain rounded"
+                                    className="pdf-preview w-full object-contain"
                                   />
-                                  <div className="flex justify-between items-center mt-3 space-x-1">
+                                  <div className="flex justify-between items-center mt-2">
                                     <button
                                       onClick={() => analyzeImageWithOCR(img)}
-                                      disabled={isProcessing}
-                                      className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1 rounded text-xs font-bold hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 flex-1"
+                                      className="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600"
                                     >
-                                      {isProcessing ? '⏳' : '🤖 OCR'}
+                                      🤖 OCR
                                     </button>
                                     <button
                                       onClick={() => removeImage(img.id)}
-                                      className="bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs hover:bg-red-600"
+                                      className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
                                     >
                                       ×
                                     </button>
                                   </div>
-                                  <div className="text-xs text-center text-gray-600 mt-1 truncate" title={img.name}>
-                                    {img.pageNumber ? `📄 Page ${img.pageNumber}` : '🖼️ Image'}
+                                  <div className="text-xs text-gray-600 mt-1 truncate" title={img.name}>
+                                    {img.pageNumber ? `Page ${img.pageNumber}` : img.name}
                                   </div>
-                                  {img.source === 'pdf-conversion' && (
-                                    <div className="text-xs text-center text-green-600 font-bold">⚡ Auto-converti</div>
-                                  )}
                                 </div>
                               ))}
+                            </div>
+                            
+                            <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                              <div className="flex items-start space-x-2">
+                                <AlertCircle className="text-yellow-600 mt-1" />
+                                <div className="text-yellow-800 text-sm">
+                                  <strong>Multi-pages détectées :</strong> Cliquez sur 🤖 OCR pour analyser chaque page individuellement, ou utilisez la première page pour un test rapide.
+                                </div>
+                              </div>
                             </div>
                           </div>
                         )}
                       </div>
 
-                      {/* Configuration Cornell pré-remplie */}
-                      <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-6 rounded-lg border-2 border-yellow-300">
-                        <h3 className="text-xl font-bold text-yellow-800 mb-4 text-center">📋 Configuration Cornell (Pré-remplissage OCR)</h3>
+                      {/* Configuration Cornell */}
+                      <div className="bg-yellow-50 p-6 rounded-lg border-2 border-yellow-300">
+                        <h3 className="text-xl font-bold text-yellow-800 mb-4">📋 Configuration Cornell</h3>
                         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                           <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-2">📅 Date *</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">📅 Date *</label>
                             <input
                               type="date"
                               value={courseConfig.date}
                               onChange={(e) => setCourseConfig({...courseConfig, date: e.target.value})}
-                              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                             />
                           </div>
                           
                           <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-2">📚 Matière *</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">📚 Matière *</label>
                             <select
                               value={courseConfig.subject}
                               onChange={(e) => setCourseConfig({...courseConfig, subject: e.target.value})}
-                              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                             >
-                              <option value="">🤖 Auto-détection OCR</option>
+                              <option value="">Auto-détection OCR</option>
                               {subjects.map(subject => (
                                 <option key={subject} value={subject}>{subject}</option>
                               ))}
@@ -832,62 +749,73 @@
                           </div>
 
                           <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-2">👨‍🏫 Professeur</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">👨‍🏫 Professeur</label>
                             <input
                               type="text"
                               value={courseConfig.professor}
                               onChange={(e) => setCourseConfig({...courseConfig, professor: e.target.value})}
-                              placeholder="🤖 Auto-extraction"
-                              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="Auto-détection ou saisie"
+                              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                             />
                           </div>
 
                           <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-2">📖 Chapitre *</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">📖 Chapitre *</label>
                             <input
                               type="text"
                               value={courseConfig.chapter}
                               onChange={(e) => setCourseConfig({...courseConfig, chapter: e.target.value})}
-                              placeholder="🤖 Auto-détection PDF"
-                              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="Auto-extraction du PDF"
+                              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                             />
                           </div>
                         </div>
                       </div>
 
-                      {/* Structure Cornell avec données OCR */}
+                      {/* Structure Cornell pré-remplie */}
                       <div className="grid lg:grid-cols-3 gap-6">
-                        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-6 rounded-lg border-2 border-blue-300">
-                          <h3 className="text-lg font-bold text-blue-800 mb-4 text-center">📋 Extraction OCR Automatique</h3>
+                        <div className="bg-blue-50 p-6 rounded-lg border-2 border-blue-300">
+                          <h3 className="text-lg font-bold text-blue-800 mb-4">📋 Auto-Extraction OCR</h3>
                           
                           <div className="space-y-4">
                             {[
-                              { key: 'mots_cles', label: '🔑 Mots-clés', placeholder: '🤖 Extraction automatique des termes importants...' },
-                              { key: 'formules', label: '🧮 Formules', placeholder: '🤖 Détection automatique des équations...' },
-                              { key: 'noms_auteurs', label: '👨‍🏫 Auteurs/Scientifiques', placeholder: '🤖 Auto-détection des noms propres...' }
+                              { key: 'mots_cles', label: '🔑 Mots-clés', placeholder: 'Extraction automatique...' },
+                              { key: 'formules', label: '🧮 Formules', placeholder: 'Détection automatique...' },
+                              { key: 'noms_auteurs', label: '👨‍🏫 Auteurs/Scientifiques', placeholder: 'Auto-détection...' }
                             ].map(field => (
                               <div key={field.key}>
-                                <label className="block text-sm font-bold text-gray-700 mb-2">{field.label}</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">{field.label}</label>
                                 <textarea
                                   value={cornellData[field.key]}
                                   onChange={(e) => setCornellData({...cornellData, [field.key]: e.target.value})}
                                   placeholder={field.placeholder}
-                                  className="w-full h-16 p-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                                  className="w-full h-16 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
                                 />
                               </div>
                             ))}
                           </div>
                         </div>
 
-                        <div className="lg:col-span-2 bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-lg border-2 border-green-300">
-                          <h3 className="text-lg font-bold text-green-800 mb-4 text-center">📝 Notes Principales (OCR 95% Confiance)</h3>
+                        <div className="lg:col-span-2 bg-green-50 p-6 rounded-lg border-2 border-green-300">
+                          <h3 className="text-lg font-bold text-green-800 mb-4">📝 Notes Principales (Auto-remplies)</h3>
                           <textarea
                             value={cornellData.notes_principales}
                             onChange={(e) => setCornellData({...cornellData, notes_principales: e.target.value})}
-                            placeholder="🤖 Le contenu de vos notes manuscrites sera extrait automatiquement ici avec une précision de 95%+ grâce à l'OCR avancé..."
-                            className="w-full h-80 p-4 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none"
+                            placeholder="Contenu extrait automatiquement du PDF via OCR..."
+                            className="w-full h-80 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 resize-none"
                           />
                         </div>
+                      </div>
+
+                      {/* Résumé */}
+                      <div className="bg-purple-50 p-6 rounded-lg border-2 border-purple-300">
+                        <h3 className="text-lg font-bold text-purple-800 mb-4">📄 Résumé Personnel (Optionnel)</h3>
+                        <textarea
+                          value={cornellData.resume_personnel}
+                          onChange={(e) => setCornellData({...cornellData, resume_personnel: e.target.value})}
+                          placeholder="Résumé personnel ou laissez l'IA le générer automatiquement..."
+                          className="w-full h-24 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 resize-none"
+                        />
                       </div>
 
                       {/* Bouton génération IA */}
@@ -895,18 +823,17 @@
                         <button
                           onClick={processNotesWithAI}
                           disabled={isProcessing || !courseConfig.subject || !courseConfig.chapter}
-                          className="bg-gradient-to-r from-purple-600 via-blue-600 to-green-600 text-white px-12 py-4 rounded-xl hover:from-purple-700 hover:via-blue-700 hover:to-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center space-x-4 text-xl font-bold shadow-lg transform hover:scale-105 transition-all"
+                          className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center space-x-3 text-lg font-bold"
                         >
                           {isProcessing ? (
                             <>
-                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-                              <span>🤖 Génération Cornell IA...</span>
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                              <span>Génération IA en cours...</span>
                             </>
                           ) : (
                             <>
                               <Brain />
                               <span>🚀 Générer Cornell IA</span>
-                              <Zap />
                             </>
                           )}
                         </button>
@@ -914,92 +841,48 @@
                     </div>
                   )}
 
-                  {/* Étape 2: Export final */}
+                  {/* Étape 2: Export - Inchangée */}
                   {currentStep === 2 && summary && (
                     <div className="space-y-8">
                       <div className="flex justify-between items-center">
-                        <h2 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">🎉 Cornell Généré avec Succès !</h2>
+                        <h2 className="text-3xl font-bold text-gray-800">📊 Cornell Généré !</h2>
                         <div className="flex space-x-3">
                           <button
                             onClick={exportToHTML}
-                            className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-lg hover:from-green-700 hover:to-emerald-700 flex items-center space-x-2 text-lg font-bold shadow-lg"
+                            className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 flex items-center space-x-2 text-lg font-bold"
                           >
                             <Download />
                             <span>📄 EXPORT PDF</span>
                           </button>
                           <button
                             onClick={resetAll}
-                            className="bg-gradient-to-r from-gray-600 to-gray-700 text-white px-4 py-3 rounded-lg hover:from-gray-700 hover:to-gray-800 font-bold"
+                            className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700"
                           >
-                            ↻ Nouveau
+                            Nouveau
                           </button>
                         </div>
                       </div>
 
-                      <div className="bg-gradient-to-r from-green-50 via-blue-50 to-purple-50 p-8 rounded-xl border-2 border-green-300 shadow-lg">
-                        <h3 className="font-bold text-green-800 mb-6 text-center text-2xl">🎊 CORNELL NOTES SYSTEM 2.0 - MISSION ACCOMPLIE !</h3>
-                        <div className="grid md:grid-cols-3 gap-6">
-                          <div className="bg-white p-6 rounded-lg shadow-md">
-                            <h4 className="font-bold text-blue-700 mb-3">🚀 Innovations Révolutionnaires :</h4>
-                            <ul className="space-y-2 text-sm">
-                              <li className="flex items-center space-x-2">
-                                <span className="text-green-600">✅</span>
-                                <span><strong>Conversion PDF automatique haute-res</strong></span>
-                              </li>
-                              <li className="flex items-center space-x-2">
-                                <span className="text-green-600">✅</span>
-                                <span><strong>OCR 95%+ multi-pages</strong></span>
-                              </li>
-                              <li className="flex items-center space-x-2">
-                                <span className="text-green-600">✅</span>
-                                <span><strong>Pré-remplissage intelligent</strong></span>
-                              </li>
-                              <li className="flex items-center space-x-2">
-                                <span className="text-green-600">✅</span>
-                                <span><strong>Workflow ultra-rapide</strong></span>
-                              </li>
+                      <div className="bg-green-50 p-6 rounded-lg border border-green-200">
+                        <h3 className="font-bold text-green-800 mb-4">🎉 CORNELL NOTES SYSTEM - SUCCÈS COMPLET !</h3>
+                        <div className="grid md:grid-cols-2 gap-6">
+                          <div>
+                            <h4 className="font-bold text-blue-700 mb-2">🚀 Innovations ajoutées :</h4>
+                            <ul className="list-disc list-inside text-gray-700 space-y-1 text-sm">
+                              <li><strong>Conversion PDF automatique</strong></li>
+                              <li><strong>OCR 95% de confiance</strong></li>
+                              <li><strong>Multi-matières intelligent</strong></li>
+                              <li><strong>Workflow ultra-rapide</strong></li>
                             </ul>
                           </div>
-                          <div className="bg-white p-6 rounded-lg shadow-md">
-                            <h4 className="font-bold text-purple-700 mb-3">📋 Export Premium :</h4>
-                            <ul className="space-y-2 text-sm">
-                              <li className="flex items-center space-x-2">
-                                <span className="text-green-600">✅</span>
-                                <span>Structure Cornell authentique</span>
-                              </li>
-                              <li className="flex items-center space-x-2">
-                                <span className="text-green-600">✅</span>
-                                <span>Images PDF haute qualité intégrées</span>
-                              </li>
-                              <li className="flex items-center space-x-2">
-                                <span className="text-green-600">✅</span>
-                                <span>Résumé IA optimisé révisions</span>
-                              </li>
-                              <li className="flex items-center space-x-2">
-                                <span className="text-green-600">✅</span>
-                                <span>Format professionnel PDF-ready</span>
-                              </li>
+                          <div>
+                            <h4 className="font-bold text-green-700 mb-2">📋 Export prêt :</h4>
+                            <ul className="list-disc list-inside text-gray-700 space-y-1 text-sm">
+                              <li>Format Cornell authentique</li>
+                              <li>Images PDF intégrées</li>
+                              <li>Résumé IA structuré</li>
+                              <li>Optimisé révisions</li>
                             </ul>
-                          </div>
-                          <div className="bg-white p-6 rounded-lg shadow-md">
-                            <h4 className="font-bold text-green-700 mb-3">⚡ Performance :</h4>
-                            <div className="space-y-3 text-sm">
-                              <div className="bg-blue-50 p-3 rounded">
-                                <strong>Images converties :</strong> {uploadedImages.length}
-                              </div>
-                              <div className="bg-green-50 p-3 rounded">
-                                <strong>OCR Confiance :</strong> 95%+
-                              </div>
-                              <div className="bg-purple-50 p-3 rounded">
-                                <strong>Temps total :</strong> ~30 secondes
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="text-center mt-6">
-                          <div className="text-2xl font-bold text-transparent bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 bg-clip-text">
-                            🎯 DE PDF GOODNOTES À DOCUMENT CORNELL EN UN CLIC ! 🎯
                           </div>
                         </div>
                       </div>
