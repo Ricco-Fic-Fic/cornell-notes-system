@@ -249,6 +249,11 @@
             return;
           }
 
+          if (!courseConfig.professor.trim()) {
+            alert('Le champ Professeur est obligatoire.');
+            return;
+          }
+
           setIsProcessing(true);
           
           try {
@@ -266,7 +271,17 @@
             });
 
             if (!response.ok) {
-              throw new Error(`Erreur API: ${response.status}`);
+              const errorText = await response.text();
+              console.error(`Erreur API (${response.status}):`, errorText);
+              
+              if (response.status === 404) {
+                alert(`❌ API non trouvée (404)\n\n🔧 SOLUTION REQUISE :\nL'API Anthropic n'est pas encore configurée.\n\n📋 Étapes manquantes :\n1. Créer compte Anthropic\n2. Obtenir clé API\n3. Configurer /api/claude-proxy.js\n4. Variables environnement Vercel\n\n💡 Contactez le développeur pour finaliser la configuration.`);
+              } else if (response.status === 500) {
+                alert(`❌ Erreur serveur (500)\n\n🔧 SOLUTIONS :\n1. Vérifier clé API Anthropic\n2. Vérifier variables environnement Vercel\n3. Vérifier quotas API\n\nDétails : ${errorText}`);
+              } else {
+                alert(`❌ Erreur API (${response.status})\n\nDétails : ${errorText}`);
+              }
+              return;
             }
 
             const data = await response.json();
@@ -275,7 +290,7 @@
             
           } catch (error) {
             console.error("Erreur lors du traitement IA:", error);
-            alert("Erreur lors du traitement. Veuillez réessayer.");
+            alert(`❌ Erreur de connexion\n\n🔧 DIAGNOSTIC :\n- Vérifiez votre connexion Internet\n- L'API Anthropic n'est peut-être pas configurée\n\nErreur technique : ${error.message}`);
           } finally {
             setIsProcessing(false);
           }
@@ -796,13 +811,14 @@
                     React.createElement('div', {},
                       React.createElement('label', {
                         className: "block text-sm font-medium text-gray-700 mb-2"
-                      }, "👨‍🏫 Professeur"),
+                      }, "👨‍🏫 Professeur *"),
                       React.createElement('input', {
                         type: "text",
                         value: courseConfig.professor,
                         onChange: (e) => setCourseConfig({...courseConfig, professor: e.target.value}),
                         placeholder: "Auto-détection ou saisie",
-                        className: "w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className: "w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500",
+                        required: true
                       })
                     ),
 
@@ -947,7 +963,7 @@
                 },
                   React.createElement('button', {
                     onClick: processNotesWithAI,
-                    disabled: isProcessing || (!cornellData.notes_principales.trim() && !cornellData.resume_personnel.trim()),
+                    disabled: isProcessing || (!cornellData.notes_principales.trim() && !cornellData.resume_personnel.trim()) || !courseConfig.professor.trim(),
                     className: "px-8 py-4 bg-blue-600 text-white text-lg font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center"
                   },
                     isProcessing ? 
