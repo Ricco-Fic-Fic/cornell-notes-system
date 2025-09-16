@@ -680,6 +680,16 @@
             });
         }
         
+        function initializeAdditionalUpload() {
+            const additionalInput = document.getElementById('additionalFileInput');
+            
+            if (additionalInput) {
+                additionalInput.addEventListener('change', (e) => {
+                    handleAdditionalFiles(Array.from(e.target.files));
+                });
+            }
+        }
+        
         function initializePreview() {
             // Écouter les changements sur tous les champs
             const fields = ['courseDate', 'courseSubject', 'courseChapter', 'keywords', 'formulas', 'authors', 'dates', 'doubts', 'mainNotes', 'summary'];
