@@ -102,10 +102,12 @@
             setUploadedImages(prev => [...prev, ...images]);
             setConversionStatus(`✅ ${images.length} page(s) convertie(s) avec succès !`);
             
-            if (images.length === 1) {
+            // Lancer OCR automatique sur la première image (ou la seule image)
+            if (images.length > 0) {
               setTimeout(() => {
+                setConversionStatus('🤖 Lancement OCR automatique sur la première page...');
                 analyzeImageWithOCR(images[0]);
-              }, 1000);
+              }, 1500);
             }
             
           } catch (error) {
