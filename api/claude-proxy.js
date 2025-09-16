@@ -1,300 +1,256 @@
+// api/claude-proxy.js - Génération Cornell IA
 export default async function handler(req, res) {
-  console.log("🚀 === DÉBUT FONCTION PROXY DEBUG ===");
-  console.log("🔍 Méthode de requête:", req.method);
-  
-  // Autoriser toutes les origines pour éviter les erreurs CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  
-  // Gérer les requêtes OPTIONS (preflight)
-  if (req.method === 'OPTIONS') {
-    console.log("✅ Requête OPTIONS - Retour 200");
-    return res.status(200).end();
-  }
-  
-  // Vérifier que c'est bien une requête POST
-  if (req.method !== 'POST') {
-    console.log("❌ Méthode non POST:", req.method);
-    return res.status(405).json({ error: 'Méthode non autorisée' });
-  }
-  
-  console.log("✅ Requête POST confirmée");
-  
-  try {
-    // === ÉTAPE 1 : VÉRIFICATION DONNÉES REÇUES ===
-    console.log("📥 ÉTAPE 1 : Vérification des données reçues");
-    console.log("🔍 Type de req.body:", typeof req.body);
-    console.log("🔍 Contenu req.body:", JSON.stringify(req.body, null, 2));
+    // CORS Headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     
-    if (!req.body) {
-      console.log("❌ ERREUR : req.body est vide ou undefined");
-      return res.status(400).json({ error: 'Corps de requête manquant' });
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
     }
     
-    // Récupérer les données envoyées par le frontend
-    const { courseConfig, cornellData, uploadedImages } = req.body;
-    
-    console.log("🔍 courseConfig:", courseConfig);
-    console.log("🔍 cornellData keys:", cornellData ? Object.keys(cornellData) : 'undefined');
-    console.log("🔍 uploadedImages length:", uploadedImages ? uploadedImages.length : 'undefined');
-    
-    // === ÉTAPE 2 : VÉRIFICATION VARIABLE D'ENVIRONNEMENT ===
-    console.log("🔑 ÉTAPE 2 : Vérification clé API");
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    console.log("🔍 Clé API présente:", apiKey ? "✅ OUI (longueur: " + apiKey.length + ")" : "❌ NON");
-    console.log("🔍 Clé API commence par:", apiKey ? apiKey.substring(0, 15) + "..." : "N/A");
-    
-    if (!apiKey) {
-      console.log("❌ ERREUR : Clé API manquante");
-      return res.status(500).json({ error: 'Configuration serveur - clé API manquante' });
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Méthode non autorisée' });
     }
     
-    // === ÉTAPE 3 : CONSTRUCTION DU PROMPT ===
-    console.log("📝 ÉTAPE 3 : Construction du prompt");
-    
-    let prompt;
     try {
-      prompt = `Tu es un assistant expert en méthode Cornell et synthèse académique.
+        const { courseConfig, cornellData, uploadedImages } = req.body;
+        
+        // Configuration API Anthropic
+        const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+        if (!ANTHROPIC_API_KEY) {
+            return res.status(500).json({ error: 'Clé API Anthropic manquante' });
+        }
+        
+        // Construction du prompt pour génération Cornell
+        const cornellPrompt = `
+Tu es un assistant pédagogique expert qui génère des résumés Cornell Notes de qualité académique.
 
-INFORMATIONS DU COURS :
-- Matière : ${courseConfig?.subject || 'Non spécifié'}
-- Chapitre ${courseConfig?.chapterNumber || 'N/A'} : ${courseConfig?.chapter || 'Non spécifié'}
-- Date : ${courseConfig?.date || 'Non spécifié'}
-- Professeur : ${courseConfig?.professor || 'Non spécifié'}
+## DONNÉES DU COURS :
+**Matière :** ${courseConfig.subject}
+**Chapitre :** ${courseConfig.chapter}
+**Professeur :** ${courseConfig.professor}
+**Date :** ${courseConfig.date}
 
-NOTES CORNELL À ANALYSER :
+## NOTES FOURNIES :
+**Mots-clés :** ${cornellData.mots_cles}
+**Formules :** ${cornellData.formules}
+**Noms d'auteurs :** ${cornellData.noms_auteurs}
+**Dates importantes :** ${cornellData.dates_importantes}
+**Doutes/Questions :** ${cornellData.doutes_questions}
+**Notes principales :** ${cornellData.notes_principales}
+**Résumé personnel :** ${cornellData.resume_personnel}
 
-📝 NOTES PRINCIPALES :
-${cornellData?.notes_principales || 'Non spécifié'}
+## MISSION :
+Génère un résumé Cornell Notes complet et structuré qui reprend TOUS les éléments fournis et les organise de façon pédagogique optimale.
 
-🔑 MOTS-CLÉS :
-${cornellData?.mots_cles || 'Non spécifié'}
+## FORMAT DE RÉPONSE OBLIGATOIRE :
+Réponds UNIQUEMENT en JSON structuré comme suit :
 
-🧮 FORMULES :
-${cornellData?.formules || 'Non spécifié'}
-
-👨‍🏫 NOMS D'AUTEUR/SCIENTIFIQUES :
-${cornellData?.noms_auteurs || 'Non spécifié'}
-
-📅 DATES IMPORTANTES :
-${cornellData?.dates_importantes || 'Non spécifié'}
-
-❓ DOUTES ET QUESTIONNEMENTS :
-${cornellData?.doutes_questions || 'Non spécifié'}
-
-📄 RÉSUMÉ PERSONNEL :
-${cornellData?.resume_personnel || 'Non spécifié'}
-
-🖼️ IMAGES DISPONIBLES : ${uploadedImages?.length || 0} image(s) uploadée(s)
-
-MISSION : Génère un résumé structuré optimisé pour révisions, respectant la méthode Cornell.
-
-RÉPONDS UNIQUEMENT AVEC LE JSON VALIDE - RIEN D'AUTRE :
 {
-  "resume_executif": "Synthèse globale du chapitre en 3-4 phrases claires",
-  "concepts_cles": ["concept1", "concept2", "concept3"],
+  "resume_executif": "Une synthèse globale du chapitre en 2-3 phrases percutantes qui capture l'essence du sujet",
+  "concepts_cles": [
+    "concept1",
+    "concept2",
+    "concept3"
+  ],
   "definitions": [
-    {"terme": "terme1", "definition": "définition claire et précise"},
-    {"terme": "terme2", "definition": "définition claire et précise"}
+    {
+      "terme": "Terme technique 1",
+      "definition": "Définition claire et précise"
+    },
+    {
+      "terme": "Terme technique 2", 
+      "definition": "Définition claire et précise"
+    }
   ],
   "formules_lois": [
-    {"nom": "Nom de la formule/loi", "expression": "Expression mathématique", "description": "Utilisation"}
+    {
+      "nom": "Nom de la formule/loi",
+      "expression": "Expression mathématique exacte",
+      "description": "Usage et signification"
+    }
   ],
   "personnages_dates": [
-    {"nom": "Nom du scientifique/auteur", "contribution": "Ce qu'il a apporté", "date": "Époque/date"}
+    {
+      "nom": "Nom de la personne",
+      "contribution": "Apport/découverte principale",
+      "date": "Période ou date exacte"
+    }
   ],
   "chronologie": [
-    {"periode": "Époque/Date", "evenement": "Événement important"}
-  ],
-  "exemples_applications": [
-    {"contexte": "Situation d'application", "explication": "Comment ça marche"}
+    {
+      "periode": "Date/Époque",
+      "evenement": "Événement marquant"
+    }
   ],
   "questions_revision": [
-    {"niveau": "facile", "question": "Question de base", "indice": "Aide pour répondre"},
-    {"niveau": "moyen", "question": "Question intermédiaire", "indice": "Aide"},
-    {"niveau": "difficile", "question": "Question complexe", "indice": "Aide"}
+    {
+      "niveau": "facile",
+      "question": "Question de révision de niveau facile",
+      "indice": "Aide pour répondre"
+    },
+    {
+      "niveau": "moyen",
+      "question": "Question de révision de niveau moyen",
+      "indice": "Aide pour répondre"
+    },
+    {
+      "niveau": "difficile",
+      "question": "Question de révision de niveau difficile",
+      "indice": "Aide pour répondre"
+    }
   ],
   "points_attention": [
     "Erreur courante à éviter",
-    "Piège fréquent en exercice"
+    "Point de vigilance important",
+    "Piège classique"
   ],
   "liens_conceptuels": [
-    "Relation entre concept A et concept B",
-    "Lien avec chapitre précédent/suivant"
-  ],
-  "schemas_detectes": [
-    {"sujet": "fission nucléaire", "description": "Schéma de la réaction en chaîne"}
+    "Lien entre concept A et concept B",
+    "Relation avec chapitre précédent",
+    "Application pratique"
   ]
-}`;
+}
 
-      console.log("✅ Prompt construit avec succès");
-      console.log("🔍 Longueur du prompt:", prompt.length, "caractères");
-      
-    } catch (promptError) {
-      console.log("❌ ERREUR lors de la construction du prompt:", promptError.message);
-      return res.status(500).json({ error: 'Erreur construction prompt', details: promptError.message });
-    }
+## INSTRUCTIONS CRITIQUES :
+- UTILISE tous les éléments fournis dans les notes
+- STRUCTURE l'information de façon logique et pédagogique
+- CRÉE des questions de révision de différents niveaux
+- IDENTIFIE les points d'attention et erreurs courantes
+- ÉTABLIS des liens conceptuels pertinents
+- CONSERVE la précision scientifique/académique
+- ADAPTE le vocabulaire au niveau d'études approprié
 
-    // === ÉTAPE 4 : PRÉPARATION REQUÊTE API ===
-    console.log("⚙️ ÉTAPE 4 : Préparation de la requête API");
-    
-    const requestBody = {
-      model: "claude-3-haiku-20240307",
-      max_tokens: 2500,
-      messages: [
-        {
-          role: "user",
-          content: prompt
+Génère maintenant le résumé Cornell Notes complet.
+        `;
+        
+        // Messages pour Claude
+        const messages = [
+            {
+                role: "user",
+                content: cornellPrompt
+            }
+        ];
+        
+        // Appel API Claude
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': ANTHROPIC_API_KEY,
+                'anthropic-version': '2023-06-01'
+            },
+            body: JSON.stringify({
+                model: "claude-3-5-sonnet-20241022",
+                max_tokens: 4000,
+                messages: messages
+            })
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Erreur API Anthropic:', response.status, errorText);
+            return res.status(response.status).json({ 
+                error: `Erreur API Anthropic: ${response.status}`,
+                details: errorText
+            });
         }
-      ]
-    };
-    
-    console.log("🔍 Modèle utilisé:", requestBody.model);
-    console.log("🔍 Max tokens:", requestBody.max_tokens);
-    console.log("🔍 Nombre de messages:", requestBody.messages.length);
-    
-    const requestHeaders = {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01"
-    };
-    
-    console.log("🔍 Headers préparés:", Object.keys(requestHeaders));
-
-    // === ÉTAPE 5 : APPEL API ANTHROPIC ===
-    console.log("🌐 ÉTAPE 5 : Début de l'appel API Anthropic");
-    
-    let response;
-    try {
-      response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: requestHeaders,
-        body: JSON.stringify(requestBody)
-      });
-      
-      console.log("✅ Appel fetch terminé");
-      console.log("🔍 Status de la réponse:", response.status);
-      console.log("🔍 Status text:", response.statusText);
-      console.log("🔍 Headers de réponse:", [...response.headers.entries()]);
-      
-    } catch (fetchError) {
-      console.log("❌ ERREUR lors du fetch:", fetchError.message);
-      console.log("❌ Stack trace:", fetchError.stack);
-      return res.status(500).json({ error: 'Erreur réseau', details: fetchError.message });
+        
+        const data = await response.json();
+        const content = data.content[0]?.text;
+        
+        if (!content) {
+            return res.status(500).json({ error: 'Réponse vide de Claude' });
+        }
+        
+        // Parser la réponse JSON de Claude
+        let cornellResult;
+        try {
+            // Nettoyer le texte pour extraire le JSON
+            const cleanedContent = content
+                .replace(/```json\n?/g, '')
+                .replace(/```\n?/g, '')
+                .trim();
+            
+            cornellResult = JSON.parse(cleanedContent);
+            
+            // Validation des données obligatoires
+            if (!cornellResult.resume_executif) {
+                cornellResult.resume_executif = `Résumé du chapitre ${courseConfig.chapter} en ${courseConfig.subject}`;
+            }
+            
+            if (!cornellResult.concepts_cles) cornellResult.concepts_cles = [];
+            if (!cornellResult.definitions) cornellResult.definitions = [];
+            if (!cornellResult.formules_lois) cornellResult.formules_lois = [];
+            if (!cornellResult.personnages_dates) cornellResult.personnages_dates = [];
+            if (!cornellResult.chronologie) cornellResult.chronologie = [];
+            if (!cornellResult.questions_revision) cornellResult.questions_revision = [];
+            if (!cornellResult.points_attention) cornellResult.points_attention = [];
+            if (!cornellResult.liens_conceptuels) cornellResult.liens_conceptuels = [];
+            
+        } catch (parseError) {
+            console.error('Erreur parsing JSON:', parseError);
+            console.log('Contenu reçu:', content);
+            
+            // Fallback: structure minimale
+            cornellResult = {
+                resume_executif: `Résumé du chapitre ${courseConfig.chapter} en ${courseConfig.subject} généré à partir des notes fournies.`,
+                concepts_cles: cornellData.mots_cles ? cornellData.mots_cles.split(',').map(k => k.trim()) : [],
+                definitions: [],
+                formules_lois: cornellData.formules ? [
+                    {
+                        nom: "Formules identifiées",
+                        expression: cornellData.formules,
+                        description: "Formules extraites des notes"
+                    }
+                ] : [],
+                personnages_dates: cornellData.noms_auteurs ? [
+                    {
+                        nom: cornellData.noms_auteurs,
+                        contribution: "Contribution mentionnée dans les notes",
+                        date: cornellData.dates_importantes || "Date à préciser"
+                    }
+                ] : [],
+                chronologie: [],
+                questions_revision: [
+                    {
+                        niveau: "moyen",
+                        question: `Quels sont les concepts clés du chapitre ${courseConfig.chapter} ?`,
+                        indice: "Référez-vous aux mots-clés identifiés"
+                    }
+                ],
+                points_attention: cornellData.doutes_questions ? [cornellData.doutes_questions] : [],
+                liens_conceptuels: [`Relations entre les concepts du chapitre ${courseConfig.chapter}`],
+                fallback_used: true,
+                raw_content: content
+            };
+        }
+        
+        // Ajout de métadonnées utiles
+        cornellResult.generated_at = new Date().toISOString();
+        cornellResult.course_info = {
+            subject: courseConfig.subject,
+            chapter: courseConfig.chapter,
+            professor: courseConfig.professor,
+            date: courseConfig.date
+        };
+        
+        // Log pour debugging
+        console.log('Cornell Result Generated:', {
+            resume_length: cornellResult.resume_executif?.length || 0,
+            concepts_count: cornellResult.concepts_cles?.length || 0,
+            definitions_count: cornellResult.definitions?.length || 0,
+            questions_count: cornellResult.questions_revision?.length || 0
+        });
+        
+        return res.status(200).json(cornellResult);
+        
+    } catch (error) {
+        console.error('Erreur serveur Cornell:', error);
+        return res.status(500).json({ 
+            error: 'Erreur serveur lors de la génération Cornell',
+            details: error.message
+        });
     }
-
-    // === ÉTAPE 6 : VÉRIFICATION STATUS RÉPONSE ===
-    console.log("📊 ÉTAPE 6 : Vérification du status de réponse");
-    
-    if (!response.ok) {
-      console.log("❌ Status NON OK:", response.status);
-      
-      let errorDetails;
-      try {
-        errorDetails = await response.text();
-        console.log("🔍 Détails de l'erreur:", errorDetails);
-      } catch (textError) {
-        console.log("❌ Impossible de lire les détails de l'erreur:", textError.message);
-        errorDetails = "Impossible de lire les détails";
-      }
-      
-      return res.status(500).json({ 
-        error: `Erreur API Anthropic: ${response.status}`, 
-        details: errorDetails 
-      });
-    }
-
-    // === ÉTAPE 7 : PARSING RÉPONSE JSON ===
-    console.log("📋 ÉTAPE 7 : Parsing de la réponse JSON");
-    
-    let data;
-    try {
-      data = await response.json();
-      console.log("✅ Parsing JSON réussi");
-      console.log("🔍 Clés de la réponse:", Object.keys(data));
-      console.log("🔍 Type de content:", data.content ? typeof data.content : 'undefined');
-      console.log("🔍 Longueur content:", data.content ? data.content.length : 'N/A');
-      
-    } catch (jsonError) {
-      console.log("❌ ERREUR lors du parsing JSON:", jsonError.message);
-      return res.status(500).json({ error: 'Erreur parsing réponse', details: jsonError.message });
-    }
-
-    // === ÉTAPE 8 : EXTRACTION DU TEXTE ===
-    console.log("🔤 ÉTAPE 8 : Extraction du texte de réponse");
-    
-    let responseText;
-    try {
-      if (!data.content || !data.content[0] || !data.content[0].text) {
-        console.log("❌ Structure de réponse inattendue");
-        console.log("🔍 Structure complète:", JSON.stringify(data, null, 2));
-        return res.status(500).json({ error: 'Structure de réponse invalide', details: 'content[0].text manquant' });
-      }
-      
-      responseText = data.content[0].text;
-      console.log("✅ Texte extrait avec succès");
-      console.log("🔍 Longueur du texte:", responseText.length);
-      console.log("🔍 Début du texte:", responseText.substring(0, 200) + "...");
-      
-    } catch (extractError) {
-      console.log("❌ ERREUR lors de l'extraction:", extractError.message);
-      return res.status(500).json({ error: 'Erreur extraction texte', details: extractError.message });
-    }
-
-    // === ÉTAPE 9 : NETTOYAGE DU TEXTE ===
-    console.log("🧹 ÉTAPE 9 : Nettoyage du texte");
-    
-    try {
-      // Nettoyer la réponse
-      const cleanedText = responseText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-      console.log("✅ Nettoyage terminé");
-      console.log("🔍 Longueur après nettoyage:", cleanedText.length);
-      console.log("🔍 Texte nettoyé début:", cleanedText.substring(0, 100) + "...");
-      
-      responseText = cleanedText;
-      
-    } catch (cleanError) {
-      console.log("❌ ERREUR lors du nettoyage:", cleanError.message);
-      return res.status(500).json({ error: 'Erreur nettoyage texte', details: cleanError.message });
-    }
-
-    // === ÉTAPE 10 : PARSING JSON FINAL ===
-    console.log("🎯 ÉTAPE 10 : Parsing JSON final");
-    
-    let parsedSummary;
-    try {
-      parsedSummary = JSON.parse(responseText);
-      console.log("✅ JSON final parsé avec succès");
-      console.log("🔍 Clés du résumé:", Object.keys(parsedSummary));
-      
-    } catch (parseError) {
-      console.log("❌ ERREUR lors du parsing JSON final:", parseError.message);
-      console.log("🔍 Texte qui a causé l'erreur:", responseText);
-      return res.status(500).json({ 
-        error: 'Erreur parsing JSON final', 
-        details: parseError.message,
-        rawText: responseText.substring(0, 500) 
-      });
-    }
-
-    // === ÉTAPE 11 : RETOUR RÉPONSE ===
-    console.log("🎉 ÉTAPE 11 : Retour de la réponse finale");
-    console.log("✅ === SUCCÈS COMPLET ===");
-    
-    return res.status(200).json(parsedSummary);
-    
-  } catch (globalError) {
-    console.log("💥 ===== ERREUR GLOBALE CAPTURÉE =====");
-    console.log("❌ Type:", globalError.name);
-    console.log("❌ Message:", globalError.message);
-    console.log("❌ Stack:", globalError.stack);
-    console.log("💥 =====================================");
-    
-    return res.status(500).json({ 
-      error: "Erreur globale dans la fonction proxy", 
-      details: globalError.message,
-      stack: globalError.stack
-    });
-  }
 }
