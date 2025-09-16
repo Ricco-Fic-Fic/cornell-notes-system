@@ -415,6 +415,18 @@
             <div id="uploadStatus" class="hidden"></div>
             <div id="imagePreview" class="image-preview"></div>
             
+            <h2>🖼️ Images et Schémas Supplémentaires</h2>
+            <div class="upload-area" id="additionalUploadArea" style="margin: 20px 0; border-color: #10b981; background: linear-gradient(45deg, #ecfdf5, #d1fae5);">
+                <div class="upload-icon">🖼️</div>
+                <h3>Ajoutez des schémas, graphiques ou images complémentaires</h3>
+                <p>JPG, PNG, WEBP (diagrammes, schémas, graphiques...)</p>
+                <input type="file" id="additionalFileInput" multiple accept="image/*" style="display: none;">
+                <button type="button" class="btn btn-success" onclick="document.getElementById('additionalFileInput').click()">
+                    📎 Ajouter Images/Schémas
+                </button>
+            </div>
+            <div id="additionalImagePreview" class="image-preview"></div>
+            
             <div style="text-align: center; margin-top: 30px;">
                 <button type="button" class="btn btn-success" id="processOCR" disabled>
                     🤖 Analyser avec OCR
@@ -535,7 +547,8 @@
         }
         
         // Variables globales
-        let uploadedImages = [];
+        let uploadedImages = []; // Images issues de la conversion PDF
+        let additionalImages = []; // Images/schémas supplémentaires
         let currentAISummary = null;
         let isProcessing = false;
         
@@ -549,6 +562,9 @@
             
             // Upload par drag & drop
             initializeUpload();
+            
+            // Upload d'images supplémentaires
+            initializeAdditionalUpload();
             
             // Mise à jour de l'aperçu en temps réel
             initializePreview();
@@ -573,7 +589,73 @@
             });
         }
         
-        function initializeUpload() {
+        function initializeAdditionalUpload() {
+            const additionalInput = document.getElementById('additionalFileInput');
+            
+            additionalInput.addEventListener('change', (e) => {
+                handleAdditionalFiles(Array.from(e.target.files));
+            });
+        }
+        
+        async function handleAdditionalFiles(files) {
+            for (const file of files) {
+                if (file.size > 5 * 1024 * 1024) {
+                    showStatus('Fichier trop volumineux : ' + file.name, 'error');
+                    continue;
+                }
+                
+                if (file.type.startsWith('image/')) {
+                    await processAdditionalImage(file);
+                }
+            }
+        }
+        
+        async function processAdditionalImage(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                additionalImages.push({
+                    id: Date.now() + Math.random(),
+                    name: file.name,
+                    data: e.target.result,
+                    type: file.type,
+                    category: 'additional'
+                });
+                updateAdditionalImagePreview();
+                showStatus('✅ Image ajoutée : ' + file.name, 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function updateAdditionalImagePreview() {
+            const preview = document.getElementById('additionalImagePreview');
+            
+            if (additionalImages.length === 0) {
+                preview.innerHTML = '';
+                return;
+            }
+            
+            preview.innerHTML = `
+                <h4 style="color: #10b981; font-weight: bold; margin-bottom: 15px;">
+                    🖼️ Images/Schémas supplémentaires (${additionalImages.length})
+                </h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                    ${additionalImages.map(img => `
+                        <div class="image-item" style="border: 2px solid #10b981;">
+                            <img src="${img.data}" alt="${img.name}">
+                            <div class="info">
+                                <small style="color: #10b981; font-weight: bold;">📎 ${img.name}</small>
+                            </div>
+                            <button class="remove" onclick="removeAdditionalImage(${img.id})">&times;</button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        function removeAdditionalImage(id) {
+            additionalImages = additionalImages.filter(img => img.id !== id);
+            updateAdditionalImagePreview();
+        }
             const uploadArea = document.getElementById('uploadArea');
             const fileInput = document.getElementById('fileInput');
             
@@ -1150,13 +1232,19 @@ Albert Einstein`;
             </div>
             ` : ''}
 
-            ${uploadedImages && uploadedImages.length > 0 ? `
+            ${uploadedImages && uploadedImages.length > 0 || additionalImages && additionalImages.length > 0 ? `
             <div class="section">
                 <div class="section-title">🖼️ Images et Schémas</div>
                 ${uploadedImages.map(img => `
                     <div class="image-container">
                         <img src="${img.data}" alt="${img.name}">
-                        <div class="image-caption">${img.name}</div>
+                        <div class="image-caption">📄 ${img.name}</div>
+                    </div>
+                `).join('')}
+                ${additionalImages.map(img => `
+                    <div class="image-container">
+                        <img src="${img.data}" alt="${img.name}">
+                        <div class="image-caption">📎 ${img.name}</div>
                     </div>
                 `).join('')}
             </div>
@@ -1181,7 +1269,7 @@ Albert Einstein`;
     <div class="footer">
         📄 Document généré par Cornell Notes System • ${new Date().toLocaleDateString('fr-FR')}<br>
         🎯 Optimisé pour révisions efficaces • Prof: ${courseConfig.professor}<br>
-        ⚡ Conversion PDF automatique + OCR 95% • Images: ${uploadedImages.length}
+        ⚡ Conversion PDF automatique + OCR 95% • Images: ${uploadedImages.length + additionalImages.length}
     </div>
 </body>
 </html>`;
@@ -1218,7 +1306,9 @@ Albert Einstein`;
                 
                 // Réinitialiser les images
                 uploadedImages = [];
+                additionalImages = [];
                 updateImagePreview();
+                updateAdditionalImagePreview();
                 updateProcessButton();
                 
                 // Réinitialiser les status
