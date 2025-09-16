@@ -357,14 +357,14 @@
         </div>
         
         <div class="tabs">
-            <div class="tab active" data-tab="upload">📁 Upload & Configuration</div>
+            <div class="tab active" data-tab="upload">📤 Upload & Configuration</div>
             <div class="tab" data-tab="cornell">📝 Structure Cornell</div>
             <div class="tab" data-tab="export">📄 Génération & Export</div>
         </div>
         
         <!-- ONGLET 1: Upload & Configuration -->
         <div class="tab-content active" id="upload">
-            <h2>📁 Configuration du Cours</h2>
+            <h2>📤 Configuration du Cours</h2>
             <div class="form-row">
                 <div class="form-group">
                     <label>📅 Date *</label>
@@ -401,7 +401,7 @@
                 </div>
             </div>
             
-            <h2>📁 Upload de Fichiers</h2>
+            <h2>📤 Upload de Fichiers</h2>
             <div class="upload-area" id="uploadArea">
                 <div class="upload-icon">📤</div>
                 <h3>Déposez vos fichiers ici</h3>
@@ -422,7 +422,7 @@
                 <p>JPG, PNG, WEBP (diagrammes, schémas, graphiques...)</p>
                 <input type="file" id="additionalFileInput" multiple accept="image/*" style="display: none;">
                 <button type="button" class="btn btn-success" onclick="document.getElementById('additionalFileInput').click()">
-                    📎 Ajouter Images/Schémas
+                    🔍 Ajouter Images/Schémas
                 </button>
             </div>
             <div id="additionalImagePreview" class="image-preview"></div>
@@ -474,7 +474,7 @@
             </div>
             
             <div class="form-group">
-                <label>📝 Résumé personnel</label>
+                <label>📋 Résumé personnel</label>
                 <textarea id="summary" rows="4" placeholder="Votre synthèse personnelle du chapitre..."></textarea>
             </div>
             
@@ -589,73 +589,7 @@
             });
         }
         
-        function initializeAdditionalUpload() {
-            const additionalInput = document.getElementById('additionalFileInput');
-            
-            additionalInput.addEventListener('change', (e) => {
-                handleAdditionalFiles(Array.from(e.target.files));
-            });
-        }
-        
-        async function handleAdditionalFiles(files) {
-            for (const file of files) {
-                if (file.size > 5 * 1024 * 1024) {
-                    showStatus('Fichier trop volumineux : ' + file.name, 'error');
-                    continue;
-                }
-                
-                if (file.type.startsWith('image/')) {
-                    await processAdditionalImage(file);
-                }
-            }
-        }
-        
-        async function processAdditionalImage(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                additionalImages.push({
-                    id: Date.now() + Math.random(),
-                    name: file.name,
-                    data: e.target.result,
-                    type: file.type,
-                    category: 'additional'
-                });
-                updateAdditionalImagePreview();
-                showStatus('✅ Image ajoutée : ' + file.name, 'success');
-            };
-            reader.readAsDataURL(file);
-        }
-        
-        function updateAdditionalImagePreview() {
-            const preview = document.getElementById('additionalImagePreview');
-            
-            if (additionalImages.length === 0) {
-                preview.innerHTML = '';
-                return;
-            }
-            
-            preview.innerHTML = `
-                <h4 style="color: #10b981; font-weight: bold; margin-bottom: 15px;">
-                    🖼️ Images/Schémas supplémentaires (${additionalImages.length})
-                </h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
-                    ${additionalImages.map(img => `
-                        <div class="image-item" style="border: 2px solid #10b981;">
-                            <img src="${img.data}" alt="${img.name}">
-                            <div class="info">
-                                <small style="color: #10b981; font-weight: bold;">📎 ${img.name}</small>
-                            </div>
-                            <button class="remove" onclick="removeAdditionalImage(${img.id})">&times;</button>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-        
-        function removeAdditionalImage(id) {
-            additionalImages = additionalImages.filter(img => img.id !== id);
-            updateAdditionalImagePreview();
-        }
+        function initializeUpload() {
             const uploadArea = document.getElementById('uploadArea');
             const fileInput = document.getElementById('fileInput');
             
@@ -682,12 +616,27 @@
         
         function initializeAdditionalUpload() {
             const additionalInput = document.getElementById('additionalFileInput');
+            const additionalUploadArea = document.getElementById('additionalUploadArea');
             
-            if (additionalInput) {
-                additionalInput.addEventListener('change', (e) => {
-                    handleAdditionalFiles(Array.from(e.target.files));
-                });
-            }
+            // Drag & drop pour images supplémentaires
+            additionalUploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                additionalUploadArea.classList.add('dragover');
+            });
+            
+            additionalUploadArea.addEventListener('dragleave', () => {
+                additionalUploadArea.classList.remove('dragover');
+            });
+            
+            additionalUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                additionalUploadArea.classList.remove('dragover');
+                handleAdditionalFiles(Array.from(e.dataTransfer.files));
+            });
+            
+            additionalInput.addEventListener('change', (e) => {
+                handleAdditionalFiles(Array.from(e.target.files));
+            });
         }
         
         function initializePreview() {
@@ -754,8 +703,21 @@
             updateProcessButton();
         }
         
+        async function handleAdditionalFiles(files) {
+            for (const file of files) {
+                if (file.size > 5 * 1024 * 1024) {
+                    showStatus('Fichier trop volumineux : ' + file.name, 'error');
+                    continue;
+                }
+                
+                if (file.type.startsWith('image/')) {
+                    await processAdditionalImage(file);
+                }
+            }
+        }
+        
         async function convertPDFToImages(file) {
-            showStatus('🔄 Conversion PDF en cours...', 'info');
+            showStatus('📄 Conversion PDF en cours...', 'info');
             
             try {
                 const arrayBuffer = await file.arrayBuffer();
@@ -782,7 +744,8 @@
                         id: Date.now() + pageNum,
                         name: `${file.name} - Page ${pageNum}`,
                         data: imageData,
-                        type: 'image/jpeg'
+                        type: 'image/jpeg',
+                        category: 'pdf'
                     });
                 }
                 
@@ -798,12 +761,30 @@
             const reader = new FileReader();
             reader.onload = (e) => {
                 uploadedImages.push({
-                    id: Date.now(),
+                    id: Date.now() + Math.random(),
                     name: file.name,
                     data: e.target.result,
-                    type: file.type
+                    type: file.type,
+                    category: 'image'
                 });
                 updateImagePreview();
+                showStatus('✅ Image ajoutée : ' + file.name, 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        async function processAdditionalImage(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                additionalImages.push({
+                    id: Date.now() + Math.random(),
+                    name: file.name,
+                    data: e.target.result,
+                    type: file.type,
+                    category: 'additional'
+                });
+                updateAdditionalImagePreview();
+                showStatus('✅ Image supplémentaire ajoutée : ' + file.name, 'success');
             };
             reader.readAsDataURL(file);
         }
@@ -816,21 +797,59 @@
                 return;
             }
             
-            preview.innerHTML = uploadedImages.map(img => `
-                <div class="image-item">
-                    <img src="${img.data}" alt="${img.name}">
-                    <div class="info">
-                        <small>${img.name}</small>
-                    </div>
-                    <button class="remove" onclick="removeImage(${img.id})">&times;</button>
+            preview.innerHTML = `
+                <h4 style="color: #667eea; font-weight: bold; margin-bottom: 15px;">
+                    📄 Images principal (${uploadedImages.length})
+                </h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                    ${uploadedImages.map(img => `
+                        <div class="image-item">
+                            <img src="${img.data}" alt="${img.name}">
+                            <div class="info">
+                                <small>${img.name}</small>
+                            </div>
+                            <button class="remove" onclick="removeImage(${img.id})">&times;</button>
+                        </div>
+                    `).join('')}
                 </div>
-            `).join('');
+            `;
+        }
+        
+        function updateAdditionalImagePreview() {
+            const preview = document.getElementById('additionalImagePreview');
+            
+            if (additionalImages.length === 0) {
+                preview.innerHTML = '';
+                return;
+            }
+            
+            preview.innerHTML = `
+                <h4 style="color: #10b981; font-weight: bold; margin-bottom: 15px;">
+                    🖼️ Images/Schémas supplémentaires (${additionalImages.length})
+                </h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                    ${additionalImages.map(img => `
+                        <div class="image-item" style="border: 2px solid #10b981;">
+                            <img src="${img.data}" alt="${img.name}">
+                            <div class="info">
+                                <small style="color: #10b981; font-weight: bold;">🔍 ${img.name}</small>
+                            </div>
+                            <button class="remove" onclick="removeAdditionalImage(${img.id})">&times;</button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
         }
         
         function removeImage(id) {
             uploadedImages = uploadedImages.filter(img => img.id !== id);
             updateImagePreview();
             updateProcessButton();
+        }
+        
+        function removeAdditionalImage(id) {
+            additionalImages = additionalImages.filter(img => img.id !== id);
+            updateAdditionalImagePreview();
         }
         
         function updateProcessButton() {
@@ -1254,7 +1273,7 @@ Albert Einstein`;
                 ${additionalImages.map(img => `
                     <div class="image-container">
                         <img src="${img.data}" alt="${img.name}">
-                        <div class="image-caption">📎 ${img.name}</div>
+                        <div class="image-caption">🔍 ${img.name}</div>
                     </div>
                 `).join('')}
             </div>
