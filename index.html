@@ -1,316 +1,48 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cornell Notes System - IA Contextuelle</title>
-    <!-- PDF.js pour conversion PDF → Image -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <title>Template Cornell Universel - Basé sur templates validés</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
             padding: 20px;
+            background: #f5f5f5;
+            color: #333;
         }
-        
-        .container {
+        .cornell-page {
+            background: white;
             max-width: 1200px;
             margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             overflow: hidden;
         }
         
+        /* HEADER EXACT - 4 colonnes comme dans templates validés */
         .header {
-            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
-            padding: 30px;
-            text-align: center;
-            color: white;
-        }
-        
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-        
-        .header p {
-            font-size: 1.2em;
-            opacity: 0.9;
-        }
-        
-        .api-config {
-            background: rgba(255,255,255,0.1);
-            padding: 20px;
-            margin-top: 20px;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        
-        .api-config input {
-            width: 100%;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            margin-top: 5px;
-            font-size: 14px;
-        }
-        
-        .api-status {
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-            font-weight: bold;
-        }
-        
-        .api-status.success {
-            background: rgba(16, 185, 129, 0.2);
-            border: 1px solid rgba(16, 185, 129, 0.5);
-        }
-        
-        .api-status.error {
-            background: rgba(239, 68, 68, 0.2);
-            border: 1px solid rgba(239, 68, 68, 0.5);
-        }
-        
-        .tabs {
-            display: flex;
-            background: #f8f9ff;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .tab {
-            flex: 1;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            font-weight: bold;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-        }
-        
-        .tab:hover {
-            background: #e2e8f0;
-        }
-        
-        .tab.active {
-            background: white;
-            border-bottom-color: #667eea;
-            color: #667eea;
-        }
-        
-        .tab-content {
-            display: none;
-            padding: 30px;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #374151;
-        }
-        
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-        }
-        
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        
-        .form-row {
+            padding: 15px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-        
-        .upload-area {
-            border: 3px dashed #667eea;
-            border-radius: 12px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: linear-gradient(45deg, #f8f9ff, #e8f2ff);
-        }
-        
-        .upload-area:hover {
-            border-color: #4c51bf;
-            background: linear-gradient(45deg, #e8f2ff, #dbeafe);
-        }
-        
-        .upload-area.dragover {
-            border-color: #10b981;
-            background: linear-gradient(45deg, #ecfdf5, #d1fae5);
-        }
-        
-        .upload-icon {
-            font-size: 3em;
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-        
-        .btn {
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            grid-template-columns: 1fr 1fr 2fr 1fr;
+            gap: 15px;
+            font-weight: bold;
             color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
-        }
-        
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .btn-success {
-            background: linear-gradient(45deg, #10b981, #059669);
-        }
-        
-        .btn-danger {
-            background: linear-gradient(45deg, #ef4444, #dc2626);
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(45deg, #6b7280, #4b5563);
-        }
-        
-        .image-preview {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
-        }
-        
-        .image-item {
-            position: relative;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        
-        .image-item img {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-        }
-        
-        .image-item .info {
-            padding: 10px;
-            text-align: center;
-        }
-        
-        .image-item .remove {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: rgba(239, 68, 68, 0.9);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        
-        .cornell-preview {
-            max-width: 800px;
-            margin: 20px auto;
-            border: 2px solid #333;
-            font-family: Arial, sans-serif;
-        }
-        
-        .cornell-header {
-            display: grid;
-            grid-template-columns: 1fr 2fr 1fr;
-            background: #f7c948;
-            border-bottom: 2px solid #333;
-            font-weight: bold;
             text-align: center;
             font-size: 14px;
         }
         
-        .cornell-header > div {
-            padding: 10px;
-            border-right: 2px solid #333;
-        }
-        
-        .cornell-header > div:last-child {
-            border-right: none;
-        }
-        
-        .cornell-main {
+        /* BODY EXACT - 35% sidebar / 65% notes VALIDÉ */
+        .body {
             display: grid;
-            grid-template-columns: 1fr 2fr;
-            min-height: 300px;
+            grid-template-columns: 35% 65%;
+            min-height: 600px;
         }
         
-        .cornell-sidebar {
-            background: #f7c948;
-            border-right: 2px solid #333;
+        /* SIDEBAR EXACT - Structure validée */
+        .sidebar {
             padding: 15px;
-            font-size: 12px;
-        }
-        
-        .cornell-notes {
-            padding: 15px;
-            background: white;
-            font-size: 12px;
-        }
-        
-        .cornell-summary {
-            background: #f7c948;
-            padding: 15px;
-            border-top: 2px solid #333;
-            font-size: 12px;
-            text-align: center;
-            font-weight: bold;
         }
         
         .sidebar-section {
@@ -319,1200 +51,392 @@
         
         .sidebar-title {
             font-weight: bold;
-            font-style: italic;
-            margin-bottom: 5px;
-            text-decoration: underline;
+            margin-bottom: 8px;
+            font-size: 13px;
         }
         
-        .progress-bar {
-            width: 100%;
-            height: 20px;
-            background: #e2e8f0;
-            border-radius: 10px;
+        .sidebar-content {
+            font-size: 12px;
+            line-height: 1.4;
+            color: #555;
+        }
+        
+        /* NOTES EXACT - Structure validée */
+        .notes {
+            padding: 15px;
+            background: #f8f9fa;
+        }
+        
+        .notes-section {
+            margin-bottom: 15px;
+        }
+        
+        .notes-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .notes-content {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #444;
+        }
+        
+        /* RÉSUMÉ INTÉGRÉ EXACT - Dans notes comme validé */
+        .resume-integrated {
+            color: white;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 6px;
+        }
+        
+        .resume-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        
+        .resume-content {
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        /* FOOTER EXACT */
+        .footer {
+            background: #ecf0f1;
+            text-align: center;
+            padding: 10px;
+            font-size: 11px;
+            color: #7f8c8d;
+        }
+        
+        /* SCHÉMA ENRICHI P3 EXACT comme templates validés */
+        .schema-enrichi {
+            border: 3px solid;
+            border-radius: 8px;
+            margin: 15px 0;
             overflow: hidden;
-            margin: 10px 0;
         }
         
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #10b981, #059669);
-            border-radius: 10px;
-            transition: width 0.3s ease;
+        .schema-header {
+            color: white;
+            padding: 10px 15px;
+            font-weight: bold;
+            font-size: 13px;
         }
         
-        .status-message {
+        .schema-content {
+            padding: 15px;
+        }
+        
+        .schema-image {
+            background: #fefefe;
+            border: 2px solid #bdc3c7;
+            min-height: 220px;
+            margin-bottom: 15px;
             padding: 15px;
             border-radius: 8px;
-            margin: 10px 0;
+            position: relative;
+        }
+        
+        /* ENRICHISSEMENT IA EXACT comme templates validés */
+        .enrichissement-ia {
+            background: #2c3e50;
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            border: 1px solid #34495e;
+        }
+        
+        .ia-badge {
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            margin-bottom: 8px;
+            display: inline-block;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .enrichissement-list {
+            font-size: 11px;
+            line-height: 1.5;
+        }
+        
+        /* Badge de validation */
+        .validation-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 15px;
+            font-size: 11px;
             font-weight: bold;
         }
         
-        .status-success {
-            background: #dcfce7;
-            color: #166534;
-            border: 1px solid #bbf7d0;
+        .container {
+            position: relative;
         }
         
-        .status-error {
-            background: #fef2f2;
-            color: #991b1b;
-            border: 1px solid #fecaca;
-        }
+        /* ============================================
+           CLASSES MATIÈRES - BASÉES SUR TEMPLATES VALIDÉS
+           ============================================ */
         
-        .status-info {
-            background: #dbeafe;
-            color: #1e40af;
-            border: 1px solid #bfdbfe;
+        /* FRANÇAIS - comme BGH Molière */
+        .matiere-francais .header { background: #2ecc71; }
+        .matiere-francais .sidebar { background: #d5f4e6; }
+        .matiere-francais .sidebar-title { color: #27ae60; }
+        .matiere-francais .resume-integrated { background: #2ecc71; }
+        .matiere-francais .schema-enrichi { 
+            border-color: #2ecc71;
+            background: linear-gradient(145deg, #f8fff9, #e8f5e9);
         }
+        .matiere-francais .schema-header { background: #2ecc71; }
+        .matiere-francais .ia-badge { background: #2ecc71; }
+        .matiere-francais .validation-badge { background: #2ecc71; }
         
-        .hidden {
-            display: none !important;
+        /* HISTOIRE - comme Sonderbund */
+        .matiere-histoire .header { background: #e67e22; }
+        .matiere-histoire .sidebar { background: #fdf2e9; }
+        .matiere-histoire .sidebar-title { color: #d35400; }
+        .matiere-histoire .resume-integrated { background: #e67e22; }
+        .matiere-histoire .schema-enrichi { 
+            border-color: #e67e22;
+            background: linear-gradient(145deg, #fef9f5, #fdf2e9);
         }
+        .matiere-histoire .schema-header { background: #e67e22; }
+        .matiere-histoire .ia-badge { background: #e67e22; }
+        .matiere-histoire .validation-badge { background: #e67e22; }
         
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+        /* COMPTABILITÉ - comme Plan Comptable */
+        .matiere-comptabilite .header { background: #9b59b6; }
+        .matiere-comptabilite .sidebar { background: #f4ecf7; }
+        .matiere-comptabilite .sidebar-title { color: #8e44ad; }
+        .matiere-comptabilite .resume-integrated { background: #9b59b6; }
+        .matiere-comptabilite .schema-enrichi { 
+            border-color: #9b59b6;
+            background: linear-gradient(145deg, #faf9fc, #f4ecf7);
         }
+        .matiere-comptabilite .schema-header { background: #9b59b6; }
+        .matiere-comptabilite .ia-badge { background: #9b59b6; }
+        .matiere-comptabilite .validation-badge { background: #9b59b6; }
         
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        /* MATHÉMATIQUES */
+        .matiere-mathematiques .header { background: #3498db; }
+        .matiere-mathematiques .sidebar { background: #ebf3fd; }
+        .matiere-mathematiques .sidebar-title { color: #2980b9; }
+        .matiere-mathematiques .resume-integrated { background: #3498db; }
+        .matiere-mathematiques .schema-enrichi { 
+            border-color: #3498db;
+            background: linear-gradient(145deg, #f8fcff, #ebf3fd);
         }
+        .matiere-mathematiques .schema-header { background: #3498db; }
+        .matiere-mathematiques .ia-badge { background: #3498db; }
+        .matiere-mathematiques .validation-badge { background: #3498db; }
+        
+        /* SCIENCES */
+        .matiere-sciences .header { background: #1abc9c; }
+        .matiere-sciences .sidebar { background: #e8f6f3; }
+        .matiere-sciences .sidebar-title { color: #16a085; }
+        .matiere-sciences .resume-integrated { background: #1abc9c; }
+        .matiere-sciences .schema-enrichi { 
+            border-color: #1abc9c;
+            background: linear-gradient(145deg, #f0fffe, #e8f6f3);
+        }
+        .matiere-sciences .schema-header { background: #1abc9c; }
+        .matiere-sciences .ia-badge { background: #1abc9c; }
+        .matiere-sciences .validation-badge { background: #1abc9c; }
+        
+        /* GÉOGRAPHIE */
+        .matiere-geographie .header { background: #f39c12; }
+        .matiere-geographie .sidebar { background: #fef9e7; }
+        .matiere-geographie .sidebar-title { color: #e67e22; }
+        .matiere-geographie .resume-integrated { background: #f39c12; }
+        .matiere-geographie .schema-enrichi { 
+            border-color: #f39c12;
+            background: linear-gradient(145deg, #fffcf5, #fef9e7);
+        }
+        .matiere-geographie .schema-header { background: #f39c12; }
+        .matiere-geographie .ia-badge { background: #f39c12; }
+        .matiere-geographie .validation-badge { background: #f39c12; }
+        
+        /* PHILOSOPHIE */
+        .matiere-philosophie .header { background: #8e44ad; }
+        .matiere-philosophie .sidebar { background: #f8f4fd; }
+        .matiere-philosophie .sidebar-title { color: #7d3c98; }
+        .matiere-philosophie .resume-integrated { background: #8e44ad; }
+        .matiere-philosophie .schema-enrichi { 
+            border-color: #8e44ad;
+            background: linear-gradient(145deg, #fcfaff, #f8f4fd);
+        }
+        .matiere-philosophie .schema-header { background: #8e44ad; }
+        .matiere-philosophie .ia-badge { background: #8e44ad; }
+        .matiere-philosophie .validation-badge { background: #8e44ad; }
+        
+        /* LANGUES */
+        .matiere-langues .header { background: #e74c3c; }
+        .matiere-langues .sidebar { background: #fdedec; }
+        .matiere-langues .sidebar-title { color: #c0392b; }
+        .matiere-langues .resume-integrated { background: #e74c3c; }
+        .matiere-langues .schema-enrichi { 
+            border-color: #e74c3c;
+            background: linear-gradient(145deg, #fff8f8, #fdedec);
+        }
+        .matiere-langues .schema-header { background: #e74c3c; }
+        .matiere-langues .ia-badge { background: #e74c3c; }
+        .matiere-langues .validation-badge { background: #e74c3c; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🎓 Cornell Notes System</h1>
-            <p>Transformez vos notes Goodnotes en documents Cornell professionnels avec IA contextuelle</p>
-            
-            <!-- Configuration API -->
-            <div class="api-config">
-                <label for="geminiApiKey" style="color: white; font-weight: bold;">🔑 Clé API Google Gemini (gratuite)</label>
-                <input type="password" id="geminiApiKey" placeholder="AIza... (votre clé API Gemini)" />
-                <button type="button" class="btn btn-success" onclick="testGeminiAPI()" style="margin-top: 10px; font-size: 14px;">
-                    🧪 Tester la connexion
-                </button>
-                <div id="apiStatus" class="api-status hidden"></div>
-                <p style="font-size: 12px; opacity: 0.8; margin-top: 5px;">
-                    Obtenir une clé gratuite : <a href="https://aistudio.google.com/" target="_blank" style="color: #fbbf24;">aistudio.google.com</a>
-                </p>
-            </div>
+        <div class="validation-badge">
+            ✅ TEMPLATE VALIDÉ
         </div>
         
-        <div class="tabs">
-            <div class="tab active" data-tab="upload">📤 Upload & Configuration</div>
-            <div class="tab" data-tab="cornell">📝 Structure Cornell</div>
-            <div class="tab" data-tab="export">📄 Génération & Export</div>
-        </div>
-        
-        <!-- ONGLET 1: Upload & Configuration -->
-        <div class="tab-content active" id="upload">
-            <h2>📤 Configuration du Cours</h2>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>📅 Date *</label>
-                    <input type="date" id="courseDate" required>
-                </div>
-                <div class="form-group">
-                    <label>📚 Matière *</label>
-                    <select id="courseSubject" required>
-                        <option value="">Sélectionnez une matière</option>
-                        <option value="Physique">Physique</option>
-                        <option value="Mathématiques">Mathématiques</option>
-                        <option value="Chimie">Chimie</option>
-                        <option value="Biologie">Biologie</option>
-                        <option value="Histoire">Histoire</option>
-                        <option value="Géographie">Géographie</option>
-                        <option value="Philosophie">Philosophie</option>
-                        <option value="Littérature">Littérature</option>
-                        <option value="Économie">Économie</option>
-                        <option value="Anglais">Anglais</option>
-                        <option value="Allemand">Allemand</option>
-                        <option value="Droit">Droit</option>
-                        <option value="Comptabilité">Comptabilité</option>
-                        <option value="Français">Français</option>
-                        <option value="Autre">Autre</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>👨‍🏫 Professeur</label>
-                    <input type="text" id="courseProfessor" placeholder="Nom du professeur">
-                </div>
-                <div class="form-group">
-                    <label>📖 Chapitre *</label>
-                    <input type="text" id="courseChapter" placeholder="Ex: Radioactivité - Fission Nucléaire" required>
-                </div>
+        <!-- CHANGEZ SEULEMENT ICI : matiere-francais, matiere-histoire, matiere-comptabilite, etc. -->
+        <div class="cornell-page matiere-francais">
+            
+            <!-- HEADER EXACT - 4 colonnes comme templates validés -->
+            <div class="header">
+                <div>👨‍🏫 [PROFESSEUR]</div>
+                <div>[DATE]</div>
+                <div>[CHAPITRE + SCHÉMA]</div>
+                <div>[MATIÈRE]</div>
             </div>
-            
-            <h2>📤 Upload de Fichiers</h2>
-            <div class="upload-area" id="uploadArea">
-                <div class="upload-icon">📤</div>
-                <h3>Déposez vos fichiers ici</h3>
-                <p>PDF, JPG, PNG, WEBP (max 5MB par fichier)</p>
-                <input type="file" id="fileInput" multiple accept=".pdf,image/*" style="display: none;">
-                <button type="button" class="btn" onclick="document.getElementById('fileInput').click()">
-                    Choisir des fichiers
-                </button>
-            </div>
-            
-            <div id="uploadStatus" class="hidden"></div>
-            <div id="imagePreview" class="image-preview"></div>
-            
-            <h2>🖼️ Images et Schémas Supplémentaires</h2>
-            <div class="upload-area" id="additionalUploadArea" style="margin: 20px 0; border-color: #10b981; background: linear-gradient(45deg, #ecfdf5, #d1fae5);">
-                <div class="upload-icon">🖼️</div>
-                <h3>Ajoutez des schémas, graphiques ou images complémentaires</h3>
-                <p>JPG, PNG, WEBP (diagrammes, schémas, graphiques...)</p>
-                <input type="file" id="additionalFileInput" multiple accept="image/*" style="display: none;">
-                <button type="button" class="btn btn-success" onclick="document.getElementById('additionalFileInput').click()">
-                    🔍 Ajouter Images/Schémas
-                </button>
-            </div>
-            <div id="additionalImagePreview" class="image-preview"></div>
-            
-            <div style="text-align: center; margin-top: 30px;">
-                <button type="button" class="btn btn-success" id="processOCR" disabled>
-                    🤖 Analyser avec IA Contextuelle
-                </button>
-                <button type="button" class="btn btn-secondary" onclick="resetForm()">
-                    🔄 Réinitialiser
-                </button>
-            </div>
-        </div>
-        
-        <!-- ONGLET 2: Structure Cornell -->
-        <div class="tab-content" id="cornell">
-            <h2>📝 Structure Cornell</h2>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label>🔑 Mots-clés</label>
-                    <textarea id="keywords" rows="3" placeholder="Mots-clés importants du cours..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label>🧮 Formules</label>
-                    <textarea id="formulas" rows="3" placeholder="Formules mathématiques ou scientifiques..."></textarea>
-                </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label>👨‍🎓 Noms d'auteurs</label>
-                    <textarea id="authors" rows="2" placeholder="Scientifiques, auteurs, personnages historiques..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label>📅 Dates importantes</label>
-                    <textarea id="dates" rows="2" placeholder="Dates clés, chronologie..."></textarea>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label>❓ Doutes et questionnements</label>
-                <textarea id="doubts" rows="2" placeholder="Questions à approfondir, points à clarifier..."></textarea>
-            </div>
-            
-            <div class="form-group">
-                <label>📄 Notes principales *</label>
-                <textarea id="mainNotes" rows="8" placeholder="Contenu principal du cours..." required></textarea>
-            </div>
-            
-            <div class="form-group">
-                <label>📋 Résumé personnel</label>
-                <textarea id="summary" rows="4" placeholder="Votre synthèse personnelle du chapitre..."></textarea>
-            </div>
-            
-            <h2>👁️ Aperçu Cornell</h2>
-            <div class="cornell-preview" id="cornellPreview">
-                <div class="cornell-header">
-                    <div><strong>Date</strong><br><span id="previewDate">--/--/--</span></div>
-                    <div><strong>Numéro + Nom du Chapitre</strong><br><span id="previewChapter">--</span></div>
-                    <div><strong>Matière</strong><br><span id="previewSubject">--</span></div>
-                </div>
-                <div class="cornell-main">
-                    <div class="cornell-sidebar">
-                        <div class="sidebar-section">
-                            <div class="sidebar-title">Mots-clés</div>
-                            <div id="previewKeywords">--</div>
-                        </div>
-                        <div class="sidebar-section">
-                            <div class="sidebar-title">Formules</div>
-                            <div id="previewFormulas">--</div>
-                        </div>
-                        <div class="sidebar-section">
-                            <div class="sidebar-title">Noms d'auteur</div>
-                            <div id="previewAuthors">--</div>
-                        </div>
-                        <div class="sidebar-section">
-                            <div class="sidebar-title">Dates</div>
-                            <div id="previewDates">--</div>
-                        </div>
-                        <div class="sidebar-section">
-                            <div class="sidebar-title">Doutes et questionnements</div>
-                            <div id="previewDoubts">--</div>
+
+            <div class="body">
+                <!-- SIDEBAR 35% - Structure EXACTE des templates validés -->
+                <div class="sidebar">
+                    
+                    <!-- Mots-clés - OPTIMISÉS P2 + P3 -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">🏷️ Mots-clés</div>
+                        <div class="sidebar-content">
+                            • [mot-clé spécifique 1]<br>
+                            • [mot-clé spécifique 2]<br>
+                            • [mot-clé spécifique 3]<br>
+                            • [mot-clé spécifique 4]<br>
+                            • [mot-clé spécifique 5]
                         </div>
                     </div>
-                    <div class="cornell-notes">
-                        <div id="previewNotes">Notes principales apparaîtront ici...</div>
+
+                    <!-- Formules - SPÉCIFIQUES -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">📐 Formules</div>
+                        <div class="sidebar-content">
+                            [Formule/loi/règle spécifique 1]<br>
+                            [Formule/loi/règle spécifique 2]<br>
+                            [Formule/loi/règle spécifique 3]
+                        </div>
+                    </div>
+
+                    <!-- Acteurs/Éléments clés - FOCUS -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">👥 [Acteurs clés/Codes clés/Éléments-clés]</div>
+                        <div class="sidebar-content">
+                            [Élément important 1]<br>
+                            → [Description/rôle]<br><br>
+                            [Élément important 2]<br>
+                            → [Description/rôle]<br><br>
+                            [Élément important 3]<br>
+                            → [Description/rôle]
+                        </div>
+                    </div>
+
+                    <!-- Dates/Périodes - PERTINENTES -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">📅 [Dates clés/Périodes]</div>
+                        <div class="sidebar-content">
+                            <strong>[DATE/PÉRIODE] :</strong><br>
+                            [Événement important]<br><br>
+                            <strong>[DATE/PÉRIODE] :</strong><br>
+                            [Événement important]
+                        </div>
+                    </div>
+
+                    <!-- Questions - FOCUS STRICT 3 QUESTIONS -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">❓ Questions</div>
+                        <div class="sidebar-content">
+                            • [Question spécifique 1] ?<br><br>
+                            • [Question spécifique 2] ?<br><br>
+                            • [Question spécifique 3] ?
+                        </div>
                     </div>
                 </div>
-                <div class="cornell-summary">
-                    <strong>Résumé</strong><br>
-                    <div id="previewSummary">Résumé apparaîtra ici...</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- ONGLET 3: Génération & Export -->
-        <div class="tab-content" id="export">
-            <h2>🤖 Génération IA</h2>
-            <div style="text-align: center; margin: 30px 0;">
-                <button type="button" class="btn" id="generateIA" onclick="generateWithIA()">
-                    🧠 Générer Cornell avec IA
-                </button>
-            </div>
-            
-            <div id="generationStatus" class="hidden"></div>
-            <div id="iaResult" class="hidden">
-                <h2>✅ Cornell généré avec succès !</h2>
-                <div style="text-align: center; margin: 30px 0;">
-                    <button type="button" class="btn btn-success" onclick="exportToPDF()">
-                        📄 Exporter en PDF
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <script>
-        // Configuration PDF.js
-        if (window.pdfjsLib) {
-            window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        }
-        
-        // Variables globales
-        let uploadedImages = [];
-        let additionalImages = [];
-        let currentAISummary = null;
-        let isProcessing = false;
-        let geminiApiKey = '';
-        let apiTested = false;
-        
-        // Initialisation
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('courseDate').value = new Date().toISOString().split('T')[0];
-            initializeTabs();
-            initializeUpload();
-            initializeAdditionalUpload();
-            initializePreview();
-            
-            // Charger la clé API sauvegardée
-            const savedApiKey = localStorage.getItem('geminiApiKey');
-            if (savedApiKey) {
-                document.getElementById('geminiApiKey').value = savedApiKey;
-                geminiApiKey = savedApiKey;
-            }
-        });
-        
-        // Test de l'API Gemini
-        async function testGeminiAPI() {
-            const apiKeyInput = document.getElementById('geminiApiKey');
-            const apiStatus = document.getElementById('apiStatus');
-            
-            geminiApiKey = apiKeyInput.value.trim();
-            
-            if (!geminiApiKey) {
-                showApiStatus('Veuillez saisir votre clé API Gemini', 'error');
-                return;
-            }
-            
-            apiStatus.className = 'api-status';
-            apiStatus.innerHTML = '<span class="loading"></span> Test de connexion...';
-            apiStatus.classList.remove('hidden');
-            
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiApiKey}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [{
-                                text: "Test de connexion - répondez simplement 'OK'"
-                            }]
-                        }]
-                    })
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    showApiStatus('✅ API Gemini connectée avec succès !', 'success');
-                    localStorage.setItem('geminiApiKey', geminiApiKey);
-                    apiTested = true;
-                    updateProcessButton();
-                } else {
-                    throw new Error(`Erreur API: ${response.status}`);
-                }
-            } catch (error) {
-                showApiStatus('❌ Erreur de connexion - Vérifiez votre clé API', 'error');
-                apiTested = false;
-            }
-        }
-        
-        function showApiStatus(message, type) {
-            const apiStatus = document.getElementById('apiStatus');
-            apiStatus.className = `api-status ${type}`;
-            apiStatus.textContent = message;
-            apiStatus.classList.remove('hidden');
-            
-            if (type === 'success') {
-                setTimeout(() => {
-                    apiStatus.classList.add('hidden');
-                }, 3000);
-            }
-        }
-        
-        // Génération de contenu contextuel par matière
-        function generateSubjectPrompt(subject, chapter, level = 'lycée') {
-            const specificPrompts = {
-                'Français': `Tu es un professeur de français ${level}. Crée du contenu Cornell pour "${chapter}".
-IMPORTANT: Génère UNIQUEMENT du contenu littéraire français (pas de physique, chimie, etc.)
-
-Format JSON obligatoire:
-{
-  "keywords": "Mots-clés littéraires: figures de style, genres, mouvements",
-  "formulas": "Notions: structure dramatique, versification, analyse narratologique",
-  "authors": "Auteurs et écrivains français avec dates",
-  "dates": "Dates littéraires et historiques pertinentes",
-  "doubts": "Questions d'analyse littéraire et stylistique",
-  "mainNotes": "Analyse littéraire détaillée du chapitre",
-  "summary": "Synthèse littéraire concise"
-}`,
-
-                'Comptabilité': `Tu es un professeur de comptabilité ${level}. Crée du contenu Cornell pour "${chapter}".
-IMPORTANT: Génère UNIQUEMENT du contenu comptable (pas de physique).
-
-Format JSON obligatoire:
-{
-  "keywords": "Termes comptables: actif, passif, bilan, comptes",
-  "formulas": "Équations comptables et principes fondamentaux",
-  "authors": "Théoriciens comptables importants avec dates",
-  "dates": "Dates importantes de l'évolution comptable",
-  "doubts": "Questions comptables fréquentes et difficultés",
-  "mainNotes": "Explication comptable détaillée du chapitre",
-  "summary": "Synthèse comptable concise"
-}`,
-
-                'Mathématiques': `Tu es un professeur de mathématiques ${level}. Crée du contenu Cornell pour "${chapter}".
-IMPORTANT: Génère UNIQUEMENT du contenu mathématique.
-
-Format JSON obligatoire:
-{
-  "keywords": "Concepts mathématiques du chapitre",
-  "formulas": "Formules mathématiques avec notations LaTeX",
-  "authors": "Mathématiciens célèbres liés au sujet",
-  "dates": "Dates de découvertes mathématiques",
-  "doubts": "Erreurs fréquentes et points difficiles",
-  "mainNotes": "Explication mathématique détaillée",
-  "summary": "Synthèse mathématique concise"
-}`,
-
-                'Histoire': `Tu es un professeur d'histoire ${level}. Crée du contenu Cornell pour "${chapter}".
-IMPORTANT: Génère UNIQUEMENT du contenu historique.
-
-Format JSON obligatoire:
-{
-  "keywords": "Événements, personnages, concepts historiques",
-  "formulas": "Chronologie, causalités, processus historiques",
-  "authors": "Personnages historiques importants",
-  "dates": "Dates clés et chronologie détaillée",
-  "doubts": "Points controversés et interprétations",
-  "mainNotes": "Récit historique détaillé du chapitre",
-  "summary": "Synthèse historique concise"
-}`
-            };
-            
-            // Prompt spécialisé ou générique intelligent
-            return specificPrompts[subject] || `Tu es un expert en ${subject} niveau ${level}. 
-
-RÈGLE ABSOLUE: Ne génère JAMAIS de contenu sur la physique, radioactivité, ondes électromagnétiques si la matière n'est pas Physique.
-
-Génère du contenu Cornell spécifique à ${subject} pour le chapitre "${chapter}".
-
-Format JSON strictement obligatoire:
-{
-  "keywords": "Mots-clés spécifiques à ${subject} (pas de physique)",
-  "formulas": "Concepts/formules/notions propres à ${subject}",
-  "authors": "Personnalités importantes de ${subject}",
-  "dates": "Dates importantes en ${subject}",
-  "doubts": "Questions fréquentes en ${subject}",
-  "mainNotes": "Contenu détaillé du chapitre en ${subject}",
-  "summary": "Synthèse du chapitre en ${subject}"
-}`;
-        }
-        
-        // Appel API Gemini pour génération contextuelle
-        async function callGeminiAPI(subject, chapter) {
-            if (!geminiApiKey || !apiTested) {
-                throw new Error('API Gemini non configurée - Testez la connexion d\'abord');
-            }
-            
-            const prompt = generateSubjectPrompt(subject, chapter);
-            
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiApiKey}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [{
-                                text: prompt
-                            }]
-                        }],
-                        generationConfig: {
-                            temperature: 0.7,
-                            topK: 40,
-                            topP: 0.95,
-                            maxOutputTokens: 2048
-                        }
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Erreur API: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                const generatedText = data.candidates[0].content.parts[0].text;
-                
-                // Parser le JSON généré
-                const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
-                if (jsonMatch) {
-                    return JSON.parse(jsonMatch[0]);
-                } else {
-                    throw new Error('Format de réponse invalide');
-                }
-                
-            } catch (error) {
-                console.error('Erreur API Gemini:', error);
-                throw error;
-            }
-        }
-        
-        // Fonctions d'interface (identiques à la version précédente)
-        function initializeTabs() {
-            const tabs = document.querySelectorAll('.tab');
-            const contents = document.querySelectorAll('.tab-content');
-            
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const target = tab.getAttribute('data-tab');
+                <!-- NOTES 65% - Structure EXACTE validée -->
+                <div class="notes">
                     
-                    tabs.forEach(t => t.classList.remove('active'));
-                    contents.forEach(c => c.classList.remove('active'));
-                    
-                    tab.classList.add('active');
-                    document.getElementById(target).classList.add('active');
-                });
-            });
-        }
-        
-        function initializeUpload() {
-            const uploadArea = document.getElementById('uploadArea');
-            const fileInput = document.getElementById('fileInput');
-            
-            uploadArea.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                uploadArea.classList.add('dragover');
-            });
-            
-            uploadArea.addEventListener('dragleave', () => {
-                uploadArea.classList.remove('dragover');
-            });
-            
-            uploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                uploadArea.classList.remove('dragover');
-                handleFiles(Array.from(e.dataTransfer.files));
-            });
-            
-            fileInput.addEventListener('change', (e) => {
-                handleFiles(Array.from(e.target.files));
-            });
-        }
-        
-        function initializeAdditionalUpload() {
-            const additionalInput = document.getElementById('additionalFileInput');
-            const additionalUploadArea = document.getElementById('additionalUploadArea');
-            
-            additionalUploadArea.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                additionalUploadArea.classList.add('dragover');
-            });
-            
-            additionalUploadArea.addEventListener('dragleave', () => {
-                additionalUploadArea.classList.remove('dragover');
-            });
-            
-            additionalUploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                additionalUploadArea.classList.remove('dragover');
-                handleAdditionalFiles(Array.from(e.dataTransfer.files));
-            });
-            
-            additionalInput.addEventListener('change', (e) => {
-                handleAdditionalFiles(Array.from(e.target.files));
-            });
-        }
-        
-        function initializePreview() {
-            const fields = ['courseDate', 'courseSubject', 'courseChapter', 'keywords', 'formulas', 'authors', 'dates', 'doubts', 'mainNotes', 'summary'];
-            
-            fields.forEach(field => {
-                const element = document.getElementById(field);
-                if (element) {
-                    element.addEventListener('input', updatePreview);
-                    element.addEventListener('change', updatePreview);
-                }
-            });
-            
-            updatePreview();
-        }
-        
-        function updatePreview() {
-            const date = document.getElementById('courseDate').value;
-            const subject = document.getElementById('courseSubject').value;
-            const chapter = document.getElementById('courseChapter').value;
-            const keywords = document.getElementById('keywords').value;
-            const formulas = document.getElementById('formulas').value;
-            const authors = document.getElementById('authors').value;
-            const dates = document.getElementById('dates').value;
-            const doubts = document.getElementById('doubts').value;
-            const mainNotes = document.getElementById('mainNotes').value;
-            const summary = document.getElementById('summary').value;
-            
-            let formattedDate = '--/--/--';
-            if (date) {
-                const parts = date.split('-');
-                formattedDate = `${parts[2]}.${parts[1]}.${parts[0].slice(-2)}`;
-            }
-            
-            document.getElementById('previewDate').textContent = formattedDate;
-            document.getElementById('previewChapter').textContent = chapter || '--';
-            document.getElementById('previewSubject').textContent = subject || '--';
-            document.getElementById('previewKeywords').textContent = keywords || '--';
-            document.getElementById('previewFormulas').textContent = formulas || '--';
-            document.getElementById('previewAuthors').textContent = authors || '--';
-            document.getElementById('previewDates').textContent = dates || '--';
-            document.getElementById('previewDoubts').textContent = doubts || '--';
-            document.getElementById('previewNotes').textContent = mainNotes || 'Notes principales apparaîtront ici...';
-            document.getElementById('previewSummary').textContent = summary || 'Résumé apparaîtra ici...';
-        }
-        
-        async function handleFiles(files) {
-            for (const file of files) {
-                if (file.size > 5 * 1024 * 1024) {
-                    showStatus('Fichier trop volumineux : ' + file.name, 'error');
-                    continue;
-                }
-                
-                if (file.type === 'application/pdf') {
-                    await convertPDFToImages(file);
-                } else if (file.type.startsWith('image/')) {
-                    await processImage(file);
-                }
-            }
-            
-            updateProcessButton();
-        }
-        
-        async function handleAdditionalFiles(files) {
-            for (const file of files) {
-                if (file.size > 5 * 1024 * 1024) {
-                    showStatus('Fichier trop volumineux : ' + file.name, 'error');
-                    continue;
-                }
-                
-                if (file.type.startsWith('image/')) {
-                    await processAdditionalImage(file);
-                }
-            }
-        }
-        
-        async function convertPDFToImages(file) {
-            showStatus('📄 Conversion PDF en cours...', 'info');
-            
-            try {
-                const arrayBuffer = await file.arrayBuffer();
-                const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                const maxPages = Math.min(pdf.numPages, 5);
-                
-                for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
-                    const page = await pdf.getPage(pageNum);
-                    const viewport = page.getViewport({ scale: 1.5 });
-                    
-                    const canvas = document.createElement('canvas');
-                    const context = canvas.getContext('2d');
-                    canvas.height = viewport.height;
-                    canvas.width = viewport.width;
-                    
-                    await page.render({
-                        canvasContext: context,
-                        viewport: viewport
-                    }).promise;
-                    
-                    const imageData = canvas.toDataURL('image/jpeg', 0.9);
-                    
-                    uploadedImages.push({
-                        id: Date.now() + pageNum,
-                        name: `${file.name} - Page ${pageNum}`,
-                        data: imageData,
-                        type: 'image/jpeg',
-                        category: 'pdf'
-                    });
-                }
-                
-                showStatus(`✅ ${maxPages} page(s) converties avec succès !`, 'success');
-                updateImagePreview();
-                
-            } catch (error) {
-                showStatus('⌐ Erreur lors de la conversion PDF : ' + error.message, 'error');
-            }
-        }
-        
-        async function processImage(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                uploadedImages.push({
-                    id: Date.now() + Math.random(),
-                    name: file.name,
-                    data: e.target.result,
-                    type: file.type,
-                    category: 'image'
-                });
-                updateImagePreview();
-                showStatus('✅ Image ajoutée : ' + file.name, 'success');
-            };
-            reader.readAsDataURL(file);
-        }
-        
-        async function processAdditionalImage(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                additionalImages.push({
-                    id: Date.now() + Math.random(),
-                    name: file.name,
-                    data: e.target.result,
-                    type: file.type,
-                    category: 'additional'
-                });
-                updateAdditionalImagePreview();
-                showStatus('✅ Image supplémentaire ajoutée : ' + file.name, 'success');
-            };
-            reader.readAsDataURL(file);
-        }
-        
-        function updateImagePreview() {
-            const preview = document.getElementById('imagePreview');
-            
-            if (uploadedImages.length === 0) {
-                preview.innerHTML = '';
-                return;
-            }
-            
-            preview.innerHTML = `
-                <h4 style="color: #667eea; font-weight: bold; margin-bottom: 15px;">
-                    📄 Images principal (${uploadedImages.length})
-                </h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
-                    ${uploadedImages.map(img => `
-                        <div class="image-item">
-                            <img src="${img.data}" alt="${img.name}">
-                            <div class="info">
-                                <small>${img.name}</small>
+                    <!-- SCHÉMA ENRICHI P3 - STRUCTURE EXACTE templates validés -->
+                    <div class="schema-enrichi">
+                        <div class="schema-header">
+                            [ICÔNE] SCHÉMA [TYPE] - [Titre du schéma]
+                        </div>
+                        <div class="schema-content">
+                            <div class="schema-image">
+                                [CONTENU DU SCHÉMA]<br>
+                                [Structure visuelle adaptée à la matière]<br>
+                                [Éléments graphiques spécifiques]
                             </div>
-                            <button class="remove" onclick="removeImage(${img.id})">&times;</button>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-        
-        function updateAdditionalImagePreview() {
-            const preview = document.getElementById('additionalImagePreview');
-            
-            if (additionalImages.length === 0) {
-                preview.innerHTML = '';
-                return;
-            }
-            
-            preview.innerHTML = `
-                <h4 style="color: #10b981; font-weight: bold; margin-bottom: 15px;">
-                    🖼️ Images/Schémas supplémentaires (${additionalImages.length})
-                </h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
-                    ${additionalImages.map(img => `
-                        <div class="image-item" style="border: 2px solid #10b981;">
-                            <img src="${img.data}" alt="${img.name}">
-                            <div class="info">
-                                <small style="color: #10b981; font-weight: bold;">🔍 ${img.name}</small>
+                            
+                            <!-- ENRICHISSEMENT IA EXACT comme templates validés -->
+                            <div class="enrichissement-ia">
+                                <div class="ia-badge">🤖 ENRICHISSEMENT IA</div>
+                                <div class="enrichissement-list">
+                                    <strong>• [Contexte théorique/Logique] :</strong> [Arrière-plan conceptuel spécifique]<br>
+                                    <strong>• [Liens interdisciplinaires/Analyse] :</strong> [Connexions avec autres domaines]<br>
+                                    <strong>• [Applications pratiques/Gestion] :</strong> [Utilisation concrète, exemples]<br>
+                                    <strong>• [Mémorisation/Conformité] :</strong> [Moyens mnémotechniques, aspects légaux]
+                                </div>
                             </div>
-                            <button class="remove" onclick="removeAdditionalImage(${img.id})">&times;</button>
                         </div>
-                    `).join('')}
+                    </div>
+                    
+                    <!-- Section 1 -->
+                    <div class="notes-section">
+                        <div class="notes-title">[ICÔNE] [Titre section 1]</div>
+                        <div class="notes-content">
+                            [Contenu section 1 - Développement détaillé du premier aspect du chapitre]
+                        </div>
+                    </div>
+
+                    <!-- Section 2 -->
+                    <div class="notes-section">
+                        <div class="notes-title">[ICÔNE] [Titre section 2]</div>
+                        <div class="notes-content">
+                            [Contenu section 2 - Développement détaillé du deuxième aspect du chapitre]
+                        </div>
+                    </div>
+
+                    <!-- Section 3 -->
+                    <div class="notes-section">
+                        <div class="notes-title">[ICÔNE] [Titre section 3]</div>
+                        <div class="notes-content">
+                            [Contenu section 3 - Développement détaillé du troisième aspect du chapitre]
+                        </div>
+                    </div>
+
+                    <!-- RÉSUMÉ DANS LES NOTES - EXACT comme validé P1+P2 -->
+                    <div class="resume-integrated">
+                        <div class="resume-title">💡 Résumé - [Titre du chapitre]</div>
+                        <div class="resume-content">
+                            [Synthèse en 3-4 lignes du chapitre - Points essentiels, concepts clés, importance pour la compréhension globale]
+                        </div>
+                    </div>
                 </div>
-            `;
-        }
-        
-        function removeImage(id) {
-            uploadedImages = uploadedImages.filter(img => img.id !== id);
-            updateImagePreview();
-            updateProcessButton();
-        }
-        
-        function removeAdditionalImage(id) {
-            additionalImages = additionalImages.filter(img => img.id !== id);
-            updateAdditionalImagePreview();
-        }
-        
-        function updateProcessButton() {
-            const button = document.getElementById('processOCR');
-            const hasApiKey = apiTested;
-            const subject = document.getElementById('courseSubject').value;
-            const chapter = document.getElementById('courseChapter').value;
-            
-            button.disabled = !hasApiKey || !subject || !chapter;
-            
-            if (!hasApiKey) {
-                button.textContent = '🔑 Configurez d\'abord l\'API Gemini';
-            } else if (!subject || !chapter) {
-                button.textContent = '📚 Sélectionnez matière et chapitre';  
-            } else {
-                button.textContent = '🤖 Analyser avec IA Contextuelle';
-            }
-        }
-        
-        function showStatus(message, type) {
-            const status = document.getElementById('uploadStatus');
-            status.className = `status-message status-${type}`;
-            status.textContent = message;
-            status.classList.remove('hidden');
-            
-            if (type === 'success') {
-                setTimeout(() => {
-                    status.classList.add('hidden');
-                }, 3000);
-            }
-        }
-        
-        // Nouvelle fonction d'analyse IA contextuelle
-        document.getElementById('processOCR').addEventListener('click', async function() {
-            if (isProcessing) return;
-            
-            const subject = document.getElementById('courseSubject').value;
-            const chapter = document.getElementById('courseChapter').value;
-            
-            if (!subject || !chapter) {
-                alert('Veuillez sélectionner une matière et saisir le nom du chapitre.');
-                return;
-            }
-            
-            isProcessing = true;
-            showStatus(`🤖 Génération contenu ${subject} en cours...`, 'info');
-            this.innerHTML = '<span class="loading"></span> Génération en cours...';
-            this.disabled = true;
-            
-            try {
-                console.log(`Génération pour: ${subject} - ${chapter}`);
-                
-                // Appel à l'API Gemini pour génération contextuelle
-                const aiContent = await callGeminiAPI(subject, chapter);
-                console.log('Contenu reçu:', aiContent);
-                
-                // Remplissage des champs avec le contenu généré par l'IA
-                document.getElementById('keywords').value = aiContent.keywords || '';
-                document.getElementById('formulas').value = aiContent.formulas || '';
-                document.getElementById('authors').value = aiContent.authors || '';
-                document.getElementById('dates').value = aiContent.dates || '';
-                document.getElementById('doubts').value = aiContent.doubts || '';
-                document.getElementById('mainNotes').value = aiContent.mainNotes || '';
-                document.getElementById('summary').value = aiContent.summary || '';
-                
-                updatePreview();
-                
-                showStatus(`✅ Contenu ${subject} généré avec succès par IA !`, 'success');
-                
-                // Passer automatiquement à l'onglet suivant
-                setTimeout(() => {
-                    document.querySelector('[data-tab="cornell"]').click();
-                }, 1500);
-                
-            } catch (error) {
-                console.error('Erreur génération IA:', error);
-                showStatus(`❌ Erreur API: ${error.message} - Utilisez le contenu par défaut`, 'error');
-                
-                // Remplir avec du contenu vide en cas d'erreur
-                document.getElementById('keywords').value = `Veuillez saisir les mots-clés de ${subject}`;
-                document.getElementById('formulas').value = subject.includes('Math') || subject.includes('Physique') || subject.includes('Chimie') ? 'Formules à compléter' : 'Concepts à détailler';
-                document.getElementById('authors').value = `Personnalités importantes en ${subject}`;
-                document.getElementById('dates').value = `Dates importantes de ${subject}`;
-                document.getElementById('doubts').value = `Questions fréquentes en ${subject}`;
-                document.getElementById('mainNotes').value = `Développez ici le contenu principal du chapitre "${chapter}" en ${subject}`;
-                document.getElementById('summary').value = `Résumé personnel du chapitre ${chapter}`;
-                
-                updatePreview();
-                
-            } finally {
-                isProcessing = false;
-                this.innerHTML = '🤖 Analyser avec IA Contextuelle';
-                this.disabled = false;
-            }
-        });
-        
-        async function generateWithIA() {
-            if (isProcessing) return;
-            
-            const mainNotes = document.getElementById('mainNotes').value.trim();
-            if (!mainNotes) {
-                alert('Veuillez remplir les notes principales avant la génération IA.');
-                return;
-            }
-            
-            isProcessing = true;
-            const button = document.getElementById('generateIA');
-            const status = document.getElementById('generationStatus');
-            
-            button.innerHTML = '<span class="loading"></span> Génération IA en cours...';
-            button.disabled = true;
-            
-            status.className = 'status-message status-info';
-            status.textContent = '🤖 Enrichissement du contenu par IA...';
-            status.classList.remove('hidden');
-            
-            try {
-                const subject = document.getElementById('courseSubject').value;
-                const chapter = document.getElementById('courseChapter').value;
-                
-                // Enrichir le contenu existant
-                const enrichedContent = await callGeminiAPI(subject, chapter + ' - Enrichissement');
-                
-                currentAISummary = {
-                    resume_executif: enrichedContent.summary || document.getElementById('summary').value,
-                    concepts_cles: enrichedContent.keywords ? enrichedContent.keywords.split('\n').map(k => k.replace('• ', '')) : [],
-                    definitions: [],
-                    formules_lois: [],
-                    personnages_dates: [],
-                    chronologie: [],
-                    points_attention: enrichedContent.doubts ? enrichedContent.doubts.split('\n') : [],
-                    liens_conceptuels: []
-                };
-                
-                isProcessing = false;
-                button.innerHTML = '🧠 Générer Cornell avec IA';
-                button.disabled = false;
-                
-                status.className = 'status-message status-success';
-                status.textContent = '✅ Cornell enrichi avec succès par IA !';
-                
-                document.getElementById('iaResult').classList.remove('hidden');
-                
-            } catch (error) {
-                console.error('Erreur enrichissement IA:', error);
-                
-                // Fallback vers contenu simulé
-                currentAISummary = {
-                    resume_executif: document.getElementById('summary').value || "Résumé généré automatiquement",
-                    concepts_cles: document.getElementById('keywords').value.split('\n').filter(k => k.trim()),
-                    definitions: [],
-                    formules_lois: [],
-                    personnages_dates: [],
-                    chronologie: [],
-                    points_attention: document.getElementById('doubts').value.split('\n').filter(d => d.trim()),
-                    liens_conceptuels: []
-                };
-                
-                isProcessing = false;
-                button.innerHTML = '🧠 Générer Cornell avec IA';
-                button.disabled = false;
-                
-                status.className = 'status-message status-success';
-                status.textContent = '✅ Cornell généré avec succès (mode secours) !';
-                
-                document.getElementById('iaResult').classList.remove('hidden');
-            }
-        }
-        
-        function exportToPDF() {
-            if (!currentAISummary) {
-                alert('Veuillez générer le Cornell avec IA avant d\'exporter.');
-                return;
-            }
-            
-            const courseConfig = {
-                date: document.getElementById('courseDate').value,
-                subject: document.getElementById('courseSubject').value,
-                chapter: document.getElementById('courseChapter').value,
-                professor: document.getElementById('courseProfessor').value
-            };
-            
-            // Création du nom de fichier
-            const dateParts = courseConfig.date.split('-');
-            const dateFormatted = dateParts[0].slice(-2) + dateParts[1] + dateParts[2];
-            const dateDisplay = dateParts[2] + '.' + dateParts[1] + '.' + dateParts[0].slice(-2);
-            
-            const cleanChapter = courseConfig.chapter
-                .replace(/[àáâãäå]/g, 'a')
-                .replace(/[èéêë]/g, 'e')
-                .replace(/[ìíîï]/g, 'i')
-                .replace(/[òóôõö]/g, 'o')
-                .replace(/[ùúûü]/g, 'u')
-                .replace(/[ç]/g, 'c')
-                .replace(/\s+/g, '_')
-                .replace(/[<>:"/\\|?*]/g, '');
-            
-            const fileName = `${dateFormatted}_${courseConfig.subject}_${cleanChapter}.html`;
-            
-            // Génération du HTML final (structure identique)
-            const htmlContent = generateExportHTML(courseConfig, currentAISummary, dateDisplay, fileName);
-            
-            // Téléchargement
-            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName;
-            
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            alert(`✅ Export réussi : ${fileName}\n\n📊 Contenu inclus :\n• Structure Cornell authentique\n• ${uploadedImages.length + additionalImages.length} image(s) intégrée(s)\n• Contenu ${courseConfig.subject} contextualisé par IA\n• Génération adaptative selon matière\n\n📋 Pour PDF final :\n1. Ouvrir le fichier HTML\n2. Cmd+P (Mac) ou Ctrl+P (PC)\n3. Enregistrer au format PDF`);
-        }
-        
-        function generateExportHTML(courseConfig, aiSummary, dateDisplay, fileName) {
-            return `<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cornell - ${courseConfig.subject} - ${courseConfig.chapter}</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-            line-height: 1.6;
-            color: #2d3748;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
-            background: white;
-        }
-        .cornell-header {
-            display: grid;
-            grid-template-columns: 1fr 2fr 1fr;
-            background: #f7c948;
-            padding: 15px;
-            border: 2px solid #333;
-            margin-bottom: 0;
-            font-weight: bold;
-            text-align: center;
-        }
-        .cornell-main {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            border: 2px solid #333;
-            border-top: none;
-            min-height: 600px;
-        }
-        .cornell-sidebar {
-            background: #f7c948;
-            padding: 20px;
-            border-right: 2px solid #333;
-        }
-        .cornell-notes {
-            padding: 20px;
-            background: white;
-        }
-        .cornell-summary {
-            background: #f7c948;
-            padding: 20px;
-            border: 2px solid #333;
-            border-top: none;
-            margin-bottom: 30px;
-        }
-        .sidebar-section {
-            margin-bottom: 25px;
-        }
-        .sidebar-title {
-            font-weight: bold;
-            font-style: italic;
-            margin-bottom: 10px;
-            color: #2d3748;
-        }
-        .section {
-            margin: 25px 0;
-            page-break-inside: avoid;
-        }
-        .section-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #2b6cb0;
-            border-left: 4px solid #63b3ed;
-            padding-left: 12px;
-            margin-bottom: 15px;
-        }
-        .image-container {
-            margin: 20px 0;
-            text-align: center;
-        }
-        .image-container img {
-            max-width: 100%;
-            height: auto;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .image-caption {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-        }
-        .footer {
-            margin-top: 50px;
-            text-align: center;
-            font-size: 12px;
-            color: #a0aec0;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 20px;
-        }
-        @media print {
-            body { margin: 0; padding: 15px; }
-            .cornell-main { min-height: auto; }
-        }
-    </style>
-</head>
-<body>
-    <div class="cornell-header">
-        <div><strong>Date</strong><br>${dateDisplay}</div>
-        <div><strong>Numéro + Nom du Chapitre</strong><br>${courseConfig.chapter}</div>
-        <div><strong>Matière</strong><br>${courseConfig.subject}</div>
-    </div>
+            </div>
 
-    <div class="cornell-main">
-        <div class="cornell-sidebar">
-            <div class="sidebar-section">
-                <div class="sidebar-title">Mots-clés</div>
-                ${document.getElementById('keywords').value.split('\n').map(k => k.trim() ? `<div>${k}</div>` : '').join('') || '<div>-</div>'}
+            <!-- FOOTER EXACT -->
+            <div class="footer">
+                [AAMMJJ]_[Matière]_[Schéma] - Page 1/1
             </div>
-            
-            <div class="sidebar-section">
-                <div class="sidebar-title">Formules</div>
-                ${document.getElementById('formulas').value.split('\n').map(f => f.trim() ? `<div>${f}</div>` : '').join('') || '<div>-</div>'}
-            </div>
-            
-            <div class="sidebar-section">
-                <div class="sidebar-title">Noms d'auteur</div>
-                ${document.getElementById('authors').value.split('\n').map(a => a.trim() ? `<div>${a}</div>` : '').join('') || '<div>-</div>'}
-            </div>
-            
-            <div class="sidebar-section">
-                <div class="sidebar-title">Dates</div>
-                ${document.getElementById('dates').value.split('\n').map(d => d.trim() ? `<div>${d}</div>` : '').join('') || '<div>-</div>'}
-            </div>
-            
-            <div class="sidebar-section">
-                <div class="sidebar-title">Doutes et questionnements</div>
-                ${document.getElementById('doubts').value.split('\n').map(q => q.trim() ? `<div>${q}</div>` : '').join('') || '<div>-</div>'}
-            </div>
-        </div>
-        
-        <div class="cornell-notes">
-            <div style="background: #ebf8ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3182ce; margin-bottom: 20px;">
-                <strong>🎯 Résumé du chapitre - ${courseConfig.subject}</strong><br>
-                ${document.getElementById('mainNotes').value || 'Notes principales'}
-            </div>
-            
-            ${uploadedImages && uploadedImages.length > 0 || additionalImages && additionalImages.length > 0 ? `
-            <div class="section">
-                <div class="section-title">🖼️ Images et Schémas</div>
-                ${uploadedImages.map(img => `
-                    <div class="image-container">
-                        <img src="${img.data}" alt="${img.name}">
-                        <div class="image-caption">📄 ${img.name}</div>
-                    </div>
-                `).join('')}
-                ${additionalImages.map(img => `
-                    <div class="image-container">
-                        <img src="${img.data}" alt="${img.name}">
-                        <div class="image-caption">🔍 ${img.name}</div>
-                    </div>
-                `).join('')}
-            </div>
-            ` : ''}
         </div>
     </div>
 
-    <div class="cornell-summary">
-        <div style="text-align: center; font-weight: bold; font-style: italic; margin-bottom: 15px;">
-            Résumé - ${courseConfig.subject}
-        </div>
-        <div>${document.getElementById('summary').value || 'Résumé personnel'}</div>
-    </div>
-
-    <div class="footer">
-        📄 Document généré par Cornell Notes System IA • ${new Date().toLocaleDateString('fr-FR')}<br>
-        🎯 Matière: ${courseConfig.subject} • Prof: ${courseConfig.professor}<br>
-        🤖 IA Contextuelle Google Gemini • Images: ${uploadedImages.length + additionalImages.length} • Contenu adaptatif
-    </div>
-</body>
-</html>`;
-        }
-        
-        function resetForm() {
-            if (confirm('Êtes-vous sûr de vouloir tout réinitialiser ?')) {
-                // Réinitialiser tous les champs
-                document.getElementById('courseDate').value = new Date().toISOString().split('T')[0];
-                document.getElementById('courseSubject').value = '';
-                document.getElementById('courseProfessor').value = '';
-                document.getElementById('courseChapter').value = '';
-                document.getElementById('keywords').value = '';
-                document.getElementById('formulas').value = '';
-                document.getElementById('authors').value = '';
-                document.getElementById('dates').value = '';
-                document.getElementById('doubts').value = '';
-                document.getElementById('mainNotes').value = '';
-                document.getElementById('summary').value = '';
-                
-                // Réinitialiser les images
-                uploadedImages = [];
-                additionalImages = [];
-                updateImagePreview();
-                updateAdditionalImagePreview();
-                updateProcessButton();
-                
-                // Réinitialiser les status
-                document.getElementById('uploadStatus').classList.add('hidden');
-                document.getElementById('generationStatus').classList.add('hidden');
-                document.getElementById('iaResult').classList.add('hidden');
-                
-                // Réinitialiser l'IA
-                currentAISummary = null;
-                isProcessing = false;
-                
-                // Retour au premier onglet
-                document.querySelector('[data-tab="upload"]').click();
-                
-                updatePreview();
-            }
-        }
-    </script>
 </body>
 </html>
