@@ -459,7 +459,7 @@
             </div>
             
             <div style="text-align: center; margin-top: 30px;">
-                <button type="button" class="btn" onclick="enrichContent()">
+                <button type="button" class="btn" onclick="enrichWithGeminiAI()">
                     ✨ Enrichir avec IA
                 </button>
                 <button type="button" class="btn btn-secondary" onclick="previewCornell()">
@@ -811,24 +811,108 @@ function convertDate(dateStr) {
             }
         }
         
-        function enrichContent() {
-            showStatus('✨ Enrichissement IA en cours...', 'info', 'enrichmentStatus');
-            
-            setTimeout(() => {
-                const currentNotes = document.getElementById('mainNotes').value;
-                const enrichedNotes = currentNotes + '\n\n[Enrichissement IA]\nDéveloppements supplémentaires basés sur l\'analyse contextuelle...';
-                
-                const currentSummary = document.getElementById('summary').value;
-                const enrichedSummary = currentSummary + ' Points clés pour révisions efficaces ajoutés.';
-                
-                document.getElementById('mainNotes').value = enrichedNotes;
-                document.getElementById('summary').value = enrichedSummary;
-                
-                document.getElementById('exportBtn').disabled = false;
-                
-                showStatus('✅ Contenu enrichi avec succès !', 'success', 'enrichmentStatus');
-            }, 2000);
+       async function enrichWithGeminiAI() {
+    const formData = {
+        courseDate: document.getElementById('courseDate').value,
+        courseSubject: document.getElementById('courseSubject').value,
+        courseChapter: document.getElementById('courseChapter').value,
+        courseProfessor: document.getElementById('courseProfessor').value,
+        keywords: document.getElementById('keywords').value,
+        formulas: document.getElementById('formulas').value,
+        authors: document.getElementById('authors').value,
+        dates: document.getElementById('dates').value,
+        doubts: document.getElementById('doubts').value,
+        mainNotes: document.getElementById('mainNotes').value,
+        currentSummary: document.getElementById('summary').value
+    };
+
+    // Validation
+    if (!formData.courseSubject || !formData.mainNotes) {
+        showStatus('❌ La matière et les notes principales sont obligatoires', 'error', 'enrichmentStatus');
+        return;
+    }
+
+    const btn = document.querySelector('button[onclick*="enrich"]');
+    const originalText = btn ? btn.textContent : 'Enrichir avec IA';
+    if (btn) {
+        btn.innerHTML = '<span class="loading"></span> Enrichissement avec Gemini IA...';
+        btn.disabled = true;
+    }
+
+    try {
+        showStatus('🤖 Enrichissement en cours avec Gemini...', 'info', 'enrichmentStatus');
+
+        // Appel vers l'API Gemini Enrichissement (Vercel)
+        const response = await fetch('/api/gemini-proxy', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `Erreur HTTP ${response.status}`);
         }
+
+        const data = await response.json();
+        
+        if (data.success && data.enrichment) {
+            const enriched = data.enrichment;
+            
+            // Mise à jour des champs avec l'enrichissement IA
+            if (enriched.enrichissement) {
+                // Mise à jour des éléments Cornell enrichis
+                if (enriched.enrichissement.mots_cles_enrichis) {
+                    document.getElementById('keywords').value = enriched.enrichissement.mots_cles_enrichis.join(', ');
+                }
+                
+                if (enriched.enrichissement.formules_identifiees) {
+                    document.getElementById('formulas').value = enriched.enrichissement.formules_identifiees.join(', ');
+                }
+                
+                if (enriched.enrichissement.auteurs_personnages) {
+                    document.getElementById('authors').value = enriched.enrichissement.auteurs_personnages.join(', ');
+                }
+                
+                if (enriched.enrichissement.dates_cles) {
+                    document.getElementById('dates').value = enriched.enrichissement.dates_cles.join(', ');
+                }
+                
+                if (enriched.enrichissement.questions_reflexion) {
+                    document.getElementById('doubts').value = enriched.enrichissement.questions_reflexion.join(', ');
+                }
+            }
+
+            // Mise à jour des zones principales
+            if (enriched.notes_principales_ameliorees) {
+                document.getElementById('mainNotes').value = enriched.notes_principales_ameliorees;
+            }
+            
+            if (enriched.resume_synthetise) {
+                document.getElementById('summary').value = enriched.resume_synthetise;
+            }
+
+            // Activation du bouton d'export
+            document.getElementById('exportBtn').disabled = false;
+            
+            showStatus('✅ Enrichissement IA terminé ! Notes améliorées par Gemini.', 'success', 'enrichmentStatus');
+
+        } else {
+            throw new Error('Réponse inattendue de l\'API d\'enrichissement');
+        }
+
+    } catch (error) {
+        console.error('Erreur enrichissement IA:', error);
+        showStatus(`❌ Erreur enrichissement: ${error.message}`, 'error', 'enrichmentStatus');
+    } finally {
+        if (btn) {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
+    }
+}
         
         function generatePDF() {
             showStatus('📄 Génération PDF en cours...', 'info', 'exportStatus');
