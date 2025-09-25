@@ -406,7 +406,7 @@
             <div id="imagePreview" style="margin: 20px 0;"></div>
             
             <div style="text-align: center; margin-top: 30px;">
-                <button type="button" class="btn" id="analyzeBtn" onclick="analyzeWithClaude()" disabled>
+                <button type="button" class="btn" id="analyzeBtn" onclick="analyzeWithGeminiVision()" disabled>
                     🤖 Analyser avec Claude Haiku
                 </button>
                 <button type="button" class="btn btn-secondary" onclick="resetForm()">
@@ -683,29 +683,104 @@
             }
         }
         
-        async function analyzeWithClaude() {
-            if (!apiKey || uploadedImages.length === 0) return;
+      async function analyzeWithGeminiVision() {
+    if (!apiKey || uploadedImages.length === 0) {
+        showStatus('❌ Clé API manquante ou aucune image', 'error', 'analysisStatus');
+        return;
+    }
+
+    const btn = document.getElementById('analyzeBtn');
+    const originalText = btn.textContent;
+    btn.innerHTML = '<span class="loading"></span> Analyse OCR avec Gemini...';
+    btn.disabled = true;
+
+    try {
+        showStatus('🔍 Analyse OCR en cours avec Gemini Vision...', 'info', 'analysisStatus');
+
+        // Appel vers l'API Gemini Vision (Vercel)
+        const response = await fetch('/api/gemini-vision', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                images: uploadedImages,
+                subject: document.getElementById('courseSubject').value,
+                level: 'Lycée/Université'
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `Erreur HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.success && data.ocr_result) {
+            const ocrData = data.ocr_result.extraction_ocr;
             
-            const btn = document.getElementById('analyzeBtn');
-            const originalText = btn.textContent;
-            btn.innerHTML = '<span class="loading"></span> Analyse en cours...';
-            btn.disabled = true;
+            // Remplissage automatique des champs Cornell
+            if (ocrData.date_cours) {
+                document.getElementById('courseDate').value = convertDate(ocrData.date_cours);
+            }
             
-            showStatus('🤖 Analyse OCR avec Claude Haiku...', 'info', 'analysisStatus');
+            if (ocrData.professeur) {
+                document.getElementById('courseProfessor').value = ocrData.professeur;
+            }
             
-            try {
-                // Simulation d'appel API pour cette démo
-                await new Promise(resolve => setTimeout(resolve, 3000));
-                
-                const mockResult = {
-                    keywords: ['concept clé 1', 'concept clé 2', 'théorie principale'],
-                    formulas: ['E = mc²', 'F = ma'],
-                    authors: ['Newton', 'Einstein'],
-                    dates: ['1687 - Principia', '1905 - Relativité'],
-                    doubts: ['Pourquoi cette relation ?', 'Application pratique ?'],
-                    mainNotes: 'Synthèse principale générée par Claude Haiku basée sur l\'analyse OCR des images uploadées...',
-                    summary: 'Résumé personnel enrichi par IA contextuelle...'
-                };
+            if (ocrData.titre_cours) {
+                document.getElementById('courseChapter').value = ocrData.titre_cours;
+            }
+
+            // Remplissage des éléments Cornell
+            document.getElementById('keywords').value = ocrData.mots_cles?.join(', ') || '';
+            document.getElementById('formulas').value = ocrData.formules?.join(', ') || '';
+            document.getElementById('authors').value = ocrData.auteurs_personnages?.join(', ') || '';
+            document.getElementById('dates').value = ocrData.dates_importantes?.join(', ') || '';
+            document.getElementById('doubts').value = ocrData.questions_doutes?.join(', ') || '';
+            
+            // Zone principale avec le texte intégral OCR
+            if (ocrData.texte_integral) {
+                document.getElementById('mainNotes').value = ocrData.texte_integral;
+            }
+
+            // Activation du bouton d'enrichissement
+            document.getElementById('enrichBtn').disabled = false;
+            
+            showStatus('✅ Analyse OCR terminée ! Champs remplis automatiquement.', 'success', 'analysisStatus');
+
+        } else {
+            throw new Error('Réponse inattendue de l\'API');
+        }
+
+    } catch (error) {
+        console.error('Erreur analyse OCR:', error);
+        showStatus(`❌ Erreur OCR: ${error.message}`, 'error', 'analysisStatus');
+    } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
+}
+
+// Fonction utilitaire pour convertir les dates
+function convertDate(dateStr) {
+    const datePatterns = [
+        /(\d{1,2})\/(\d{1,2})\/(\d{4})/,  // DD/MM/YYYY
+        /(\d{1,2})-(\d{1,2})-(\d{4})/,   // DD-MM-YYYY
+        /(\d{4})\/(\d{1,2})\/(\d{1,2})/   // YYYY/MM/DD
+    ];
+    
+    for (let pattern of datePatterns) {
+        const match = dateStr.match(pattern);
+        if (match) {
+            const [, day, month, year] = match;
+            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        }
+    }
+    
+    return '';
+}
                 
                 // Remplir les champs
                 document.getElementById('keywords').value = mockResult.keywords.join('\n• ');
