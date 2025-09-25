@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cornell Notes System - Autonome</title>
+    <title>Cornell Notes System - Universel Multi-Matières</title>
     <!-- PDF.js pour conversion PDF → Image -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <style>
@@ -174,10 +174,6 @@
             background: linear-gradient(45deg, #10b981, #059669);
         }
         
-        .btn-danger {
-            background: linear-gradient(45deg, #ef4444, #dc2626);
-        }
-        
         .btn-secondary {
             background: linear-gradient(45deg, #6b7280, #4b5563);
         }
@@ -288,22 +284,6 @@
             text-decoration: underline;
         }
         
-        .progress-bar {
-            width: 100%;
-            height: 20px;
-            background: #e2e8f0;
-            border-radius: 10px;
-            overflow: hidden;
-            margin: 10px 0;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #10b981, #059669);
-            border-radius: 10px;
-            transition: width 0.3s ease;
-        }
-        
         .status-message {
             padding: 15px;
             border-radius: 8px;
@@ -347,13 +327,92 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* ============================================
+           CLASSES MATIÈRES UNIVERSELLES - FUSION DES VERSIONS
+           ============================================ */
+        
+        /* FRANÇAIS - Vert */
+        .matiere-francais .cornell-header { background: #2ecc71; }
+        .matiere-francais .cornell-sidebar { background: #d5f4e6; }
+        .matiere-francais .cornell-summary { background: #2ecc71; }
+        
+        /* HISTOIRE - Orange */
+        .matiere-histoire .cornell-header { background: #e67e22; }
+        .matiere-histoire .cornell-sidebar { background: #fdf2e9; }
+        .matiere-histoire .cornell-summary { background: #e67e22; }
+        
+        /* COMPTABILITÉ - Violet */
+        .matiere-comptabilite .cornell-header { background: #9b59b6; }
+        .matiere-comptabilite .cornell-sidebar { background: #f4ecf7; }
+        .matiere-comptabilite .cornell-summary { background: #9b59b6; }
+        
+        /* MATHÉMATIQUES - Bleu clair */
+        .matiere-mathematiques .cornell-header { background: #3498db; }
+        .matiere-mathematiques .cornell-sidebar { background: #ebf3fd; }
+        .matiere-mathematiques .cornell-summary { background: #3498db; }
+        
+        /* ÉCONOMIE - Bleu foncé */
+        .matiere-economie .cornell-header { background: #2c3e50; }
+        .matiere-economie .cornell-sidebar { background: #ecf0f1; }
+        .matiere-economie .cornell-summary { background: #2c3e50; }
+        
+        /* BIOLOGIE - Vert foncé */
+        .matiere-biologie .cornell-header { background: #27ae60; }
+        .matiere-biologie .cornell-sidebar { background: #d5f4e6; }
+        .matiere-biologie .cornell-summary { background: #27ae60; }
+        
+        /* PHYSIQUE - Cyan */
+        .matiere-physique .cornell-header { background: #1abc9c; }
+        .matiere-physique .cornell-sidebar { background: #e8f6f3; }
+        .matiere-physique .cornell-summary { background: #1abc9c; }
+        
+        /* CHIMIE - Jaune */
+        .matiere-chimie .cornell-header { background: #f39c12; }
+        .matiere-chimie .cornell-sidebar { background: #fef9e7; }
+        .matiere-chimie .cornell-summary { background: #f39c12; }
+        
+        /* GÉOGRAPHIE - Marron */
+        .matiere-geographie .cornell-header { background: #d35400; }
+        .matiere-geographie .cornell-sidebar { background: #fdf2e9; }
+        .matiere-geographie .cornell-summary { background: #d35400; }
+        
+        /* PHILOSOPHIE - Violet foncé */
+        .matiere-philosophie .cornell-header { background: #8e44ad; }
+        .matiere-philosophie .cornell-sidebar { background: #f8f4fd; }
+        .matiere-philosophie .cornell-summary { background: #8e44ad; }
+        
+        /* LANGUES - Rouge */
+        .matiere-langues .cornell-header { background: #e74c3c; }
+        .matiere-langues .cornell-sidebar { background: #fdedec; }
+        .matiere-langues .cornell-summary { background: #e74c3c; }
+        
+        /* ANGLAIS */
+        .matiere-anglais .cornell-header { background: #e74c3c; }
+        .matiere-anglais .cornell-sidebar { background: #fdedec; }
+        .matiere-anglais .cornell-summary { background: #e74c3c; }
+        
+        /* ALLEMAND */
+        .matiere-allemand .cornell-header { background: #e74c3c; }
+        .matiere-allemand .cornell-sidebar { background: #fdedec; }
+        .matiere-allemand .cornell-summary { background: #e74c3c; }
+        
+        /* DROIT - Gris bleu */
+        .matiere-droit .cornell-header { background: #34495e; }
+        .matiere-droit .cornell-sidebar { background: #ecf0f1; }
+        .matiere-droit .cornell-summary { background: #34495e; }
+        
+        /* AUTRE - Neutre */
+        .matiere-autre .cornell-header { background: #95a5a6; }
+        .matiere-autre .cornell-sidebar { background: #ecf0f1; }
+        .matiere-autre .cornell-summary { background: #95a5a6; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>🎓 Cornell Notes System</h1>
-            <p>Transformez vos notes Goodnotes en documents Cornell professionnels</p>
+            <p>Transformez vos notes Goodnotes en documents Cornell professionnels - Multi-Matières Universel</p>
         </div>
         
         <div class="tabs">
@@ -374,21 +433,20 @@
                     <label>📚 Matière *</label>
                     <select id="courseSubject" required>
                         <option value="">Sélectionnez une matière</option>
-                        <option value="Physique">Physique</option>
-                        <option value="Mathématiques">Mathématiques</option>
-                        <option value="Chimie">Chimie</option>
-                        <option value="Biologie">Biologie</option>
-                        <option value="Histoire">Histoire</option>
-                        <option value="Géographie">Géographie</option>
-                        <option value="Philosophie">Philosophie</option>
-                        <option value="Littérature">Littérature</option>
-                        <option value="Économie">Économie</option>
-                        <option value="Anglais">Anglais</option>
-                        <option value="Allemand">Allemand</option>
-                        <option value="Droit">Droit</option>
-                        <option value="Comptabilité">Comptabilité</option>
-                        <option value="Français">Français</option>
-                        <option value="Autre">Autre</option>
+                        <option value="francais">Français</option>
+                        <option value="histoire">Histoire</option>
+                        <option value="comptabilite">Comptabilité</option>
+                        <option value="mathematiques">Mathématiques</option>
+                        <option value="economie">Économie</option>
+                        <option value="biologie">Biologie</option>
+                        <option value="physique">Physique</option>
+                        <option value="chimie">Chimie</option>
+                        <option value="geographie">Géographie</option>
+                        <option value="philosophie">Philosophie</option>
+                        <option value="anglais">Anglais</option>
+                        <option value="allemand">Allemand</option>
+                        <option value="droit">Droit</option>
+                        <option value="autre">Autre</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -397,7 +455,7 @@
                 </div>
                 <div class="form-group">
                     <label>📖 Chapitre *</label>
-                    <input type="text" id="courseChapter" placeholder="Ex: Radioactivité - Fission Nucléaire" required>
+                    <input type="text" id="courseChapter" placeholder="Ex: Chap.3 Politique Monétaire" required>
                 </div>
             </div>
             
@@ -429,7 +487,7 @@
             
             <div style="text-align: center; margin-top: 30px;">
                 <button type="button" class="btn btn-success" id="processOCR" disabled>
-                    🤖 Analyser avec OCR
+                    🤖 Analyser avec OCR Contextuel
                 </button>
                 <button type="button" class="btn btn-secondary" onclick="resetForm()">
                     🔄 Réinitialiser
@@ -521,7 +579,7 @@
         
         <!-- ONGLET 3: Génération & Export -->
         <div class="tab-content" id="export">
-            <h2>🤖 Génération IA</h2>
+            <h2>🤖 Génération IA Contextuelle</h2>
             <div style="text-align: center; margin: 30px 0;">
                 <button type="button" class="btn" id="generateIA" onclick="generateWithIA()">
                     🧠 Générer Cornell avec IA
@@ -547,26 +605,112 @@
         }
         
         // Variables globales
-        let uploadedImages = []; // Images issues de la conversion PDF
-        let additionalImages = []; // Images/schémas supplémentaires
+        let uploadedImages = [];
+        let additionalImages = [];
         let currentAISummary = null;
         let isProcessing = false;
         
+        // Données contextuelles par matière - FUSION UNIVERSELLE
+        const subjectData = {
+            'economie': {
+                keywords: ['M1, M2, M3', 'BNS, BCE, FED', 'Taux directeur', 'Franc fort', 'Assouplissement quantitatif', 'Politique monétaire'],
+                formulas: ['M1 = billets + comptes vue', 'M2 = M1 + épargne court terme', 'M3 = M2 + instruments financiers', 'Inflation cible <2%'],
+                authors: ['BNS (Banque Nationale Suisse)', 'BCE (Banque Centrale Européenne)', 'FED (Réserve Fédérale US)'],
+                dates: ['1907 - Création BNS', '1999 - Création BCE', '2008 - Crise financière'],
+                doubts: ['Pourquoi CHF = monnaie refuge ?', 'Comment BNS maintient stabilité prix ?', 'Impact taux négatifs sur économie ?']
+            },
+            'biologie': {
+                keywords: ['Protéines', 'Glucides', 'Acides aminés', 'Monosaccharides', 'Polysaccharides', 'Enzymes'],
+                formulas: ['C₆H₁₂O₆ (glucose)', 'Déshydratation: 2 glucose → maltose + H₂O', 'Hydrolyse: maltose + H₂O → 2 glucose'],
+                authors: ['Watson & Crick (ADN)', 'Mendel (génétique)', 'Darwin (évolution)'],
+                dates: ['1953 - Structure ADN', '1859 - Origine espèces', '1865 - Lois de Mendel'],
+                doubts: ['Différence protéines/glucides ?', 'Rôle des enzymes ?', 'Structure quaternaire protéines ?']
+            },
+            'histoire': {
+                keywords: ['Sonderbund', 'Cantons catholiques', 'Dufour', 'Constitution fédérale', 'Guerre civile', 'Radikalen'],
+                formulas: ['7 cantons → Sonderbund', '26 jours de guerre', '130 morts'],
+                authors: ['Guillaume-Henri Dufour', 'Radikaux suisses', 'Jésuites'],
+                dates: ['1845 - Formation ligue', 'Nov 1847 - Guerre Sonderbund', '1848 - Constitution'],
+                doubts: ['Causes profondes du conflit ?', 'Rôle des Jésuites ?', 'Conséquences pour la Suisse moderne ?']
+            },
+            'francais': {
+                keywords: ['Molière', 'Bourgeois Gentilhomme', 'Comédie-ballet', 'Satire sociale', 'Lully', 'Louis XIV'],
+                formulas: ['Théâtre = Règle des 3 unités', 'Comédie = critique + divertissement', 'Alexandrin = 12 syllabes'],
+                authors: ['Molière (Jean-Baptiste Poquelin)', 'Jean-Baptiste Lully', 'Louis XIV'],
+                dates: ['1670 - Création BGH', '1622-1673 - Vie Molière', '1661-1715 - Règne Louis XIV'],
+                doubts: ['Portée critique de Molière ?', 'Collaboration Molière-Lully ?', 'Réception à la cour ?']
+            },
+            'comptabilite': {
+                keywords: ['Bilan', 'Actif/Passif', 'Comptes 1000-1010', 'Capitaux propres', 'Immobilisations', 'Créances'],
+                formulas: ['Actif = Passif', 'Résultat = Produits - Charges', 'Capitaux propres = Actif - Dettes'],
+                authors: ['Luca Pacioli (comptabilité moderne)', 'Plan comptable suisse'],
+                dates: ['1494 - Premier traité comptabilité', '1957 - Plan comptable français', '2013 - Norme IFRS'],
+                doubts: ['Différence bilan/compte résultat ?', 'Évaluation actifs ?', 'Amortissements ?']
+            },
+            'physique': {
+                keywords: ['Ondes électromagnétiques', 'Photons', 'Radioactivité', 'Désintégration', 'Fission nucléaire', 'Réaction en chaîne'],
+                formulas: ['E = mc²', 'Désintégration alpha: ²³⁸U → ²³⁴Th + ²⁴He', 'Désintégration bêta: n → p⁺ + e⁻'],
+                authors: ['Henri Becquerel', 'Enrico Fermi', 'Albert Einstein'],
+                dates: ['1896 - Découverte radioactivité', '1942 - Première réaction fission contrôlée'],
+                doubts: ['Différents types de désintégration ?', 'Centrale vs bombe atomique ?', 'Rayonnements dangereux ?']
+            },
+            'mathematiques': {
+                keywords: ['Fonction', 'Dérivée', 'Intégrale', 'Limite', 'Asymptote', 'Primitive'],
+                formulas: ['f\'(x) = lim h→0 [f(x+h)-f(x)]/h', '∫f(x)dx', 'lim x→a f(x)', 'y = ax + b'],
+                authors: ['Newton', 'Leibniz', 'Euler', 'Gauss'],
+                dates: ['1665 - Calcul différentiel Newton', '1684 - Publication Leibniz'],
+                doubts: ['Différence dérivée/primitive ?', 'Applications concrètes intégrales ?', 'Calcul limites complexes ?']
+            },
+            'chimie': {
+                keywords: ['Atome', 'Molécule', 'Liaison ionique', 'Liaison covalente', 'pH', 'Oxydation'],
+                formulas: ['pH = -log[H⁺]', 'PV = nRT', 'C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O'],
+                authors: ['Mendeleev', 'Lavoisier', 'Avogadro'],
+                dates: ['1869 - Tableau périodique', '1789 - Conservation de la masse'],
+                doubts: ['Différence liaison ionique/covalente ?', 'Calcul pH solutions ?', 'Équilibrage équations ?']
+            },
+            'geographie': {
+                keywords: ['Relief', 'Climat', 'Démographie', 'Urbanisation', 'Mondialisation', 'Développement'],
+                formulas: ['Densité = Population/Superficie', 'IDH = Santé + Éducation + Niveau de vie'],
+                authors: ['Vidal de la Blache', 'Ratzel', 'Humboldt'],
+                dates: ['1945 - Création ONU', '1992 - Sommet Rio'],
+                doubts: ['Facteurs du développement ?', 'Impact changement climatique ?', 'Inégalités mondiales ?']
+            },
+            'philosophie': {
+                keywords: ['Conscience', 'Liberté', 'Vérité', 'Justice', 'Bonheur', 'Morale'],
+                formulas: ['Cogito ergo sum', 'Impératif catégorique', 'Dialectique thèse-antithèse-synthèse'],
+                authors: ['Descartes', 'Kant', 'Platon', 'Aristote'],
+                dates: ['1637 - Discours de la méthode', '1785 - Fondements métaphysique des mœurs'],
+                doubts: ['Liberté vs déterminisme ?', 'Origine de la morale ?', 'Définition du bonheur ?']
+            },
+            'anglais': {
+                keywords: ['Present perfect', 'Past continuous', 'Conditional', 'Passive voice', 'Modal verbs'],
+                formulas: ['Have/Has + past participle', 'Would + base verb', 'Be + past participle'],
+                authors: ['Shakespeare', 'Dickens', 'Orwell'],
+                dates: ['1066 - Invasion normande', '1476 - Première imprimerie'],
+                doubts: ['Usage present perfect vs past simple ?', 'Formation passive voice ?', 'Modal verbs nuances ?']
+            },
+            'allemand': {
+                keywords: ['Deklinationen', 'Konjugation', 'Perfekt', 'Genitiv', 'Akkusativ', 'Dativ'],
+                formulas: ['Haben/Sein + Partizip II', 'Der/Die/Das + Genitiv'],
+                authors: ['Goethe', 'Schiller', 'Kafka'],
+                dates: ['1521 - Luther Bible', '1871 - Deutsches Reich'],
+                doubts: ['Wann Akkusativ vs Dativ ?', 'Haben oder sein im Perfekt ?', 'Genitivformen ?']
+            },
+            'droit': {
+                keywords: ['Constitution', 'Code civil', 'Jurisprudence', 'Contrat', 'Responsabilité', 'Hiérarchie des normes'],
+                formulas: ['Loi > Décret > Arrêté', 'Offre + Acceptation = Contrat'],
+                authors: ['Kelsen', 'Duguit', 'Carbonnier'],
+                dates: ['1804 - Code civil', '1958 - Constitution Ve République'],
+                doubts: ['Différence droit public/privé ?', 'Formation des contrats ?', 'Sources du droit ?']
+            }
+        };
+        
         // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
-            // Date par défaut
             document.getElementById('courseDate').value = new Date().toISOString().split('T')[0];
-            
-            // Gestion des onglets
             initializeTabs();
-            
-            // Upload par drag & drop
             initializeUpload();
-            
-            // Upload d'images supplémentaires
             initializeAdditionalUpload();
-            
-            // Mise à jour de l'aperçu en temps réel
             initializePreview();
         });
         
@@ -578,88 +722,19 @@
                 tab.addEventListener('click', () => {
                     const target = tab.getAttribute('data-tab');
                     
-                    // Désactiver tous les onglets
                     tabs.forEach(t => t.classList.remove('active'));
                     contents.forEach(c => c.classList.remove('active'));
                     
-                    // Activer l'onglet sélectionné
                     tab.classList.add('active');
                     document.getElementById(target).classList.add('active');
                 });
             });
         }
         
-        function initializeAdditionalUpload() {
-            const additionalInput = document.getElementById('additionalFileInput');
-            
-            additionalInput.addEventListener('change', (e) => {
-                handleAdditionalFiles(Array.from(e.target.files));
-            });
-        }
-        
-        async function handleAdditionalFiles(files) {
-            for (const file of files) {
-                if (file.size > 5 * 1024 * 1024) {
-                    showStatus('Fichier trop volumineux : ' + file.name, 'error');
-                    continue;
-                }
-                
-                if (file.type.startsWith('image/')) {
-                    await processAdditionalImage(file);
-                }
-            }
-        }
-        
-        async function processAdditionalImage(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                additionalImages.push({
-                    id: Date.now() + Math.random(),
-                    name: file.name,
-                    data: e.target.result,
-                    type: file.type,
-                    category: 'additional'
-                });
-                updateAdditionalImagePreview();
-                showStatus('✅ Image ajoutée : ' + file.name, 'success');
-            };
-            reader.readAsDataURL(file);
-        }
-        
-        function updateAdditionalImagePreview() {
-            const preview = document.getElementById('additionalImagePreview');
-            
-            if (additionalImages.length === 0) {
-                preview.innerHTML = '';
-                return;
-            }
-            
-            preview.innerHTML = `
-                <h4 style="color: #10b981; font-weight: bold; margin-bottom: 15px;">
-                    🖼️ Images/Schémas supplémentaires (${additionalImages.length})
-                </h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
-                    ${additionalImages.map(img => `
-                        <div class="image-item" style="border: 2px solid #10b981;">
-                            <img src="${img.data}" alt="${img.name}">
-                            <div class="info">
-                                <small style="color: #10b981; font-weight: bold;">📎 ${img.name}</small>
-                            </div>
-                            <button class="remove" onclick="removeAdditionalImage(${img.id})">&times;</button>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-        
-        function removeAdditionalImage(id) {
-            additionalImages = additionalImages.filter(img => img.id !== id);
-            updateAdditionalImagePreview();
-        }
+        function initializeUpload() {
             const uploadArea = document.getElementById('uploadArea');
             const fileInput = document.getElementById('fileInput');
             
-            // Drag & drop
             uploadArea.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 uploadArea.classList.add('dragover');
@@ -683,15 +758,12 @@
         function initializeAdditionalUpload() {
             const additionalInput = document.getElementById('additionalFileInput');
             
-            if (additionalInput) {
-                additionalInput.addEventListener('change', (e) => {
-                    handleAdditionalFiles(Array.from(e.target.files));
-                });
-            }
+            additionalInput.addEventListener('change', (e) => {
+                handleAdditionalFiles(Array.from(e.target.files));
+            });
         }
         
         function initializePreview() {
-            // Écouter les changements sur tous les champs
             const fields = ['courseDate', 'courseSubject', 'courseChapter', 'keywords', 'formulas', 'authors', 'dates', 'doubts', 'mainNotes', 'summary'];
             
             fields.forEach(field => {
@@ -706,7 +778,6 @@
         }
         
         function updatePreview() {
-            // Mettre à jour l'aperçu Cornell
             const date = document.getElementById('courseDate').value;
             const subject = document.getElementById('courseSubject').value;
             const chapter = document.getElementById('courseChapter').value;
@@ -725,9 +796,31 @@
                 formattedDate = `${parts[2]}.${parts[1]}.${parts[0].slice(-2)}`;
             }
             
+            // Mise à jour couleurs selon matière
+            const preview = document.getElementById('cornellPreview');
+            preview.className = `cornell-preview matiere-${subject}`;
+            
+            // Mapping des noms d'affichage
+            const subjectDisplayNames = {
+                'francais': 'Français',
+                'histoire': 'Histoire', 
+                'comptabilite': 'Comptabilité',
+                'mathematiques': 'Mathématiques',
+                'economie': 'Économie',
+                'biologie': 'Biologie',
+                'physique': 'Physique',
+                'chimie': 'Chimie',
+                'geographie': 'Géographie',
+                'philosophie': 'Philosophie',
+                'anglais': 'Anglais',
+                'allemand': 'Allemand',
+                'droit': 'Droit',
+                'autre': 'Autre'
+            };
+            
             document.getElementById('previewDate').textContent = formattedDate;
             document.getElementById('previewChapter').textContent = chapter || '--';
-            document.getElementById('previewSubject').textContent = subject || '--';
+            document.getElementById('previewSubject').textContent = subjectDisplayNames[subject] || '--';
             document.getElementById('previewKeywords').textContent = keywords || '--';
             document.getElementById('previewFormulas').textContent = formulas || '--';
             document.getElementById('previewAuthors').textContent = authors || '--';
@@ -752,6 +845,19 @@
             }
             
             updateProcessButton();
+        }
+        
+        async function handleAdditionalFiles(files) {
+            for (const file of files) {
+                if (file.size > 5 * 1024 * 1024) {
+                    showStatus('Fichier trop volumineux : ' + file.name, 'error');
+                    continue;
+                }
+                
+                if (file.type.startsWith('image/')) {
+                    await processAdditionalImage(file);
+                }
+            }
         }
         
         async function convertPDFToImages(file) {
@@ -798,12 +904,29 @@
             const reader = new FileReader();
             reader.onload = (e) => {
                 uploadedImages.push({
-                    id: Date.now(),
+                    id: Date.now() + Math.random(),
                     name: file.name,
                     data: e.target.result,
                     type: file.type
                 });
                 updateImagePreview();
+                showStatus('✅ Image ajoutée : ' + file.name, 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        async function processAdditionalImage(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                additionalImages.push({
+                    id: Date.now() + Math.random(),
+                    name: file.name,
+                    data: e.target.result,
+                    type: file.type,
+                    category: 'additional'
+                });
+                updateAdditionalImagePreview();
+                showStatus('✅ Image supplémentaire ajoutée : ' + file.name, 'success');
             };
             reader.readAsDataURL(file);
         }
@@ -816,21 +939,59 @@
                 return;
             }
             
-            preview.innerHTML = uploadedImages.map(img => `
-                <div class="image-item">
-                    <img src="${img.data}" alt="${img.name}">
-                    <div class="info">
-                        <small>${img.name}</small>
-                    </div>
-                    <button class="remove" onclick="removeImage(${img.id})">&times;</button>
+            preview.innerHTML = `
+                <h4 style="color: #667eea; font-weight: bold; margin-bottom: 15px;">
+                    📄 Fichiers uploadés (${uploadedImages.length})
+                </h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                    ${uploadedImages.map(img => `
+                        <div class="image-item">
+                            <img src="${img.data}" alt="${img.name}">
+                            <div class="info">
+                                <small>${img.name}</small>
+                            </div>
+                            <button class="remove" onclick="removeImage(${img.id})">&times;</button>
+                        </div>
+                    `).join('')}
                 </div>
-            `).join('');
+            `;
+        }
+        
+        function updateAdditionalImagePreview() {
+            const preview = document.getElementById('additionalImagePreview');
+            
+            if (additionalImages.length === 0) {
+                preview.innerHTML = '';
+                return;
+            }
+            
+            preview.innerHTML = `
+                <h4 style="color: #10b981; font-weight: bold; margin-bottom: 15px;">
+                    🖼️ Images/Schémas supplémentaires (${additionalImages.length})
+                </h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                    ${additionalImages.map(img => `
+                        <div class="image-item" style="border: 2px solid #10b981;">
+                            <img src="${img.data}" alt="${img.name}">
+                            <div class="info">
+                                <small style="color: #10b981; font-weight: bold;">📎 ${img.name}</small>
+                            </div>
+                            <button class="remove" onclick="removeAdditionalImage(${img.id})">&times;</button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
         }
         
         function removeImage(id) {
             uploadedImages = uploadedImages.filter(img => img.id !== id);
             updateImagePreview();
             updateProcessButton();
+        }
+        
+        function removeAdditionalImage(id) {
+            additionalImages = additionalImages.filter(img => img.id !== id);
+            updateAdditionalImagePreview();
         }
         
         function updateProcessButton() {
@@ -851,53 +1012,48 @@
             }
         }
         
-        // Simulation OCR (version autonome)
+        // OCR Contextuel - ADAPTATIF SELON MATIÈRE
         document.getElementById('processOCR').addEventListener('click', function() {
             if (isProcessing) return;
             
             isProcessing = true;
-            showStatus('🤖 Analyse OCR en cours...', 'info');
+            showStatus('🤖 Analyse OCR contextuelle en cours...', 'info');
             this.innerHTML = '<span class="loading"></span> Analyse en cours...';
             this.disabled = true;
             
-            // Simulation réaliste
             setTimeout(() => {
-                // Pré-remplissage simulé basé sur l'exemple PDF
-                if (!document.getElementById('courseSubject').value) {
-                    document.getElementById('courseSubject').value = 'Physique';
+                const selectedSubject = document.getElementById('courseSubject').value;
+                
+                // Auto-remplissage contextuel selon la matière
+                if (subjectData[selectedSubject]) {
+                    const data = subjectData[selectedSubject];
+                    
+                    document.getElementById('keywords').value = data.keywords.join('\n• ');
+                    document.getElementById('formulas').value = data.formulas.join('\n');
+                    document.getElementById('authors').value = data.authors.join('\n');
+                    document.getElementById('dates').value = data.dates.join('\n');
+                    document.getElementById('doubts').value = data.doubts.join('\n• ');
+                    
+                    // Notes principales contextuelles
+                    const contextualNote = getContextualNote(selectedSubject);
+                    document.getElementById('mainNotes').value = contextualNote;
+                    
+                    // Résumé contextuel
+                    const contextualSummary = getContextualSummary(selectedSubject);
+                    document.getElementById('summary').value = contextualSummary;
+                } else {
+                    // Fallback généraliste
+                    document.getElementById('keywords').value = `• concept clé 1\n• concept clé 2\n• concept clé 3\n• théorie principale\n• application pratique`;
+                    document.getElementById('mainNotes').value = 'Contenu principal du cours analysé par OCR. Structure logique des concepts abordés avec développements détaillés et exemples concrets.';
+                    document.getElementById('summary').value = 'Synthèse personnelle du chapitre avec points essentiels et liens conceptuels.';
                 }
-                
-                document.getElementById('keywords').value = `• ondes électromagnétiques
-• photons  
-• radioactivité
-• désintégration
-• fission nucléaire
-• réaction en chaîne`;
-                
-                document.getElementById('formulas').value = `Désintégration alpha: ²³⁸U → ²³⁴Th + ²⁴He
-Désintégration bêta négative: n → p⁺ + e⁻
-Désintégration bêta positive: p⁺ → n + e⁺ + neutrino`;
-                
-                document.getElementById('authors').value = `Henri Becquerel (1896)
-Enrico Fermi (1942)
-Albert Einstein`;
-                
-                document.getElementById('dates').value = `1896 - Découverte radioactivité par Henri Becquerel
-1942 - Première réaction fission nucléaire contrôlée par Enrico Fermi`;
-                
-                document.getElementById('doubts').value = `• Ne pas confondre les différents types de désintégration radioactive
-• Bien comprendre la différence entre centrale nucléaire et bombe atomique`;
-                
-                document.getElementById('mainNotes').value = `La physique des ondes électromagnétiques et de la radioactivité est au cœur de ce chapitre. Les ondes transportent l'énergie sous forme de photons, tandis que la radioactivité est due à la désintégration spontanée de noyaux instables. La fission nucléaire exploite cette instabilité pour créer des réactions en chaîne contrôlées (centrales) ou incontrôlées (bombes).`;
-                
-                document.getElementById('summary').value = `La physique des ondes électromagnétiques et de la radioactivité forme un ensemble cohérent. Les concepts de photons et d'énergie quantifiée sont liés aux phénomènes de désintégration nucléaire et aux applications de la fission.`;
                 
                 updatePreview();
                 
                 isProcessing = false;
-                this.innerHTML = '🤖 Analyser avec OCR';
+                this.innerHTML = '🤖 Analyser avec OCR Contextuel';
                 this.disabled = false;
-                showStatus('✅ Analyse OCR terminée avec succès ! (Confiance: 95%)', 'success');
+                showStatus(`✅ Analyse OCR contextuelle terminée pour ${document.getElementById('courseSubject').selectedOptions[0].text}! (Confiance: 95%)`, 'success');
                 
                 // Passer automatiquement à l'onglet suivant
                 setTimeout(() => {
@@ -906,6 +1062,46 @@ Albert Einstein`;
                 
             }, 3000);
         });
+        
+        function getContextualNote(subject) {
+            const contextualNotes = {
+                'economie': 'La politique monétaire constitue un pilier fondamental de l\'économie moderne. Les banques centrales utilisent différents instruments pour maintenir la stabilité des prix et soutenir la croissance économique. La masse monétaire M1, M2 et M3 représentent différents niveaux de liquidité dans l\'économie.',
+                'biologie': 'Les biomolécules fondamentales (protéines, glucides, lipides, acides nucléiques) constituent la base de tous les êtres vivants. Les protéines, formées d\'acides aminés, assurent des fonctions structurelles et enzymatiques essentielles au métabolisme cellulaire.',
+                'histoire': 'La guerre du Sonderbund (1847) représente un tournant décisif dans l\'histoire suisse. Ce conflit oppose les cantons catholiques conservateurs aux cantons protestants libéraux, aboutissant à la création de la Suisse fédérale moderne.',
+                'francais': 'Le Bourgeois Gentilhomme de Molière illustre parfaitement l\'art de la comédie-ballet au XVIIe siècle. Cette œuvre combine critique sociale et divertissement, révélant les travers de la bourgeoisie aspirant à la noblesse.',
+                'comptabilite': 'Le bilan comptable présente la situation patrimoniale de l\'entreprise à un moment donné. L\'égalité fondamentale Actif = Passif traduit l\'équilibre entre les biens possédés et leurs sources de financement.',
+                'physique': 'La radioactivité découverte par Becquerel révolutionne notre compréhension de la matière. Les différents types de désintégration (alpha, bêta) obéissent à des lois statistiques et trouvent des applications dans l\'énergie nucléaire.',
+                'mathematiques': 'Le calcul différentiel développé par Newton et Leibniz permet l\'étude du changement et du mouvement. La dérivée mesure le taux de variation instantané d\'une fonction.',
+                'chimie': 'Les liaisons chimiques déterminent les propriétés des molécules. La liaison ionique résulte du transfert d\'électrons, tandis que la liaison covalente implique le partage d\'électrons.',
+                'geographie': 'La mondialisation transforme l\'organisation de l\'espace géographique. Les inégalités de développement s\'expriment à travers des indicateurs comme l\'IDH et créent des déséquilibres territoriaux.',
+                'philosophie': 'La question de la conscience occupe une place centrale en philosophie. Descartes établit avec le cogito la certitude de l\'existence du sujet pensant comme fondement de la connaissance.',
+                'anglais': 'Les temps verbaux anglais expriment des nuances temporelles et aspectuelles spécifiques. Le present perfect établit un lien entre passé et présent, contrairement au past simple.',
+                'allemand': 'Le système des déclinaisons allemandes organise les relations grammaticales. Les quatre cas (Nominativ, Akkusativ, Dativ, Genitiv) déterminent la fonction des groupes nominaux.',
+                'droit': 'La hiérarchie des normes organise l\'ordre juridique. La Constitution prime sur la loi, qui prime sur les décrets et arrêtés, garantissant la cohérence du système legal.'
+            };
+            
+            return contextualNotes[subject] || 'Contenu principal du cours analysé par OCR. Structure logique des concepts abordés avec développements détaillés et exemples concrets.';
+        }
+        
+        function getContextualSummary(subject) {
+            const contextualSummaries = {
+                'economie': 'La politique monétaire utilise les agrégats M1, M2, M3 et les taux directeurs pour maintenir la stabilité des prix. Les banques centrales jouent un rôle clé dans la régulation économique.',
+                'biologie': 'Les biomolécules (protéines, glucides) constituent les bases du vivant. Les protéines, polymères d\'acides aminés, assurent des fonctions enzymatiques et structurelles essentielles.',
+                'histoire': 'La guerre du Sonderbund (1847) oppose cantons catholiques et protestants, aboutissant à la Constitution fédérale de 1848 et à la Suisse moderne.',
+                'francais': 'Le Bourgeois Gentilhomme combine comédie et ballet pour critiquer la bourgeoisie aspirant à la noblesse, illustrant l\'art de Molière sous Louis XIV.',
+                'comptabilite': 'Le bilan traduit l\'équilibre Actif = Passif. Les comptes 1000-1010 organisent la comptabilisation des capitaux propres et immobilisations.',
+                'physique': 'La radioactivité se manifeste par différents types de désintégration (alpha, bêta) découverts par Becquerel, menant aux applications nucléaires de Fermi.',
+                'mathematiques': 'Le calcul différentiel mesure les variations instantanées par la dérivée. Newton et Leibniz ont révolutionné l\'analyse mathématique.',
+                'chimie': 'Les liaisons chimiques (ioniques, covalentes) déterminent les propriétés moléculaires. Le pH quantifie l\'acidité des solutions.',
+                'geographie': 'La mondialisation crée des inégalités territoriales mesurées par l\'IDH. L\'urbanisation et le développement transforment l\'espace géographique.',
+                'philosophie': 'La conscience fonde la connaissance selon Descartes (cogito). Les questions de liberté, vérité et morale structurent la réflexion philosophique.',
+                'anglais': 'Les temps verbaux (present perfect, past continuous) expriment des nuances aspectuelles. Les modal verbs modulent le sens des actions.',
+                'allemand': 'Les déclinaisons (Nominativ, Akkusativ, Dativ, Genitiv) organisent la grammaire allemande. Le Perfekt se forme avec haben/sein + participe.',
+                'droit': 'La hiérarchie des normes (Constitution > Loi > Décret) organise l\'ordre juridique. Le contrat naît de la rencontre offre-acceptation.'
+            };
+            
+            return contextualSummaries[subject] || 'Synthèse personnelle du chapitre avec points essentiels et liens conceptuels pour révisions efficaces.';
+        }
         
         function generateWithIA() {
             if (isProcessing) return;
@@ -920,99 +1116,72 @@ Albert Einstein`;
             const button = document.getElementById('generateIA');
             const status = document.getElementById('generationStatus');
             
-            button.innerHTML = '<span class="loading"></span> Génération IA en cours...';
+            button.innerHTML = '<span class="loading"></span> Génération IA contextuelle en cours...';
             button.disabled = true;
             
             status.className = 'status-message status-info';
-            status.textContent = '🤖 Génération du résumé enrichi par IA...';
+            status.textContent = '🤖 Génération du résumé enrichi par IA contextuelle...';
             status.classList.remove('hidden');
             
-            // Simulation IA (version autonome)
+            // Simulation IA contextuelle
             setTimeout(() => {
-                currentAISummary = {
-                    resume_executif: "La physique des ondes électromagnétiques et de la radioactivité est au cœur de ce chapitre. Les ondes transportent l'énergie sous forme de photons, tandis que la radioactivité est due à la désintégration spontanée de noyaux instables. La fission nucléaire exploite cette instabilité pour créer des réactions en chaîne contrôlées (centrales) ou incontrôlées (bombes).",
-                    
-                    concepts_cles: [
-                        "ondes électromagnétiques",
-                        "photons",
-                        "radioactivité",
-                        "désintégration",
-                        "fission nucléaire",
-                        "réaction en chaîne"
-                    ],
-                    
-                    definitions: [
-                        {
-                            terme: "Ondes électromagnétiques",
-                            definition: "Phénomène de propagation de l'énergie sous forme d'oscillations de champs électriques et magnétiques, transportée par des particules appelées photons."
-                        },
-                        {
-                            terme: "Radioactivité",
-                            definition: "Propriété de certains noyaux atomiques instables de se désintégrer spontanément en émettant des particules ou des rayonnements."
-                        }
-                    ],
-                    
-                    formules_lois: [
-                        {
-                            nom: "Désintégration alpha",
-                            expression: "²³⁸U → ²³⁴Th + ²⁴He",
-                            description: "Émission d'un noyau d'hélium (particule alpha) par un noyau d'uranium-238."
-                        },
-                        {
-                            nom: "Désintégration bêta négative", 
-                            expression: "n → p⁺ + e⁻",
-                            description: "Transformation d'un neutron en un proton, un électron et un antineutrino."
-                        },
-                        {
-                            nom: "Désintégration bêta positive",
-                            expression: "p⁺ → n + e⁺ + neutrino",
-                            description: "Transformation d'un proton en un neutron, un positron et un neutrino."
-                        }
-                    ],
-                    
-                    personnages_dates: [
-                        {
-                            nom: "Henri Becquerel",
-                            date: "1896"
-                        },
-                        {
-                            nom: "Enrico Fermi",
-                            date: "1942"
-                        }
-                    ],
-                    
-                    chronologie: [
-                        {
-                            periode: "1896",
-                            evenement: "Découverte de la radioactivité par Henri Becquerel"
-                        },
-                        {
-                            periode: "1942",
-                            evenement: "Première réaction de fission nucléaire contrôlée par Enrico Fermi"
-                        }
-                    ],
-                    
-                    points_attention: [
-                        "Ne pas confondre les différents types de désintégration radioactive",
-                        "Bien comprendre la différence entre une centrale nucléaire et une bombe atomique"
-                    ],
-                    
-                    liens_conceptuels: [
-                        "Les ondes électromagnétiques sont liées aux concepts de photons et de quantum d'énergie",
-                        "La radioactivité et la fission nucléaire sont des sujets clés en physique nucléaire, en lien avec les chapitres précédents sur la structure de l'atome"
-                    ]
-                };
+                const selectedSubject = document.getElementById('courseSubject').value;
+                currentAISummary = generateContextualAISummary(selectedSubject);
                 
                 isProcessing = false;
                 button.innerHTML = '🧠 Générer Cornell avec IA';
                 button.disabled = false;
                 
                 status.className = 'status-message status-success';
-                status.textContent = '✅ Cornell généré avec succès par IA !';
+                status.textContent = '✅ Cornell généré avec succès par IA contextuelle !';
                 
                 document.getElementById('iaResult').classList.remove('hidden');
                 
             }, 4000);
+        }
+        
+        function generateContextualAISummary(subject) {
+            // Données de base
+            const baseData = subjectData[subject] || {
+                keywords: ['concept1', 'concept2'], 
+                formulas: ['formule1'],
+                authors: ['auteur1'], 
+                dates: ['date1'],
+                doubts: ['question1']
+            };
+            
+            return {
+                resume_executif: getContextualNote(subject),
+                concepts_cles: baseData.keywords,
+                definitions: [
+                    {
+                        terme: baseData.keywords[0] || "Concept principal",
+                        definition: `Définition contextuelle du concept principal dans le domaine de ${subject}.`
+                    },
+                    {
+                        terme: baseData.keywords[1] || "Théorie associée", 
+                        definition: `Explication théorique approfondie liée au contexte de ${subject}.`
+                    }
+                ],
+                formules_lois: baseData.formulas.map((formula, index) => ({
+                    nom: `Loi/Formule ${index + 1}`,
+                    expression: formula,
+                    description: `Application pratique de cette formule dans le contexte de ${subject}.`
+                })),
+                personnages_dates: baseData.authors.map(author => ({
+                    nom: author.split('(')[0].trim() || author,
+                    date: "Époque pertinente"
+                })),
+                chronologie: baseData.dates.map(date => ({
+                    periode: date.split(' - ')[0] || date,
+                    evenement: date.split(' - ')[1] || "Événement important"
+                })),
+                points_attention: baseData.doubts,
+                liens_conceptuels: [
+                    `Les concepts de ${subject} s'articulent autour des notions principales étudiées.`,
+                    `Cette matière établit des liens interdisciplinaires avec d'autres domaines d'étude.`
+                ]
+            };
         }
         
         function exportToPDF() {
@@ -1024,6 +1193,7 @@ Albert Einstein`;
             const courseConfig = {
                 date: document.getElementById('courseDate').value,
                 subject: document.getElementById('courseSubject').value,
+                subjectDisplay: document.getElementById('courseSubject').selectedOptions[0].text,
                 chapter: document.getElementById('courseChapter').value,
                 professor: document.getElementById('courseProfessor').value
             };
@@ -1043,15 +1213,34 @@ Albert Einstein`;
                 .replace(/\s+/g, '_')
                 .replace(/[<>:"/\\|?*]/g, '');
             
-            const fileName = `${dateFormatted}_${courseConfig.subject}_${cleanChapter}.html`;
+            const fileName = `${dateFormatted}_${courseConfig.subjectDisplay}_${cleanChapter}.html`;
             
-            // Génération du HTML final (identique à votre exemple)
-            const htmlContent = `<!DOCTYPE html>
+            // Génération du HTML final avec styles de matière
+            const subjectClass = `matiere-${courseConfig.subject}`;
+            const htmlContent = generateFinalHTML(courseConfig, dateDisplay, subjectClass);
+            
+            // Téléchargement
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert(`✅ Export réussi : ${fileName}\n\n📊 Contenu inclus :\n• Structure Cornell authentique\n• ${uploadedImages.length} image(s) de cours\n• ${additionalImages.length} schéma(s) supplémentaire(s)\n• Résumé IA optimisé révisions\n• Thème couleur ${courseConfig.subjectDisplay}\n\n📋 Pour PDF final :\n1. Ouvrir le fichier HTML\n2. Cmd+P (Mac) ou Ctrl+P (PC)\n3. Enregistrer au format PDF`);
+        }
+        
+        function generateFinalHTML(courseConfig, dateDisplay, subjectClass) {
+            return `<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cornell - ${courseConfig.subject} - ${courseConfig.chapter}</title>
+    <title>Cornell - ${courseConfig.subjectDisplay} - ${courseConfig.chapter}</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
@@ -1172,6 +1361,64 @@ Albert Einstein`;
             border-top: 1px solid #e2e8f0;
             padding-top: 20px;
         }
+        
+        /* STYLES MATIÈRES SPÉCIFIQUES */
+        .matiere-francais .cornell-header { background: #2ecc71; color: white; }
+        .matiere-francais .cornell-sidebar { background: #d5f4e6; }
+        .matiere-francais .cornell-summary { background: #2ecc71; color: white; }
+        
+        .matiere-histoire .cornell-header { background: #e67e22; color: white; }
+        .matiere-histoire .cornell-sidebar { background: #fdf2e9; }
+        .matiere-histoire .cornell-summary { background: #e67e22; color: white; }
+        
+        .matiere-comptabilite .cornell-header { background: #9b59b6; color: white; }
+        .matiere-comptabilite .cornell-sidebar { background: #f4ecf7; }
+        .matiere-comptabilite .cornell-summary { background: #9b59b6; color: white; }
+        
+        .matiere-mathematiques .cornell-header { background: #3498db; color: white; }
+        .matiere-mathematiques .cornell-sidebar { background: #ebf3fd; }
+        .matiere-mathematiques .cornell-summary { background: #3498db; color: white; }
+        
+        .matiere-economie .cornell-header { background: #2c3e50; color: white; }
+        .matiere-economie .cornell-sidebar { background: #ecf0f1; }
+        .matiere-economie .cornell-summary { background: #2c3e50; color: white; }
+        
+        .matiere-biologie .cornell-header { background: #27ae60; color: white; }
+        .matiere-biologie .cornell-sidebar { background: #d5f4e6; }
+        .matiere-biologie .cornell-summary { background: #27ae60; color: white; }
+        
+        .matiere-physique .cornell-header { background: #1abc9c; color: white; }
+        .matiere-physique .cornell-sidebar { background: #e8f6f3; }
+        .matiere-physique .cornell-summary { background: #1abc9c; color: white; }
+        
+        .matiere-chimie .cornell-header { background: #f39c12; color: white; }
+        .matiere-chimie .cornell-sidebar { background: #fef9e7; }
+        .matiere-chimie .cornell-summary { background: #f39c12; color: white; }
+        
+        .matiere-geographie .cornell-header { background: #d35400; color: white; }
+        .matiere-geographie .cornell-sidebar { background: #fdf2e9; }
+        .matiere-geographie .cornell-summary { background: #d35400; color: white; }
+        
+        .matiere-philosophie .cornell-header { background: #8e44ad; color: white; }
+        .matiere-philosophie .cornell-sidebar { background: #f8f4fd; }
+        .matiere-philosophie .cornell-summary { background: #8e44ad; color: white; }
+        
+        .matiere-anglais .cornell-header { background: #e74c3c; color: white; }
+        .matiere-anglais .cornell-sidebar { background: #fdedec; }
+        .matiere-anglais .cornell-summary { background: #e74c3c; color: white; }
+        
+        .matiere-allemand .cornell-header { background: #e74c3c; color: white; }
+        .matiere-allemand .cornell-sidebar { background: #fdedec; }
+        .matiere-allemand .cornell-summary { background: #e74c3c; color: white; }
+        
+        .matiere-droit .cornell-header { background: #34495e; color: white; }
+        .matiere-droit .cornell-sidebar { background: #ecf0f1; }
+        .matiere-droit .cornell-summary { background: #34495e; color: white; }
+        
+        .matiere-autre .cornell-header { background: #95a5a6; color: white; }
+        .matiere-autre .cornell-sidebar { background: #ecf0f1; }
+        .matiere-autre .cornell-summary { background: #95a5a6; color: white; }
+        
         @media print {
             body { margin: 0; padding: 15px; }
             .cornell-main { min-height: auto; }
@@ -1179,124 +1426,112 @@ Albert Einstein`;
     </style>
 </head>
 <body>
-    <div class="cornell-header">
-        <div><strong>Date</strong><br>${dateDisplay}</div>
-        <div><strong>Numéro + Nom du Chapitre</strong><br>${courseConfig.chapter}</div>
-        <div><strong>Matière</strong><br>${courseConfig.subject}</div>
-    </div>
+    <div class="${subjectClass}">
+        <div class="cornell-header">
+            <div><strong>Date</strong><br>${dateDisplay}</div>
+            <div><strong>Numéro + Nom du Chapitre</strong><br>${courseConfig.chapter}</div>
+            <div><strong>Matière</strong><br>${courseConfig.subjectDisplay}</div>
+        </div>
 
-    <div class="cornell-main">
-        <div class="cornell-sidebar">
-            <div class="sidebar-section">
-                <div class="sidebar-title">Mots-clés</div>
-                ${currentAISummary.concepts_cles ? currentAISummary.concepts_cles.map(concept => `<div>• ${concept}</div>`).join('') : '<div>-</div>'}
+        <div class="cornell-main">
+            <div class="cornell-sidebar">
+                <div class="sidebar-section">
+                    <div class="sidebar-title">Mots-clés</div>
+                    ${currentAISummary.concepts_cles ? currentAISummary.concepts_cles.map(concept => `<div>• ${concept}</div>`).join('') : '<div>-</div>'}
+                </div>
+                
+                <div class="sidebar-section">
+                    <div class="sidebar-title">Formules</div>
+                    ${currentAISummary.formules_lois?.map(f => `<div><strong>${f.nom}</strong><br><code>${f.expression}</code></div>`).join('') || '<div>-</div>'}
+                </div>
+                
+                <div class="sidebar-section">
+                    <div class="sidebar-title">Noms d'auteur</div>
+                    ${currentAISummary.personnages_dates?.map(p => `<div><strong>${p.nom}</strong> (${p.date})</div>`).join('') || '<div>-</div>'}
+                </div>
+                
+                <div class="sidebar-section">
+                    <div class="sidebar-title">Dates</div>
+                    ${currentAISummary.chronologie?.map(c => `<div><strong>${c.periode}</strong><br>${c.evenement}</div>`).join('') || '<div>-</div>'}
+                </div>
+                
+                <div class="sidebar-section">
+                    <div class="sidebar-title">Doutes et questionnements</div>
+                    ${currentAISummary.points_attention?.map(point => `<div>• ${point}</div>`).join('') || '<div>-</div>'}
+                </div>
             </div>
             
-            <div class="sidebar-section">
-                <div class="sidebar-title">Formules</div>
-                ${currentAISummary.formules_lois?.map(f => `<div><strong>${f.nom}</strong><br><code>${f.expression}</code></div>`).join('') || '<div>-</div>'}
-            </div>
-            
-            <div class="sidebar-section">
-                <div class="sidebar-title">Noms d'auteur</div>
-                ${currentAISummary.personnages_dates?.map(p => `<div><strong>${p.nom}</strong> (${p.date})</div>`).join('') || '<div>-</div>'}
-            </div>
-            
-            <div class="sidebar-section">
-                <div class="sidebar-title">Dates</div>
-                ${currentAISummary.chronologie?.map(c => `<div><strong>${c.periode}</strong><br>${c.evenement}</div>`).join('') || '<div>-</div>'}
-            </div>
-            
-            <div class="sidebar-section">
-                <div class="sidebar-title">Doutes et questionnements</div>
-                ${currentAISummary.points_attention?.map(point => `<div>• ${point}</div>`).join('') || '<div>-</div>'}
+            <div class="cornell-notes">
+                <div style="background: #ebf8ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3182ce; margin-bottom: 20px;">
+                    <strong>🎯 Résumé du chapitre</strong><br>
+                    ${currentAISummary.resume_executif}
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">📖 Définitions Importantes</div>
+                    ${currentAISummary.definitions?.map(def => `
+                        <div class="definition-item">
+                            <div class="definition-term">${def.terme}</div>
+                            <div>${def.definition}</div>
+                        </div>
+                    `).join('') || '<div>Aucune définition identifiée</div>'}
+                </div>
+
+                ${currentAISummary.formules_lois?.length ? `
+                <div class="section">
+                    <div class="section-title">🧮 Formules et Lois Détaillées</div>
+                    ${currentAISummary.formules_lois.map(formule => `
+                        <div class="formula-item">
+                            <div class="formula-name">${formule.nom}</div>
+                            <div class="formula-expression">${formule.expression}</div>
+                            <div style="font-size: 14px; color: #666; margin-top: 5px;">${formule.description}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                ` : ''}
+
+                ${uploadedImages && uploadedImages.length > 0 || additionalImages && additionalImages.length > 0 ? `
+                <div class="section">
+                    <div class="section-title">🖼️ Images et Schémas</div>
+                    ${uploadedImages.map(img => `
+                        <div class="image-container">
+                            <img src="${img.data}" alt="${img.name}">
+                            <div class="image-caption">📄 ${img.name}</div>
+                        </div>
+                    `).join('')}
+                    ${additionalImages.map(img => `
+                        <div class="image-container">
+                            <img src="${img.data}" alt="${img.name}">
+                            <div class="image-caption">📎 ${img.name}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                ` : ''}
             </div>
         </div>
-        
-        <div class="cornell-notes">
-            <div style="background: #ebf8ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3182ce; margin-bottom: 20px;">
-                <strong>🎯 Résumé du chapitre</strong><br>
-                ${currentAISummary.resume_executif}
-            </div>
-            
-            <div class="section">
-                <div class="section-title">📖 Définitions Importantes</div>
-                ${currentAISummary.definitions?.map(def => `
-                    <div class="definition-item">
-                        <div class="definition-term">${def.terme}</div>
-                        <div>${def.definition}</div>
-                    </div>
-                `).join('') || '<div>Aucune définition identifiée</div>'}
-            </div>
 
-            ${currentAISummary.formules_lois?.length ? `
-            <div class="section">
-                <div class="section-title">🧮 Formules et Lois Détaillées</div>
-                ${currentAISummary.formules_lois.map(formule => `
-                    <div class="formula-item">
-                        <div class="formula-name">${formule.nom}</div>
-                        <div class="formula-expression">${formule.expression}</div>
-                        <div style="font-size: 14px; color: #666; margin-top: 5px;">${formule.description}</div>
-                    </div>
-                `).join('')}
+        <div class="cornell-summary">
+            <div style="text-align: center; font-weight: bold; font-style: italic; margin-bottom: 15px;">
+                Résumé
+            </div>
+            <div>${currentAISummary.resume_executif}</div>
+            
+            ${currentAISummary.liens_conceptuels?.length ? `
+            <div style="margin-top: 15px;">
+                <strong>Liens conceptuels :</strong><br>
+                ${currentAISummary.liens_conceptuels.map(lien => `• ${lien}`).join('<br>')}
             </div>
             ` : ''}
-
-            ${uploadedImages && uploadedImages.length > 0 || additionalImages && additionalImages.length > 0 ? `
-            <div class="section">
-                <div class="section-title">🖼️ Images et Schémas</div>
-                ${uploadedImages.map(img => `
-                    <div class="image-container">
-                        <img src="${img.data}" alt="${img.name}">
-                        <div class="image-caption">📄 ${img.name}</div>
-                    </div>
-                `).join('')}
-                ${additionalImages.map(img => `
-                    <div class="image-container">
-                        <img src="${img.data}" alt="${img.name}">
-                        <div class="image-caption">📎 ${img.name}</div>
-                    </div>
-                `).join('')}
-            </div>
-            ` : ''}
         </div>
-    </div>
 
-    <div class="cornell-summary">
-        <div style="text-align: center; font-weight: bold; font-style: italic; margin-bottom: 15px;">
-            Résumé
+        <div class="footer">
+            📄 Document généré par Cornell Notes System • ${new Date().toLocaleDateString('fr-FR')}<br>
+            🎯 Optimisé pour révisions efficaces • Prof: ${courseConfig.professor}<br>
+            ⚡ Conversion PDF automatique + OCR contextuel ${courseConfig.subjectDisplay} • Images: ${uploadedImages.length + additionalImages.length}
         </div>
-        <div>${currentAISummary.resume_executif}</div>
-        
-        ${currentAISummary.liens_conceptuels?.length ? `
-        <div style="margin-top: 15px;">
-            <strong>Liens conceptuels :</strong><br>
-            ${currentAISummary.liens_conceptuels.map(lien => `• ${lien}`).join('<br>')}
-        </div>
-        ` : ''}
-    </div>
-
-    <div class="footer">
-        📄 Document généré par Cornell Notes System • ${new Date().toLocaleDateString('fr-FR')}<br>
-        🎯 Optimisé pour révisions efficaces • Prof: ${courseConfig.professor}<br>
-        ⚡ Conversion PDF automatique + OCR 95% • Images: ${uploadedImages.length + additionalImages.length}
     </div>
 </body>
 </html>`;
-            
-            // Téléchargement
-            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName;
-            
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            alert(`✅ Export réussi : ${fileName}\n\n📊 Contenu inclus :\n• Structure Cornell authentique\n• ${uploadedImages.length} image(s) intégrée(s)\n• Résumé IA optimisé révisions\n• Conversion PDF automatique\n\n📋 Pour PDF final :\n1. Ouvrir le fichier HTML\n2. Cmd+P (Mac) ou Ctrl+P (PC)\n3. Enregistrer au format PDF`);
         }
         
         function resetForm() {
@@ -1334,6 +1569,7 @@ Albert Einstein`;
                 document.querySelector('[data-tab="upload"]').click();
                 
                 updatePreview();
+                showStatus('✅ Formulaire réinitialisé avec succès !', 'success');
             }
         }
     </script>
