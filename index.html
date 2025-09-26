@@ -545,7 +545,7 @@
             }
             
             updateAnalyzeButton();
-            showStatus(`✅ ${files.length} fichier(s) traité(s)`, 'success', 'uploadStatus');
+            showStatus('${files.length} fichier(s) traité(s)', 'success', 'uploadStatus');
         }
         
         function updateImagePreview() {
@@ -576,7 +576,7 @@
         
         async function analyzeWithGeminiVision() {
             if (uploadedImages.length === 0) {
-                showStatus('❌ Aucune image sélectionnée', 'error', 'analysisStatus');
+               showStatus('Aucune image sélectionnée', 'error', 'analysisStatus');
                 return;
             }
 
@@ -586,7 +586,7 @@
             btn.disabled = true;
 
             try {
-                showStatus('🔍 Analyse OCR en cours avec Gemini Vision...', 'info', 'analysisStatus');
+               showStatus('Analyse OCR en cours avec Gemini Vision...', 'info', 'analysisStatus');
 
                 // Appel vers l'API Gemini Vision (Vercel)
                 const response = await fetch('/api/gemini-vision', {
@@ -639,7 +639,7 @@
                     // Activation du bouton d'enrichissement
                     document.getElementById('exportBtn').disabled = false;
                     
-                    showStatus('✅ Enrichissement IA terminé ! Notes améliorées par Gemini.', 'success', 'enrichmentStatus');
+                    showStatus('Enrichissement IA terminé ! Notes améliorées par Gemini.', 'success', 'enrichmentStatus');
 
                 } else {
                     throw new Error('Réponse inattendue de l\'API d\'enrichissement');
@@ -647,7 +647,7 @@
 
             } catch (error) {
                 console.error('Erreur enrichissement IA:', error);
-                showStatus(`❌ Erreur enrichissement: ${error.message}`, 'error', 'enrichmentStatus');
+                showStatus('Erreur enrichissement: ${error.message}', 'error', 'enrichmentStatus');
             } finally {
                 if (btn) {
                     btn.textContent = originalText;
@@ -670,7 +670,7 @@
                 const fileName = `Cornell_${courseConfig.subject}_${courseConfig.chapter.replace(/\s+/g, '_')}.html`;
                 
                 // Simuler le téléchargement
-                showStatus(`✅ Export réussi : ${fileName}`, 'success', 'exportStatus');
+                showStatus('Export réussi : ${fileName}', 'success', 'exportStatus');
                 
                 updateUsageStats();
             }, 2000);
@@ -749,7 +749,7 @@
 
             } catch (error) {
                 console.error('Erreur analyse OCR:', error);
-                showStatus(`❌ Erreur OCR: ${error.message}`, 'error', 'analysisStatus');
+                showStatus('Erreur OCR: ${error.message}', 'error', 'analysisStatus');
             } finally {
                 btn.textContent = originalText;
                 btn.disabled = false;
@@ -792,7 +792,7 @@
 
             // Validation
             if (!formData.courseSubject || !formData.mainNotes) {
-                showStatus('❌ La matière et les notes principales sont obligatoires', 'error', 'enrichmentStatus');
+                showStatus('La matière et les notes principales sont obligatoires', 'error', 'enrichmentStatus');
                 return;
             }
 
@@ -804,8 +804,7 @@
             }
 
             try {
-                showStatus('🤖 Enrichissement en cours avec Gemini...', 'info', 'enrichmentStatus');
-
+               showStatus('Enrichissement en cours avec Gemini...', 'info', 'enrichmentStatus');
                 // Appel vers l'API Gemini Enrichissement (Vercel)
                 const response = await fetch('/api/gemini-proxy', {
                     method: 'POST',
@@ -861,4 +860,4 @@
                     // Activation du bouton d'export
                     document.getElementById('exportBtn').disabled = false;
                     
-                    showStatus('✅
+                    showStatus('
