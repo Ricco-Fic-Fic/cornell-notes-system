@@ -1,4 +1,4 @@
-// Vercel Serverless Function - Gemini Vision pour OCR des images manuscrites
+// Vercel Serverless Function - Gemini Vision OCR pour Cornell Notes
 // Fichier: api/gemini-vision.js
 
 export default async function handler(req, res) {
@@ -28,79 +28,73 @@ export default async function handler(req, res) {
         }
 
         // Extraction des données de la requête
-        const { images, subject, level } = req.body;
+        const { images, courseContext } = req.body;
 
         // Validation des données
         if (!images || !Array.isArray(images) || images.length === 0) {
             return res.status(400).json({ 
-                error: 'Images manquantes',
-                details: 'Au moins une image est requise pour l\'analyse OCR'
+                error: 'Données d\'images manquantes',
+                details: 'Le champ images est requis et doit contenir au moins une image'
             });
         }
 
-        if (!subject) {
+        if (images.length > 5) {
             return res.status(400).json({ 
-                error: 'Matière manquante',
-                details: 'La matière est obligatoire pour contextualiser l\'analyse'
+                error: 'Trop d\'images',
+                details: 'Maximum 5 images autorisées'
             });
         }
 
-        // Construction du prompt OCR spécialisé pour Gemini Vision
-        const prompt = `Tu es un expert académique spécialisé en ${subject}. 
+        // Construction du prompt OCR pour Gemini Vision
+        const contextInfo = courseContext ? `
+CONTEXTE DU COURS :
+- Matière : ${courseContext.subject || 'Non précisée'}
+- Chapitre : ${courseContext.chapter || 'Non précisé'}
+- Professeur : ${courseContext.professor || 'Non précisé'}
+- Date : ${courseContext.date || 'Non précisée'}
+` : '';
 
-Analyse ces images de notes manuscrites et extrais TOUTES les informations pertinentes.
+        const prompt = `Tu es un expert en OCR spécialisé dans l'extraction de notes manuscrites académiques selon la méthode Cornell.
 
-CONSIGNES SPÉCIALES :
-- Lis attentivement toute l'écriture manuscrite visible
-- Identifie les formules mathématiques/scientifiques avec précision
-- Repère les noms d'auteurs, dates, et références importantes
-- Note les questions ou points d'interrogation du student
-- Contextualise selon le niveau académique : ${level || 'Lycée/Université'}
+${contextInfo}
 
-Réponds UNIQUEMENT avec ce JSON structuré (aucun texte avant/après) :
+MISSION : Analyser cette/ces image(s) de notes manuscrites et extraire le contenu selon la structure Cornell.
+
+Réponds UNIQUEMENT avec ce JSON (aucun texte avant/après) :
 
 {
-  "extraction_ocr": {
-    "titre_cours": "Titre ou sujet principal identifié",
-    "date_cours": "Date si visible (format JJ/MM/AAAA)",
-    "professeur": "Nom du professeur si mentionné",
-    "mots_cles": ["concept1", "concept2", "théorie3", "..."],
-    "formules": ["E=mc²", "F=ma", "autre formule identifiée", "..."],
-    "auteurs_personnages": ["Newton (1643-1727)", "Einstein", "autre personnage", "..."],
-    "dates_importantes": ["1687 - Principia Mathematica", "1905 - Relativité", "..."],
-    "questions_doutes": ["Question identifiée ?", "Point peu clair ?", "..."],
-    "texte_integral": "Transcription complète de tout le texte manuscrit visible dans l'image, en conservant la structure et l'organisation originale"
+  "success": true,
+  "analysis": {
+    "keywords": "mots-clés extraits séparés par des virgules",
+    "formulas": "formules mathématiques ou scientifiques identifiées",
+    "authors": "noms d'auteurs, personnages ou figures mentionnés",
+    "dates": "dates importantes ou événements historiques",
+    "doubts": "questions ou points d'interrogation identifiés",
+    "mainNotes": "contenu principal des notes, transcription complète du texte manuscrit avec structure et organisation",
+    "summary": "résumé concis des points clés en 2-3 phrases"
   },
-  "analyse_contenu": {
-    "niveau_detected": "Niveau académique détecté (collège/lycée/université/master)",
-    "complexite": "Simple/Moyen/Avancé",
-    "themes_principaux": ["thème 1", "thème 2", "..."],
-    "qualite_ecriture": "Lisible/Difficile/Illisible par endroits",
-    "completude_notes": "Notes complètes/partielles/fragmentaires"
-  },
-  "recommendations": {
-    "elements_manquants": ["Qu'est-ce qui pourrait être ajouté"],
-    "points_clarification": ["Points nécessitant plus d'explication"],
-    "suggestions_organisation": "Comment mieux organiser ces notes"
+  "metadata": {
+    "confidence": 0.95,
+    "language": "fr",
+    "total_text_length": 500
   }
-}`;
+}
 
-        // Préparation des images pour l'API Gemini Vision
-        const imageParts = images.map(image => {
-            // Suppression du préfixe data:image/...;base64, si présent
-            const base64Data = image.includes(',') ? image.split(',')[1] : image;
-            
-            return {
-                inline_data: {
-                    mime_type: image.startsWith('data:image/png') ? 'image/png' : 
-                               image.startsWith('data:image/jpg') ? 'image/jpeg' :
-                               image.startsWith('data:image/jpeg') ? 'image/jpeg' : 'image/png',
-                    data: base64Data
-                }
-            };
-        });
+IMPORTANT : 
+- Transcris fidèlement le texte manuscrit
+- Identifie et catégorise les éléments selon Cornell
+- Préserve la structure et l'organisation
+- Si certaines sections sont vides, utilise des chaînes vides ""`;
 
-        // Construction du contenu pour Gemini
+        // Préparation des images pour l'API Gemini
+        const imageParts = images.map(base64Image => ({
+            inlineData: {
+                mimeType: "image/jpeg", // Supposons JPEG par défaut
+                data: base64Image
+            }
+        }));
+
+        // Construction du contenu pour l'API
         const contents = [{
             parts: [
                 { text: prompt },
@@ -119,11 +113,21 @@ Réponds UNIQUEMENT avec ce JSON structuré (aucun texte avant/après) :
                 body: JSON.stringify({
                     contents: contents,
                     generationConfig: {
-                        temperature: 0.3, // Précision élevée pour l'OCR
+                        temperature: 0.4,
                         topK: 32,
-                        topP: 0.9,
-                        maxOutputTokens: 3000,
-                    }
+                        topP: 1,
+                        maxOutputTokens: 4096,
+                    },
+                    safetySettings: [
+                        {
+                            category: "HARM_CATEGORY_HARASSMENT",
+                            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                        },
+                        {
+                            category: "HARM_CATEGORY_HATE_SPEECH",
+                            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                        }
+                    ]
                 })
             }
         );
@@ -133,12 +137,22 @@ Réponds UNIQUEMENT avec ce JSON structuré (aucun texte avant/après) :
             console.error('Erreur Gemini Vision API:', geminiResponse.status, errorData);
             return res.status(geminiResponse.status).json({ 
                 error: 'Erreur API Gemini Vision',
-                details: errorData
+                details: `HTTP ${geminiResponse.status}: ${errorData}`,
+                suggestion: 'Vérifiez la clé API et le format des images'
             });
         }
 
         const geminiData = await geminiResponse.json();
         
+        // Vérification de la structure de réponse
+        if (!geminiData.candidates || !geminiData.candidates[0] || !geminiData.candidates[0].content) {
+            console.error('Structure de réponse Gemini inattendue:', geminiData);
+            return res.status(500).json({
+                error: 'Réponse API Gemini invalide',
+                details: 'Structure de réponse inattendue'
+            });
+        }
+
         // Extraction de la réponse Gemini
         let generatedText = geminiData.candidates[0].content.parts[0].text;
         
@@ -148,43 +162,45 @@ Réponds UNIQUEMENT avec ce JSON structuré (aucun texte avant/après) :
         try {
             const parsedResponse = JSON.parse(generatedText);
             
+            // Validation que la réponse contient les champs attendus
+            if (!parsedResponse.analysis) {
+                throw new Error('Champ analysis manquant dans la réponse');
+            }
+
             // Retour de l'analyse OCR
             return res.status(200).json({
                 success: true,
-                ocr_result: parsedResponse,
+                analysis: parsedResponse.analysis,
                 metadata: {
-                    model: 'gemini-2.0-flash-exp-vision',
+                    model: 'gemini-2.0-flash-exp',
                     timestamp: new Date().toISOString(),
-                    subject: subject,
-                    images_count: images.length
+                    images_processed: images.length,
+                    context: courseContext || null,
+                    ...parsedResponse.metadata
                 }
             });
             
         } catch (parseError) {
             console.error('Erreur parsing JSON OCR:', parseError, 'Texte reçu:', generatedText);
             
-            // Fallback : extraction manuelle des informations si le JSON est invalide
+            // Fallback : extraction basique si le JSON est invalide
             return res.status(200).json({
                 success: true,
-                ocr_result: {
-                    extraction_ocr: {
-                        titre_cours: `Cours de ${subject}`,
-                        texte_integral: generatedText,
-                        mots_cles: extractKeywords(generatedText, subject),
-                        formulas: extractFormulas(generatedText),
-                        questions_doutes: ["Analyser l'image pour identifier les questions"]
-                    },
-                    analyse_contenu: {
-                        niveau_detected: level || 'À déterminer',
-                        qualite_ecriture: 'Analyse en cours'
-                    }
+                analysis: {
+                    keywords: "",
+                    formulas: "",
+                    authors: "",
+                    dates: "",
+                    doubts: "",
+                    mainNotes: generatedText,
+                    summary: "Analyse OCR effectuée - voir notes principales"
                 },
                 metadata: {
-                    model: 'gemini-2.0-flash-exp-vision',
+                    model: 'gemini-2.0-flash-exp',
                     timestamp: new Date().toISOString(),
-                    subject: subject,
-                    images_count: images.length,
-                    note: 'JSON parsing failed, extracted text returned'
+                    images_processed: images.length,
+                    note: 'JSON parsing failed, returned raw text',
+                    context: courseContext || null
                 }
             });
         }
@@ -193,36 +209,8 @@ Réponds UNIQUEMENT avec ce JSON structuré (aucun texte avant/après) :
         console.error('Erreur dans gemini-vision:', error);
         return res.status(500).json({ 
             error: 'Erreur interne du serveur',
-            details: error.message
+            details: error.message,
+            timestamp: new Date().toISOString()
         });
     }
-}
-
-// Fonctions utilitaires pour le fallback
-function extractKeywords(text, subject) {
-    const commonKeywords = {
-        'Physique': ['énergie', 'force', 'masse', 'vitesse', 'accélération'],
-        'Mathématiques': ['équation', 'fonction', 'dérivée', 'intégrale', 'limite'],
-        'Chimie': ['réaction', 'molécule', 'atome', 'liaison', 'élément'],
-        'Histoire': ['date', 'événement', 'personnage', 'époque', 'siècle'],
-        'Biologie': ['cellule', 'organisme', 'évolution', 'génétique', 'écosystème']
-    };
-    
-    return commonKeywords[subject] || ['concept', 'théorie', 'principe'];
-}
-
-function extractFormulas(text) {
-    const formulaPatterns = [
-        /[A-Z][a-z]?\s*=\s*[^,\s]+/g, // E = mc²
-        /\d+\s*[+\-×÷]\s*\d+/g,        // 2 + 2
-        /[a-zA-Z]\([a-zA-Z]\)/g         // f(x)
-    ];
-    
-    const formulas = [];
-    formulaPatterns.forEach(pattern => {
-        const matches = text.match(pattern);
-        if (matches) formulas.push(...matches);
-    });
-    
-    return formulas.slice(0, 5); // Limiter à 5 formules
 }
