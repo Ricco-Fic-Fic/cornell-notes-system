@@ -58,13 +58,30 @@ Structure JSON attendue:
 Extrais le maximum d'informations visibles dans les notes manuscrites.`;
 
         // Préparation des images pour l'API Gemini
-        const imageParts = images.map(img => ({
-            inlineData: {
-                mimeType: img.data.includes('image/png') ? 'image/png' : 
-                          img.data.includes('image/webp') ? 'image/webp' : 'image/jpeg',
-                data: img.data.split(',')[1] // Enlever le préfixe data:image/...;base64,
+        const imageParts = images.map(img => {
+            // Extraire le type MIME et les données base64
+            let imageData = img.data;
+            let mimeType = 'image/jpeg'; // Par défaut
+            
+            // Si l'image contient le préfixe data:image/...
+            if (imageData.includes('data:image/')) {
+                const matches = imageData.match(/data:image\/(\w+);base64,(.+)/);
+                if (matches) {
+                    mimeType = `image/${matches[1]}`;
+                    imageData = matches[2];
+                }
+            } else if (imageData.includes('base64,')) {
+                // Juste enlever le préfixe si présent
+                imageData = imageData.split('base64,')[1];
             }
-        }));
+            
+            return {
+                inlineData: {
+                    mimeType: mimeType,
+                    data: imageData
+                }
+            };
+        });
 
         // Appel API Gemini Vision
         const geminiResponse = await fetch(
