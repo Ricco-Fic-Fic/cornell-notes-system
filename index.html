@@ -538,9 +538,9 @@
                     <div class="upload-icon">📄</div>
                     <h4>Glissez vos notes manuscrites ici</h4>
                     <p>ou cliquez pour sélectionner des fichiers</p>
-                    <p><em>Formats acceptés: PDF, JPG, PNG, WEBP (max 5MB)</em></p>
+                    <p><em>Formats acceptés: JPG, PNG, WEBP uniquement (max 5MB)</em></p>
                 </div>
-                <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png,.webp" style="display: none;" onchange="handleFileSelect(event)">
+                <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" style="display: none;" onchange="handleFileSelect(event)">
                 
                 <div id="manuscriptImages" class="image-preview"></div>
                 
@@ -785,11 +785,13 @@
                 if (!validateFile(file)) continue;
 
                 try {
+                    // Gemini Vision ne supporte que les images, pas les PDF
                     if (file.type === 'application/pdf') {
-                        await processPDF(file, 'manuscript');
-                    } else {
-                        await processImage(file, 'manuscript');
+                        showStatus('Les PDF ne sont pas supportés pour l\'OCR. Veuillez convertir en images JPG/PNG/WEBP.', 'error');
+                        continue;
                     }
+                    
+                    await processImage(file, 'manuscript');
                 } catch (error) {
                     console.error('Erreur traitement fichier:', error);
                     showStatus(`Erreur lors du traitement de ${file.name}`, 'error');
@@ -798,7 +800,10 @@
 
             updateImagePreviews();
             updateButtonStates();
-            showStatus(`${uploadedImages.length} image(s) manuscrite(s) chargée(s)`, 'success');
+            
+            if (uploadedImages.length > 0) {
+                showStatus(`${uploadedImages.length} image(s) manuscrite(s) chargée(s)`, 'success');
+            }
         }
 
         // Traitement des fichiers supplémentaires
@@ -826,7 +831,7 @@
 
         function validateFile(file) {
             const maxSize = 5 * 1024 * 1024; // 5MB
-            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
             if (file.size > maxSize) {
                 showStatus(`${file.name} est trop volumineux (max 5MB)`, 'error');
@@ -834,7 +839,7 @@
             }
 
             if (!allowedTypes.includes(file.type)) {
-                showStatus(`Type de fichier non supporté: ${file.name}`, 'error');
+                showStatus(`Type de fichier non supporté: ${file.name}. Utilisez JPG, PNG ou WEBP uniquement.`, 'error');
                 return false;
             }
 
