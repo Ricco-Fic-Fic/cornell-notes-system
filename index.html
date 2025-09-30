@@ -333,16 +333,30 @@
         }
 
         .cornell-footer {
-            background: linear-gradient(135deg, #f7c948 0%, #f39c12 100%);
-            padding: 20px;
-            color: #2d3436;
-        }
+    background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+    padding: 40px;
+    color: white;
+    border-top: 3px solid #b8941f;
+}
 
-        .cornell-footer h4 {
-            margin-bottom: 15px;
-            text-align: center;
-            font-size: 1.2em;
-        }
+.cornell-footer h4 {
+    margin-bottom: 25px;
+    text-align: center;
+    font-size: 1.6em;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 700;
+}
+
+.cornell-footer > div {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 30px;
+    border-radius: 12px;
+    font-size: 16px;
+    line-height: 2;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
 
         .status-message {
             padding: 15px;
@@ -1217,19 +1231,29 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        .cornell-footer { 
-            background: linear-gradient(135deg, #f7c948 0%, #f39c12 100%); 
-            padding: 25px; 
-            color: #2d3436;
-            border-top: 3px solid #e67e22;
-        }
-        .cornell-footer h4 { 
-            margin-bottom: 15px; 
-            text-align: center; 
-            font-size: 1.3em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+       .cornell-footer { 
+    background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%); 
+    padding: 40px; 
+    color: white;
+    border-top: 3px solid #b8941f;
+}
+.cornell-footer h4 { 
+    margin-bottom: 25px; 
+    text-align: center; 
+    font-size: 1.6em;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 700;
+}
+.cornell-footer > div {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 30px;
+    border-radius: 12px;
+    font-size: 16px;
+    line-height: 2;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
         .image-gallery {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -1334,23 +1358,17 @@
                 </div>
                 ` : ''}
                 
-                ${(uploadedImages.length > 0 || additionalImages.length > 0) ? `
-                <h4 style="margin-top: 30px; color: #e67e22;">🖼️ Images et Schémas</h4>
-                <div class="image-gallery">
-                    ${uploadedImages.map(img => `
-                        <div class="image-container">
-                            <img src="${img.data}" alt="${img.name}">
-                            <div class="image-caption">📝 Notes: ${img.name}</div>
-                        </div>
-                    `).join('')}
-                    ${additionalImages.map(img => `
-                        <div class="image-container">
-                            <img src="${img.data}" alt="${img.name}">
-                            <div class="image-caption">🎨 Schéma: ${img.name}</div>
-                        </div>
-                    `).join('')}
-                </div>
-                ` : ''}
+               ${additionalImages.length > 0 ? `
+<h4 style="margin-top: 30px; color: #e67e22;">📊 Schémas et Graphiques</h4>
+<div class="image-gallery">
+    ${additionalImages.map((img, index) => `
+        <div class="image-container">
+            <img src="${img.data}" alt="${img.name}">
+            <div class="image-caption">📊 Schéma ${index + 1}</div>
+        </div>
+    `).join('')}
+</div>
+` : ''}
             </div>
         </div>
         
@@ -1378,7 +1396,7 @@
         <div class="footer-info">
             📄 Cornell Notes System - Généré le ${new Date().toLocaleDateString('fr-FR')} | 
             👨‍🏫 Prof: ${courseConfig.professor} | 
-            🖼️ Images: ${uploadedImages.length + additionalImages.length} | 
+            ${additionalImages.length > 0 ? `📊 ${additionalImages.length} schéma(s) | ` : ''}
             🤖 Enrichi par Gemini AI
         </div>
     </div>
