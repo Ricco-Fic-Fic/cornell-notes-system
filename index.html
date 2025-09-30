@@ -1000,18 +1000,18 @@
             showStatus('Enrichissement du contenu avec Gemini AI...', 'loading');
 
             try {
-                const cornellData = {
-                    course_info: courseConfig,
-                    content: {
-                        mots_cles: document.getElementById('keywords').value,
-                        formules: document.getElementById('formulas').value,
-                        auteurs: document.getElementById('authors').value,
-                        dates: document.getElementById('dates').value,
-                        questions: document.getElementById('questions').value,
-                        notes_principales: document.getElementById('mainNotes').value,
-                        resume: document.getElementById('summary').value
-                    },
-                    total_images: uploadedImages.length + additionalImages.length
+                const requestData = {
+                    courseDate: courseConfig.date,
+                    courseSubject: courseConfig.subject,
+                    courseChapter: courseConfig.chapter,
+                    courseProfessor: courseConfig.professor,
+                    keywords: document.getElementById('keywords').value,
+                    formulas: document.getElementById('formulas').value,
+                    authors: document.getElementById('authors').value,
+                    dates: document.getElementById('dates').value,
+                    doubts: document.getElementById('questions').value,
+                    mainNotes: document.getElementById('mainNotes').value,
+                    currentSummary: document.getElementById('summary').value
                 };
 
                 const response = await fetch('/api/gemini-proxy', {
@@ -1019,7 +1019,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ cornellData })
+                    body: JSON.stringify(requestData)
                 });
 
                 if (!response.ok) {
@@ -1028,8 +1028,17 @@
 
                 const result = await response.json();
                 
-                if (result.success && result.enrichedContent) {
-                    currentAISummary = result.enrichedContent;
+                if (result.success && result.enrichment) {
+                    currentAISummary = result.enrichment;
+                    
+                    // Mettre à jour les champs si l'enrichissement contient des améliorations
+                    if (result.enrichment.notes_principales_ameliorees) {
+                        document.getElementById('mainNotes').value = result.enrichment.notes_principales_ameliorees;
+                    }
+                    if (result.enrichment.resume_synthetise) {
+                        document.getElementById('summary').value = result.enrichment.resume_synthetise;
+                    }
+                    
                     updateExportPreview();
                     showStatus('Enrichissement terminé avec succès!', 'success');
                 } else {
