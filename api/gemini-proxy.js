@@ -1,33 +1,29 @@
-// Vercel Serverless Function - Proxy Gemini pour enrichissement Cornell
-// Fichier: api/gemini-proxy.js
-
 export default async function handler(req, res) {
     // Configuration CORS
+    res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
 
     if (req.method === 'OPTIONS') {
-        return res.status(200).end();
+        res.status(200).end();
+        return;
     }
 
     if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Méthode non autorisée' });
+        return res.status(405).json({ error: 'Method not allowed' });
     }
 
     try {
-        // Récupération de la clé API depuis les variables d'environnement
         const geminiApiKey = process.env.GEMINI_API_KEY;
         
         if (!geminiApiKey) {
-            console.error('Clé API Gemini manquante dans les variables d\'environnement');
             return res.status(500).json({ 
-                error: 'Configuration API manquante',
-                details: 'GEMINI_API_KEY non configurée dans Vercel'
+                error: 'Configuration serveur manquante',
+                details: 'GEMINI_API_KEY non configurée'
             });
         }
 
-        // Extraction des données du formulaire Cornell
         const {
             courseDate,
             courseSubject,
@@ -42,51 +38,57 @@ export default async function handler(req, res) {
             currentSummary
         } = req.body;
 
-        // Validation des données essentielles
         if (!courseSubject || !mainNotes) {
             return res.status(400).json({ 
-                error: 'Données insuffisantes',
-                details: 'La matière et les notes principales sont obligatoires'
+                error: 'Données manquantes',
+                details: 'courseSubject et mainNotes sont requis'
             });
         }
 
         // Construction du prompt spécialisé pour Gemini
-        const prompt = `Tu es un expert académique spécialisé en ${courseSubject}. 
+        const prompt = `Tu es un assistant IA spécialisé dans l'enrichissement de notes académiques selon la méthode Cornell.
 
-CONTEXTE DU COURS :
-- Date : ${courseDate}
-- Matière : ${courseSubject}  
-- Chapitre : ${courseChapter || 'Non précisé'}
-- Professeur : ${courseProfessor || 'Non précisé'}
+Contexte du cours:
+- Matière: ${courseSubject}
+- Chapitre: ${courseChapter}
+- Date: ${courseDate}
+- Professeur: ${courseProfessor}
 
-ÉLÉMENTS IDENTIFIÉS :
-- Mots-clés : ${keywords || 'À identifier'}
-- Formules : ${formulas || 'À identifier'}
-- Auteurs/Personnages : ${authors || 'À identifier'}
-- Dates importantes : ${dates || 'À identifier'}
-- Questions/Doutes : ${doubts || 'Aucun'}
+Mots-clés actuels: ${keywords}
+Formules: ${formulas}
+Auteurs: ${authors}
+Dates importantes: ${dates}
+Questions/doutes: ${doubts}
 
-NOTES PRINCIPALES ACTUELLES :
+Notes principales:
 ${mainNotes}
 
-RÉSUMÉ ACTUEL :
-${currentSummary || 'À créer'}
+Résumé actuel:
+${currentSummary}
 
-Ta mission : Enrichir et améliorer ces notes selon la méthode Cornell en générant un JSON structuré.
+INSTRUCTIONS IMPORTANTES:
 
-Réponds UNIQUEMENT avec ce JSON (aucun texte avant/après) :
+1. **Mots-clés**: Réduis à 5-7 mots-clés MAXIMUM, les plus importants uniquement
+2. **Questions**: Génère 2-4 questions de réflexion pertinentes et ciblées (pas de questions génériques)
+3. **Notes structurées**: Réorganise les notes principales avec:
+   - Des paragraphes courts (3-4 lignes max)
+   - Des sous-titres clairs (préfixe "### ")
+   - Une hiérarchie logique
+   - Des transitions fluides
+
+Réponds UNIQUEMENT avec ce JSON (aucun texte avant/après):
 
 {
   "enrichissement": {
-    "mots_cles_enrichis": ["liste", "des", "concepts", "clés", "améliorés"],
-    "formules_identifiees": ["E=mc²", "autres formules trouvées"],
-    "auteurs_personnages": ["Nom Auteur (époque)", "autre personnage important"],
-    "dates_cles": ["1905 - Découverte relativité", "autre date importante"],
-    "questions_reflexion": ["Pourquoi cette théorie ?", "Applications pratiques ?"]
+    "mots_cles_enrichis": ["5-7 concepts clés uniquement"],
+    "formules_identifiees": ["formules importantes"],
+    "auteurs_personnages": ["Nom Auteur (contexte)"],
+    "dates_cles": ["Date - Événement"],
+    "questions_reflexion": ["Question 1 pertinente?", "Question 2 ciblée?", "Question 3 analytique?"]
   },
-  "notes_principales_ameliorees": "Version enrichie et structurée des notes principales avec une meilleure organisation, des connections entre concepts, et des exemples concrets. Garde le niveau académique approprié.",
-  "resume_synthetise": "Résumé personnel de 100-200 mots qui capture l'essence du cours, les points clés à retenir, et les implications importantes. Style personnel et mémorable.",
-  "conseils_revision": "Conseils spécifiques pour réviser ce chapitre efficacement, points d'attention, et connections avec d'autres sujets du programme."
+  "notes_principales_ameliorees": "### Introduction\nPremier paragraphe clair et concis.\n\n### Point clé 1\nExplication structurée...\n\n### Point clé 2\nSuite logique...",
+  "resume_synthetise": "Résumé personnel de 100-200 mots, style académique mais mémorable.",
+  "conseils_revision": "Conseils spécifiques pour réviser ce chapitre."
 }`;
 
         // Appel à l'API Gemini
