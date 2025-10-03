@@ -1364,7 +1364,7 @@
             <div class="cornell-sidebar">
                 <div class="cornell-section">
                     <h4>🔑 Mots-clés</h4>
-                    <ul style="list-style: none; padding-left: 0;">${document.getElementById('keywords').value.split(',').slice(0, 7).map(kw =><li style="margin-bottom: 5px;"><span style="color: #e67e22; font-weight: bold; font-size: 1.2em; margin-right: 8px;">•</span>${kw.trim()}</li>).join('') || ' <li>Aucun mot-clé</li>'}</ul>
+                    <ul style="list-style: none; padding-left: 0;">${document.getElementById('keywords').value.split(',').slice(0, 7).map(function(kw) { return '<li style="margin-bottom: 5px;"><span style="color: #e67e22; font-weight: bold; font-size: 1.2em; margin-right: 8px;">•</span>' + kw.trim() + '</li>'; }).join('') || '<li>Aucun mot-clé</li>'}</ul>
                 </div>
                 <div class="cornell-section">
                     <h4>📐 Formules</h4>
