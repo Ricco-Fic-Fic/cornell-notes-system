@@ -1448,7 +1448,7 @@ function populateFormWithOCR(data) {
         
         <div class="cornell-footer">
             <h4>📊 Résumé</h4>
-            <div>${document.getElementById('summary').value || 'Aucun résumé'}</div>
+            <div>${currentAISummary?.resume_synthetise || document.getElementById('summary').value || 'Aucun résumé'}</div>
             
             ${currentAISummary.resume_executif ? `
             <div class="ai-content" style="margin-top: 20px;">
@@ -1466,7 +1466,31 @@ function populateFormWithOCR(data) {
             </div>
             ` : ''}
         </div>
-        
+
+        <!-- SECTION QUESTIONS DE RÉFLEXION -->
+        ${currentAISummary?.questions_reflexion && currentAISummary.questions_reflexion.length > 0 ? `
+        <div style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 20px; margin: 20px;">
+            <h4 style="color: #856404; font-size: 1.6em; text-align: center; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px;">❓ QUESTIONS DE RÉFLEXION</h4>
+            <div>
+                ${currentAISummary.questions_reflexion.map((q, index) => `
+                    <div style="margin-bottom: 12px; padding: 15px; background: white; border-left: 4px solid #ffc107; border-radius: 4px;">
+                        <strong style="color: #856404;">Question ${index + 1}:</strong> ${q}
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        ` : ''}
+
+        <!-- SECTION CONSEILS DE RÉVISION -->
+        ${currentAISummary?.conseils_revision ? `
+        <div style="background: #d1ecf1; border: 2px solid #17a2b8; border-radius: 8px; padding: 20px; margin: 20px;">
+            <h4 style="color: #0c5460; font-size: 1.6em; text-align: center; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px;">💡 CONSEILS DE RÉVISION</h4>
+            <div style="padding: 20px; background: white; border-radius: 4px; line-height: 1.8; font-size: 15px;">
+                ${currentAISummary.conseils_revision}
+            </div>
+        </div>
+        ` : 
+          
         <div class="footer-info">
             📄 Cornell Notes System - Généré le ${new Date().toLocaleDateString('fr-FR')} | 
             👨‍🏫 Prof: ${courseConfig.professor} | 
