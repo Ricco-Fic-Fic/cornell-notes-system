@@ -1307,10 +1307,11 @@ function populateFormWithOCR(data) {
             letter-spacing: 0.5px;
         }
        .cornell-footer { 
-    background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%); 
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
     padding: 40px; 
-    color: white;
-    border-top: 3px solid #b8941f;
+    color: white; 
+    border-top: 3px solid #5a67d8;
+    box-shadow: 0 -5px 15px rgba(0,0,0,0.15);
 }
 .cornell-footer h4 { 
     margin-bottom: 25px; 
@@ -1407,11 +1408,11 @@ function populateFormWithOCR(data) {
                 </div>
                 <div class="cornell-section">
                     <h4>📅 Dates</h4>
-                    <div>${document.getElementById('dates').value.split(',').map(d => `• ${d.trim()}`).join('<br>') || 'Aucune date'}</div>
+                    <div>${document.getElementById('dates').value.split(',').map(d => `<span style="color: #e67e22; font-weight: bold; font-size: 1.2em; margin-right: 8px;">◆</span>${d.trim()}`).join('<br>') || 'Aucune date'}</div>
                 </div>
                 <div class="cornell-section">
                     <h4>❓ Questions</h4>
-                    <div>${document.getElementById('questions').value.split('\n').filter(q => q.trim()).map(q => `• ${q.trim()}`).join('<br>') || 'Aucune question'}</div>
+                    <div>${document.getElementById('questions').value.split('\n').filter(q => q.trim()).map(q => `<span style="color: #e67e22; font-weight: bold; font-size: 1.2em; margin-right: 8px;">▪</span>${q.trim()}`).join('<br>') || 'Aucune question'}</div>
                 </div>
             </div>
             
