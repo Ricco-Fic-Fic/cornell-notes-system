@@ -1086,10 +1086,9 @@
     updatePreview();
     updateExportPreview();
     showStatus('Enrichissement terminé avec succès! Mots-clés limités, questions générées, notes structurées.', 'success');
-    }
-} else {
-                    throw new Error(result.error || 'Erreur lors de l\'enrichissement');
-                }
+        } else {
+            throw new Error(result.error || 'Erreur lors de l\'enrichissement');
+        }
 
             } catch (error) {
                 console.error('Erreur enrichissement:', error);
