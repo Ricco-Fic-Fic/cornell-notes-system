@@ -1043,18 +1043,50 @@
                 const result = await response.json();
                 
                 if (result.success && result.enrichment) {
-                    currentAISummary = result.enrichment;
-                    
-                    // Mettre à jour les champs si l'enrichissement contient des améliorations
-                    if (result.enrichment.notes_principales_ameliorees) {
-                        document.getElementById('mainNotes').value = result.enrichment.notes_principales_ameliorees;
-                    }
-                    if (result.enrichment.resume_synthetise) {
-                        document.getElementById('summary').value = result.enrichment.resume_synthetise;
-                    }
-                    
-                    updateExportPreview();
-                    showStatus('Enrichissement terminé avec succès!', 'success');
+    currentAISummary = result.enrichment;
+    
+    // Parser et appliquer l'enrichissement
+    const enrichData = result.enrichment.enrichissement || result.enrichment;
+    
+    // Mots-clés enrichis (limités à 5-7)
+    if (enrichData.mots_cles_enrichis) {
+        document.getElementById('keywords').value = enrichData.mots_cles_enrichis.join(', ');
+    }
+    
+    // Formules
+    if (enrichData.formules_identifiees) {
+        document.getElementById('formulas').value = enrichData.formules_identifiees.join('\n');
+    }
+    
+    // Auteurs
+    if (enrichData.auteurs_personnages) {
+        document.getElementById('authors').value = enrichData.auteurs_personnages.join(', ');
+    }
+    
+    // Dates
+    if (enrichData.dates_cles) {
+        document.getElementById('dates').value = enrichData.dates_cles.join(', ');
+    }
+    
+    // Questions générées (2-4 questions)
+    if (enrichData.questions_reflexion) {
+        document.getElementById('questions').value = enrichData.questions_reflexion.join('\n');
+    }
+    
+    // Notes principales améliorées avec structure
+    if (result.enrichment.notes_principales_ameliorees) {
+        document.getElementById('mainNotes').value = result.enrichment.notes_principales_ameliorees;
+    }
+    
+    // Résumé synthétisé
+    if (result.enrichment.resume_synthetise) {
+        document.getElementById('summary').value = result.enrichment.resume_synthetise;
+    }
+    
+    updatePreview();
+    updateExportPreview();
+    showStatus('Enrichissement terminé avec succès! Mots-clés limités, questions générées, notes structurées.', 'success');
+}
                 } else {
                     throw new Error(result.error || 'Erreur lors de l\'enrichissement');
                 }
@@ -1167,6 +1199,18 @@
             showStatus(`✅ Export réussi: ${fileName}`, 'success');
         }
 
+        function formatMarkdownToHTML(text) {
+    if (!text) return '';
+    
+    return text
+        // Convertir ### Titre en <h3>
+        .replace(/###\s+(.+)/g, '<h3 style="color: #e67e22; font-size: 1.2em; margin-top: 25px; margin-bottom: 15px; border-bottom: 2px solid #f39c12; padding-bottom: 8px;">$1</h3>')
+        // Convertir double saut de ligne en paragraphe
+        .split('\n\n')
+        .map(para => para.trim() ? `<p style="margin-bottom: 15px; text-align: justify;">${para}</p>` : '')
+        .join('');
+}
+        
         function generateEnhancedHTML() {
             return `<!DOCTYPE html>
 <html lang="fr">
@@ -1313,14 +1357,14 @@
 <body>
     <div class="cornell-container">
         <div class="cornell-header">
-            📅 ${courseConfig.date} | 📖 ${courseConfig.chapter} | 📚 ${courseConfig.subject}
+            👨‍🏫 Prof: ${courseConfig.professor} | 📅 ${new Date(courseConfig.date).toLocaleDateString('fr-CH', {day: '2-digit', month: '2-digit', year: '2-digit'})} | 📖 ${courseConfig.chapter} | 📚 ${courseConfig.subject}
         </div>
         
         <div class="cornell-content">
             <div class="cornell-sidebar">
                 <div class="cornell-section">
                     <h4>🔑 Mots-clés</h4>
-                    <div>${document.getElementById('keywords').value || 'Aucun mot-clé'}</div>
+                    <ul style="list-style: none; padding-left: 0;">${document.getElementById('keywords').value.split(',').slice(0, 7).map(kw =><li style="margin-bottom: 5px;"><span style="color: #e67e22; font-weight: bold; font-size: 1.2em; margin-right: 8px;">•</span>${kw.trim()}</li>).join('') || ' <li>Aucun mot-clé</li>'}</ul>
                 </div>
                 <div class="cornell-section">
                     <h4>📐 Formules</h4>
@@ -1342,7 +1386,7 @@
             
             <div class="cornell-notes">
                 <h4>📋 Notes principales</h4>
-                <div>${document.getElementById('mainNotes').value || 'Aucune note'}</div>
+                <div>${formatMarkdownToHTML(document.getElementById('mainNotes').value) || 'Aucune note'}</div>
                 
                 ${currentAISummary.definitions_importantes ? `
                 <div class="ai-content">
