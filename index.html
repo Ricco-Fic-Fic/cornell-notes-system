@@ -333,30 +333,31 @@
         }
 
         .cornell-footer {
-    background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
-    padding: 40px;
-    color: white;
-    border-top: 3px solid #b8941f;
-}
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%); 
+            padding: 40px; 
+            color: #1a4d2e; 
+            border-top: 3px solid #4a9d28;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.15);
+        }
 
-.cornell-footer h4 {
-    margin-bottom: 25px;
-    text-align: center;
-    font-size: 1.6em;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    font-weight: 700;
-}
+        .cornell-footer h4 {
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 1.6em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
 
-.cornell-footer > div {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 30px;
-    border-radius: 12px;
-    font-size: 16px;
-    line-height: 2;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-}
+        .cornell-footer > div {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 30px;
+            border-radius: 12px;
+            font-size: 16px;
+            line-height: 2;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
 
         .status-message {
             padding: 15px;
@@ -1406,11 +1407,11 @@ function populateFormWithOCR(data) {
                 </div>
                 <div class="cornell-section">
                     <h4>📅 Dates</h4>
-                    <div>${document.getElementById('dates').value || 'Aucune date'}</div>
+                    <div>${document.getElementById('dates').value.split(',').map(d => `• ${d.trim()}`).join('<br>') || 'Aucune date'}</div>
                 </div>
                 <div class="cornell-section">
                     <h4>❓ Questions</h4>
-                    <div>${document.getElementById('questions').value || 'Aucune question'}</div>
+                    <div>${document.getElementById('questions').value.split('\n').filter(q => q.trim()).map(q => `• ${q.trim()}`).join('<br>') || 'Aucune question'}</div>
                 </div>
             </div>
             
