@@ -51,42 +51,49 @@ export default async function handler(req, res) {
         }
 
         // Construction du prompt spécialisé pour Gemini
-        const prompt = `Tu es un expert académique spécialisé en ${courseSubject}. 
+        const prompt = `Tu es un assistant IA spécialisé dans l'enrichissement de notes académiques selon la méthode Cornell.
 
-CONTEXTE DU COURS :
-- Date : ${courseDate}
-- Matière : ${courseSubject}  
-- Chapitre : ${courseChapter || 'Non précisé'}
-- Professeur : ${courseProfessor || 'Non précisé'}
+Contexte du cours:
+- Matière: ${courseSubject}
+- Chapitre: ${courseChapter}
+- Date: ${courseDate}
+- Professeur: ${courseProfessor}
 
-ÉLÉMENTS IDENTIFIÉS :
-- Mots-clés : ${keywords || 'À identifier'}
-- Formules : ${formulas || 'À identifier'}
-- Auteurs/Personnages : ${authors || 'À identifier'}
-- Dates importantes : ${dates || 'À identifier'}
-- Questions/Doutes : ${doubts || 'Aucun'}
+Mots-clés actuels: ${keywords}
+Formules: ${formulas}
+Auteurs: ${authors}
+Dates importantes: ${dates}
+Questions/doutes: ${doubts}
 
-NOTES PRINCIPALES ACTUELLES :
+Notes principales:
 ${mainNotes}
 
-RÉSUMÉ ACTUEL :
-${currentSummary || 'À créer'}
+Résumé actuel:
+${currentSummary}
 
-Ta mission : Enrichir et améliorer ces notes selon la méthode Cornell en générant un JSON structuré.
+INSTRUCTIONS IMPORTANTES:
 
-Réponds UNIQUEMENT avec ce JSON (aucun texte avant/après) :
+1. **Mots-clés**: Réduis à 5-7 mots-clés MAXIMUM, les plus importants uniquement
+2. **Questions**: Génère 2-4 questions de réflexion pertinentes et ciblées (pas de questions génériques)
+3. **Notes structurées**: Réorganise les notes principales avec:
+   - Des paragraphes courts (3-4 lignes max)
+   - Des sous-titres clairs (préfixe "### ")
+   - Une hiérarchie logique
+   - Des transitions fluides
+
+Réponds UNIQUEMENT avec ce JSON (aucun texte avant/après):
 
 {
   "enrichissement": {
-    "mots_cles_enrichis": ["liste", "des", "concepts", "clés", "améliorés"],
-    "formules_identifiees": ["E=mc²", "autres formules trouvées"],
-    "auteurs_personnages": ["Nom Auteur (époque)", "autre personnage important"],
-    "dates_cles": ["1905 - Découverte relativité", "autre date importante"],
-    "questions_reflexion": ["Pourquoi cette théorie ?", "Applications pratiques ?"]
+    "mots_cles_enrichis": ["5-7 concepts clés uniquement"],
+    "formules_identifiees": ["formules importantes"],
+    "auteurs_personnages": ["Nom Auteur (contexte)"],
+    "dates_cles": ["Date - Événement"],
+    "questions_reflexion": ["Question 1 pertinente?", "Question 2 ciblée?", "Question 3 analytique?"]
   },
-  "notes_principales_ameliorees": "Version enrichie et structurée des notes principales avec une meilleure organisation, des connections entre concepts, et des exemples concrets. Garde le niveau académique approprié.",
-  "resume_synthetise": "Résumé personnel de 100-200 mots qui capture l'essence du cours, les points clés à retenir, et les implications importantes. Style personnel et mémorable.",
-  "conseils_revision": "Conseils spécifiques pour réviser ce chapitre efficacement, points d'attention, et connections avec d'autres sujets du programme."
+  "notes_principales_ameliorees": "### Introduction\nPremier paragraphe clair et concis.\n\n### Point clé 1\nExplication structurée...\n\n### Point clé 2\nSuite logique...",
+  "resume_synthetise": "Résumé personnel de 100-200 mots, style académique mais mémorable.",
+  "conseils_revision": "Conseils spécifiques pour réviser ce chapitre."
 }`;
 
         // Appel à l'API Gemini
