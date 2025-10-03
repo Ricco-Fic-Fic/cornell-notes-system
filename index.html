@@ -978,22 +978,52 @@
             }
         }
 
-        function populateFormWithOCR(data) {
-            // Populate form fields
-            if (data.matiere) document.getElementById('subject').value = data.matiere;
-            if (data.chapitre) document.getElementById('chapter').value = data.chapitre;
-            if (data.professeur) document.getElementById('professor').value = data.professeur;
-            
-            // Populate Cornell sections
-            if (data.mots_cles) document.getElementById('keywords').value = data.mots_cles.join(', ');
-            if (data.formules) document.getElementById('formulas').value = data.formules.join('\n');
-            if (data.auteurs) document.getElementById('authors').value = data.auteurs.join(', ');
-            if (data.dates) document.getElementById('dates').value = data.dates.join(', ');
-            if (data.contenu_principal) document.getElementById('mainNotes').value = data.contenu_principal;
+function populateFormWithOCR(data) {
+    // Populate form fields
+    if (data.matiere) document.getElementById('subject').value = data.matiere;
+    if (data.chapitre) document.getElementById('chapter').value = data.chapitre;
+    if (data.professeur) document.getElementById('professor').value = data.professeur;
+    
+    // Populate Cornell sections
+    if (data.mots_cles) document.getElementById('keywords').value = data.mots_cles.join(', ');
+    if (data.formules) document.getElementById('formulas').value = data.formules.join('\n');
+    if (data.auteurs) document.getElementById('authors').value = data.auteurs.join(', ');
+    if (data.dates) document.getElementById('dates').value = data.dates.join(', ');
+    if (data.contenu_principal) document.getElementById('mainNotes').value = data.contenu_principal;
 
-            updatePreview();
-            updateButtonStates();
-        }
+    // Afficher le résumé d'extraction
+    const extractionSummary = `
+        <div style="background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); 
+                    padding: 20px; 
+                    border-radius: 10px; 
+                    margin: 20px 0; 
+                    border-left: 5px solid #28a745;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                <div style="background: #28a745; 
+                            color: white; 
+                            padding: 8px 15px; 
+                            border-radius: 20px; 
+                            font-weight: bold; 
+                            font-size: 14px;">
+                    ✓ OCR Complété
+                </div>
+            </div>
+            <div style="color: #155724; font-size: 14px; line-height: 1.8;">
+                <strong>Extraction réussie :</strong><br>
+                → ${data.mots_cles?.length || 0} mots-clés extraits<br>
+                → ${data.formules?.length || 0} formule(s) identifiée(s)<br>
+                → ${data.auteurs?.length || 0} auteur(s) détecté(s)<br>
+                → ${data.dates?.length || 0} date(s) trouvée(s)<br>
+                → Notes principales remplies (${data.contenu_principal?.length || 0} caractères)
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('statusMessage').innerHTML = extractionSummary;
+
+    updatePreview();
+    updateButtonStates();
+}
 
         // Enrichissement avec Gemini AI
         async function enrichWithGeminiAI() {
