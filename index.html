@@ -1027,9 +1027,7 @@
                     mainNotes: document.getElementById('mainNotes').value,
                     currentSummary: document.getElementById('summary').value
                 };
-            // Instruction pour limiter mots-clés et générer questions
-                    requestData.limitKeywords = true;
-                    requestData.generateQuestions = true;
+
                 const response = await fetch('/api/gemini-proxy', {
                     method: 'POST',
                     headers: {
@@ -1233,29 +1231,11 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-     .cornell-footer { 
-    background: linear-gradient(135deg, #f7c948 0%, #f39c12 100%); 
+       .cornell-footer { 
+    background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%); 
     padding: 40px; 
-    color: #2d3436;
-    border-top: 3px solid #e67e22;
-    }
-    .cornell-footer h4 {
-    margin-bottom: 25px;
-    text-align: center;
-    font-size: 1.6em;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    font-weight: 700;
-    color: #2d3436;
-    }
-    .cornell-footer-content {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    color: #2d3436;
-    font-size: 16px;
-    line-height: 2;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    color: white;
+    border-top: 3px solid #b8941f;
 }
 .cornell-footer h4 { 
     margin-bottom: 25px; 
@@ -1332,16 +1312,15 @@
 </head>
 <body>
     <div class="cornell-container">
-        <div class="cornell-header
-        
-            👨‍🏫 Prof: ${courseConfig.professor}| 📅 ${new Date(courseConfig.date).toLocaleDateString('fr-CH', {day: '2-digit', month: '2-digit', year: '2-digit'})} |📖 ${courseConfig.chapter} | 📚 ${courseConfig.subject}
+        <div class="cornell-header">
+            📅 ${courseConfig.date} | 📖 ${courseConfig.chapter} | 📚 ${courseConfig.subject}
         </div>
         
         <div class="cornell-content">
             <div class="cornell-sidebar">
                 <div class="cornell-section">
                     <h4>🔑 Mots-clés</h4>
-                    <ul>${document.getElementById('keywords').value.split(',').slice(0, 7).map(kw => `<li>${kw.trim()}</li>`).join('') || '<li>Aucun mot-clé</li>'}</ul>
+                    <div>${document.getElementById('keywords').value || 'Aucun mot-clé'}</div>
                 </div>
                 <div class="cornell-section">
                     <h4>📐 Formules</h4>
@@ -1363,7 +1342,7 @@
             
             <div class="cornell-notes">
                 <h4>📋 Notes principales</h4>
-                <div>${(document.getElementById('mainNotes').value || 'Aucune note').replace(/###\s+(.+)/g, '<h3>$1</h3>').replace(/\n\n/g, '</p><p>').replace(/^(.+)$/, '<p>$1</p>')}</div>
+                <div>${document.getElementById('mainNotes').value || 'Aucune note'}</div>
                 
                 ${currentAISummary.definitions_importantes ? `
                 <div class="ai-content">
