@@ -1416,16 +1416,15 @@ function populateFormWithOCR(data) {
                 </div>
             </div>
             
-            <div class="cornell-notes">
-                <h4>📝 Notes principales</h4>
-                <div>${formatMarkdownToHTML(currentAISummary?.notes_principales_ameliorees || 
-                document.getElementById('mainNotes').value) || 'Aucune note'}</div>
+           <div class="cornell-notes">
+  <h4>📝 Notes principales</h4>
+  <div>${formatMarkdownToHTML(currentAISummary?.notes_principales_ameliorees || document.getElementById('mainNotes').value) || 'Aucune note'}</div>
 
-                ${currentAISummary?.descriptions_visuelles && currentAISummary.descriptions_visuelles.length > 0 ? `
-                <div style="background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border: 3px solid #ffa726; border-radius: 10px; padding: 25px; margin: 25px 0; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
-                <h4 style="color: #e65100; font-size: 1.4em; margin-bottom: 20px; text-align: center; text-transform: uppercase; letter-spacing: 1px;">
-              📊 DESCRIPTION DES GRAPHIQUES ET SCHÉMAS
-                </h4>
+  ${currentAISummary?.descriptions_visuelles && currentAISummary.descriptions_visuelles.length > 0 ? `
+  <div style="background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border: 3px solid #ffa726; border-radius: 10px; padding: 25px; margin: 25px 0; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+    <h4 style="color: #e65100; font-size: 1.4em; margin-bottom: 20px; text-align: center; text-transform: uppercase; letter-spacing: 1px;">
+      📊 DESCRIPTION DES GRAPHIQUES ET SCHÉMAS
+    </h4>
     ${currentAISummary.descriptions_visuelles.map((visual, index) => `
       <div style="background: white; border-left: 5px solid #ffa726; border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
@@ -1447,28 +1446,27 @@ function populateFormWithOCR(data) {
     <div class="ai-badge">📚 IA - Définitions importantes</div>
     ${currentAISummary.definitions_importantes.map(def => `<p><strong>${def.terme}:</strong> ${def.definition}</p>`).join('')}
   </div>
-  ` : ''}`
-                
-               ${currentAISummary?.formules_detaillees ? `
-<div class="ai-content">
-  <div class="ai-badge">🧮 IA - Formules détaillées</div>
-  ${currentAISummary.formules_detaillees.map(form => `<p><strong>${form.formule}:</strong> ${form.explication}</p>`).join('')}
-</div>
-` : ''}
-                
-               ${additionalImages.length > 0 ? `
+  ` : ''}
+
+  ${currentAISummary?.formules_detaillees ? `
+  <div class="ai-content">
+    <div class="ai-badge">🧮 IA - Formules détaillées</div>
+    ${currentAISummary.formules_detaillees.map(form => `<p><strong>${form.formule}:</strong> ${form.explication}</p>`).join('')}
+  </div>
+  ` : ''}
+
+  ${additionalImages.length > 0 ? `
 <h4 style="margin-top: 30px; color: #e67e22;">📊 Schémas et Graphiques</h4>
 <div class="image-gallery">
-    ${additionalImages.map((img, index) => `
-        <div class="image-container">
-            <img src="${img.data}" alt="${img.name}">
-            <div class="image-caption">📊 Schéma ${index + 1}</div>
-        </div>
-    `).join('')}
+  ${additionalImages.map((img, index) => `
+    <div class="image-container">
+      <img src="${img.data}" alt="${img.name}">
+      <div class="image-caption">📊 Schéma ${index + 1}</div>
+    </div>
+  `).join('')}
 </div>
 ` : ''}
-            </div>
-        </div>
+</div>
         
         <div class="cornell-footer">
             <h4>📊 Résumé</h4>
