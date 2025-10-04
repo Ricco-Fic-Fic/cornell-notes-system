@@ -1412,13 +1412,13 @@ function populateFormWithOCR(data) {
                 </div>
                 <div class="cornell-section">
                     <h4>❓ Questions</h4>
-                    <div>${document.getElementById('questions').value.split('\n').filter(q => q.trim()).map(q => `<span style="color: #e67e22; font-weight: bold; font-size: 1.2em; margin-right: 8px;">▪</span>${q.trim()}`).join('<br>') || 'Aucune question'}</div>
+                    <div>${(currentAISummary?.questions_reflexion || document.getElementById('questions').value.split('\n').filter(q => q.trim())).map(q => `<span style="color: #e67e22; font-weight: bold; font-size: 1.2em; margin-right: 8px;">▪</span>${q.trim()}`).join('<br>') || 'Aucune question'}</div>
                 </div>
             </div>
             
             <div class="cornell-notes">
                 <h4>📋 Notes principales</h4>
-                <div>${formatMarkdownToHTML(document.getElementById('mainNotes').value) || 'Aucune note'}</div>
+                <div>${formatMarkdownToHTML(currentAISummary?.notes_principales_ameliorees || document.getElementById('mainNotes').value) || 'Aucune note'}</div>
                 
                 ${currentAISummary.definitions_importantes ? `
                 <div class="ai-content">
@@ -1500,7 +1500,7 @@ function populateFormWithOCR(data) {
         <div style="background: #d1ecf1; border: 2px solid #17a2b8; border-radius: 8px; padding: 20px; margin: 20px;">
             <h4 style="color: #0c5460; font-size: 1.6em; text-align: center; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px;">💡 CONSEILS DE RÉVISION</h4>
             <div style="padding: 20px; background: white; border-radius: 4px; line-height: 1.8; font-size: 15px;">
-                ${currentAISummary.conseils_revision}
+                ${currentAISummary?.conseils_revision || 'Relire les notes principales et identifier les concepts clés'}
             </div>
         </div>
         ` : ''}
