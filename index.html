@@ -1466,11 +1466,31 @@ function populateFormWithOCR(data) {
   `).join('')}
 </div>
 ` : ''}
+${additionalImages.length > 0 ? `
+<h4 style="margin-top: 30px; color: #e67e22;">📊 Schémas et Graphiques</h4>
+<div class="image-gallery">
+  ${additionalImages.map((img, index) => `
+    <div class="image-container">
+      <img src="${img.data}" alt="${img.name}">
+      <div class="image-caption">📊 Schéma ${index + 1}</div>
+    </div>
+  `).join('')}
+</div>
+` : ''}
+
+<!-- RÉSUMÉ après les schémas -->
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; padding: 25px; margin: 25px 0; border: 3px solid #5a67d8;">
+  <h4 style="color: white; font-size: 1.4em; text-align: center; margin-bottom: 15px; text-transform: uppercase;">📊 RÉSUMÉ</h4>
+  <div style="color: white; line-height: 1.8; font-size: 15px;">
+    ${currentAISummary?.resume_synthetise || document.getElementById('summary').value || 'Aucun résumé'}
+  </div>
+</div>
+</div>
 </div>
         
-       <div class="cornell-footer">
-  <h4>📊 Résumé</h4>
-  <div>${currentAISummary?.resume_synthetise || document.getElementById('summary').value || 'Aucun résumé'}</div>
+      <div class="cornell-footer">
+  <h4>💡 CONSEILS DE RÉVISION</h4>
+  <div>${currentAISummary?.conseils_revision || 'Relire les notes principales et identifier les concepts clés'}</div>
 </div>
 
 <!-- SECTION QUESTIONS DE RÉFLEXION -->
