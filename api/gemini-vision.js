@@ -39,23 +39,38 @@ export default async function handler(req, res) {
         // Construction du prompt OCR optimisé pour Cornell
         const prompt = `Analyse ces notes manuscrites et extrais le contenu selon la méthode Cornell.
 
-IMPORTANT: Ta réponse doit être UNIQUEMENT un objet JSON valide, sans texte avant ou après.
+        IMPORTANT: Ta réponse doit être UNIQUEMENT un objet JSON valide, sans texte avant ou après.
 
-Structure JSON attendue:
-{
-  "extractedData": {
-    "matiere": "nom de la matière si visible",
-    "chapitre": "titre du chapitre si visible",
-    "professeur": "nom du professeur si visible",
-    "mots_cles": ["mot1", "mot2", "mot3"],
-    "formules": ["formule1", "formule2"],
-    "auteurs": ["auteur1", "auteur2"],
-    "dates": ["date1", "date2"],
-    "contenu_principal": "texte principal des notes"
-  }
-}
+        Structure JSON attendue:
+        {
+          "extractedData": {
+            "matiere": "nom de la matière si visible",
+            "chapitre": "titre du chapitre si visible",
+            "professeur": "nom du professeur si visible",
+            "mots_cles": ["mot1", "mot2", "mot3"],
+            "formules": ["formule1", "formule2"],
+            "auteurs": ["auteur1", "auteur2"],
+            "dates": ["date1", "date2"],
+            "contenu_principal": "texte principal des notes",
+            "descriptions_visuelles": [
+              {
+                "type": "graphique|schema|tableau|diagramme",
+                "titre": "titre ou sujet du visuel",
+                "description": "description détaillée du contenu (axes, légendes, tendances, éléments clés)"
+              }
+            ]
+          }
+        }
 
-Extrais le maximum d'informations visibles dans les notes manuscrites.`;
+        INSTRUCTIONS SPÉCIALES POUR LES VISUELS :
+        - Si tu détectes des graphiques, schémas, tableaux ou diagrammes dans les notes, remplis le champ "descriptions_visuelles"
+        - Pour chaque visuel détecté :
+          * "type" : identifie s'il s'agit d'un graphique, schéma, tableau ou diagramme
+          * "titre" : donne un titre descriptif (ex: "Évolution de la masse monétaire suisse 1984-2011")
+          * "description" : décris en détail ce que montre le visuel (axes X/Y, légendes, courbes, tendances, valeurs clés, ce qu'on peut en conclure)
+        - Si aucun visuel n'est présent, laisse "descriptions_visuelles" comme tableau vide []
+
+        Extrais le maximum d'informations visibles dans les notes manuscrites.`;
 
         // Préparation des images pour l'API Gemini
         const imageParts = images.map(img => {
