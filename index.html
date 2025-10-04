@@ -1448,11 +1448,6 @@ function populateFormWithOCR(data) {
     ${currentAISummary.definitions_importantes.map(def => `<p><strong>${def.terme}:</strong> ${def.definition}</p>`).join('')}
   </div>
   ` : ''}`
-                <div class="ai-content">
-                    <div class="ai-badge">🤖 IA - Définitions importantes</div>
-                    ${currentAISummary.definitions_importantes.map(def => `<p><strong>${def.terme}:</strong> ${def.definition}</p>`).join('')}
-                </div>
-                ` : ''}
                 
                 ${currentAISummary.formules_detaillees ? `
                 <div class="ai-content">
