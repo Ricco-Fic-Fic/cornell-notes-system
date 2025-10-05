@@ -1411,27 +1411,23 @@ function populateFormWithOCR(data) {
                     <div>${document.getElementById('dates').value.split(',').map(d => `<span style="color: #e67e22; font-weight: bold; font-size: 1.2em; margin-right: 8px;">◆</span>${d.trim()}`).join('<br>') || 'Aucune date'}</div>
                 </div>
                 <div class="cornell-section"> 
- <h4>❓ Questions</h4> 
- <div>${(currentAISummary?.questions_reflexion || 
-document.getElementById('questions').value.split('\n').filter(q => q.trim())).map(q => `<span 
-style="color: #e67e22; font-weight: bold; font-size: 1.2em; margin-right: 8px;">▪</span>$
-{q.trim()}`).join('<br>') || 'Aucune question'}</div> 
-</div> 
+                     <h4>❓ Questions</h4> 
+                     <div>${currentAISummary?.questions_reflexion ? currentAISummary.questions_reflexion.map(q => `<span style="color: #e67e22; font-weight: bold; font-size: 1.2em; margin-right: 8px;">▪</span>${q.trim()}`).join('<br>') : (document.getElementById('questions').value ? document.getElementById('questions').value.split('\n').filter(q => q.trim()).map(q => `<span style="color: #e67e22; font-weight: bold; font-size: 1.2em; margin-right: 8px;">▪</span>${q.trim()}`).join('<br>') : 'Aucune question')}</div> 
+                </div>
 
-<div class="cornell-section"> 
- <h4>💡 Conseils de Révision</h4> 
- <div>${currentAISummary?.conseils_revision || 'Relire les notes principales et identifier les concepts clés'}</div> 
-</div> 
-</div>
+                <div class="cornell-section" style="background: white; border: 2px solid #f7c948; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"> 
+                     <h4>💡 Conseils de Révision</h4> 
+                     <div style="line-height: 1.8;">${currentAISummary?.conseils_revision || 'Relire les notes principales et identifier les concepts clés'}</div> 
+                </div>
             
-           <div class="cornell-notes">
-  <h4>📝 Notes principales</h4>
-  <div>${formatMarkdownToHTML(currentAISummary?.notes_principales_ameliorees || document.getElementById('mainNotes').value) || 'Aucune note'}</div>
+               <div class="cornell-notes">
+                  <h4>📝 Notes principales</h4>
+                  <div>${formatMarkdownToHTML(currentAISummary?.notes_principales_ameliorees || document.getElementById('mainNotes').value) || 'Aucune note'}</div>
 
-  ${currentAISummary?.descriptions_visuelles && currentAISummary.descriptions_visuelles.length > 0 ? `
-  <div style="background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border: 3px solid #ffa726; border-radius: 10px; padding: 25px; margin: 25px 0; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
-    <h4 style="color: #e65100; font-size: 1.4em; margin-bottom: 20px; text-align: center; text-transform: uppercase; letter-spacing: 1px;">
-      📊 DESCRIPTION DES GRAPHIQUES ET SCHÉMAS
+              ${currentAISummary?.descriptions_visuelles && currentAISummary.descriptions_visuelles.length > 0 ? `
+              <div style="background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border: 3px solid #ffa726; border-radius: 10px; padding: 25px; margin: 25px 0; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                <h4 style="color: #e65100; font-size: 1.4em; margin-bottom: 20px; text-align: center; text-transform: uppercase; letter-spacing: 1px;">
+              📊 DESCRIPTION DES GRAPHIQUES ET SCHÉMAS
     </h4>
     ${currentAISummary.descriptions_visuelles.map((visual, index) => `
       <div style="background: white; border-left: 5px solid #ffa726; border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
