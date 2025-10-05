@@ -1073,7 +1073,12 @@ function populateFormWithOCR(data) {
                 }
 
                 const result = await response.json();
-                
+
+                // Analyser les images supplémentaires
+const imageDescriptions = await analyzeAdditionalImages();
+if (imageDescriptions.length > 0) {
+  result.enrichment.descriptions_visuelles = imageDescriptions;
+}
                 if (result.success && result.enrichment) {
     currentAISummary = result.enrichment;
     
@@ -1131,6 +1136,42 @@ function populateFormWithOCR(data) {
             }
         }
 
+        // Analyse des images supplémentaires avec Gemini Vision
+async function analyzeAdditionalImages() {
+  if (additionalImages.length === 0) {
+    return [];
+  }
+
+  try {
+    const response = await fetch('/api/gemini-vision', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        images: additionalImages.map(img => ({
+          data: img.data,
+          name: img.name
+        }))
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    
+    if (result.success && result.extractedData?.descriptions_visuelles) {
+      return result.extractedData.descriptions_visuelles;
+    }
+    
+    return [];
+  } catch (error) {
+    console.error('Erreur analyse images supplémentaires:', error);
+    return [];
+  }
+}
         // Mise à jour de la configuration
         function updateCourseConfig() {
             courseConfig.date = document.getElementById('date').value;
@@ -1460,17 +1501,31 @@ function populateFormWithOCR(data) {
   </div>
   ` : ''}
 
-${additionalImages.length > 0 ? ` 
-<h4 style="margin-top: 30px; color: #e67e22;">📊 Schémas et Graphiques</h4> 
-<div class="image-gallery"> 
- ${additionalImages.map((img, index) => ` 
- <div class="image-container"> 
- <img src="${img.data}" alt="${img.name}"> 
- <div class="image-caption">📊 Schéma ${index + 1}</div> 
- </div> 
- `).join('')} 
-</div> 
-` : ''} 
+${additionalImages.length > 0 ? `
+<h4 style="margin-top: 30px; color: #e67e22;">📊 Schémas et Graphiques</h4>
+<div class="image-gallery">
+  ${additionalImages.map((img, index) => {
+    const description = currentAISummary?.descriptions_visuelles?.[index];
+    return `
+    <div class="image-container">
+      <img src="${img.data}" alt="${img.name}">
+      <div class="image-caption">📊 ${description?.titre || `Schéma ${index + 1}`}</div>
+      ${description ? `
+        <div style="padding: 15px; background: #f8f9fa; border-top: 2px solid #f39c12;">
+          <div style="color: #e67e22; font-weight: bold; margin-bottom: 8px;">
+            ${description.type === 'graphique' ? '📈' : description.type === 'schema' ? '🔄' : description.type === 'tableau' ? '📋' : '📊'} 
+            ${description.type.toUpperCase()}
+          </div>
+          <div style="color: #2d3436; line-height: 1.6; font-size: 14px;">
+            ${description.description}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+    `;
+  }).join('')}
+</div>
+` : ''}
 
 <!-- RÉSUMÉ après les schémas --> 
 <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; padding: 25px; margin: 25px 0; border: 3px solid #5a67d8;"> 
