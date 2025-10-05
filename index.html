@@ -1410,11 +1410,19 @@ function populateFormWithOCR(data) {
                     <h4>📅 Dates</h4>
                     <div>${document.getElementById('dates').value.split(',').map(d => `<span style="color: #e67e22; font-weight: bold; font-size: 1.2em; margin-right: 8px;">◆</span>${d.trim()}`).join('<br>') || 'Aucune date'}</div>
                 </div>
-                <div class="cornell-section">
-                    <h4>❓ Questions</h4>
-                    <div>${(currentAISummary?.questions_reflexion || document.getElementById('questions').value.split('\n').filter(q => q.trim())).map(q => `<span style="color: #e67e22; font-weight: bold; font-size: 1.2em; margin-right: 8px;">▪</span>${q.trim()}`).join('<br>') || 'Aucune question'}</div>
-                </div>
-            </div>
+                <div class="cornell-section"> 
+ <h4>❓ Questions</h4> 
+ <div>${(currentAISummary?.questions_reflexion || 
+document.getElementById('questions').value.split('\n').filter(q => q.trim())).map(q => `<span 
+style="color: #e67e22; font-weight: bold; font-size: 1.2em; margin-right: 8px;">▪</span>$
+{q.trim()}`).join('<br>') || 'Aucune question'}</div> 
+</div> 
+
+<div class="cornell-section"> 
+ <h4>💡 Conseils de Révision</h4> 
+ <div>${currentAISummary?.conseils_revision || 'Relire les notes principales et identifier les concepts clés'}</div> 
+</div> 
+</div>
             
            <div class="cornell-notes">
   <h4>📝 Notes principales</h4>
@@ -1455,18 +1463,6 @@ function populateFormWithOCR(data) {
   </div>
   ` : ''}
 
-  ${additionalImages.length > 0 ? `
-<h4 style="margin-top: 30px; color: #e67e22;">📊 Schémas et Graphiques</h4>
-<div class="image-gallery">
-  ${additionalImages.map((img, index) => `
-    <div class="image-container">
-      <img src="${img.data}" alt="${img.name}">
-      <div class="image-caption">📊 Schéma ${index + 1}</div>
-    </div>
-  `).join('')}
-</div>
-` : ''}
-
 ${additionalImages.length > 0 ? ` 
 <h4 style="margin-top: 30px; color: #e67e22;">📊 Schémas et Graphiques</h4> 
 <div class="image-gallery"> 
@@ -1489,11 +1485,6 @@ ${additionalImages.length > 0 ? `
 </div> 
 </div> 
  
- <div class="cornell-footer"> 
- <h4>💡 CONSEILS DE RÉVISION</h4> 
- <div>${currentAISummary?.conseils_revision || 'Relire les notes principales et identifier les concepts clés'}</div> 
-</div> 
-
 <!-- SECTION QUESTIONS DE RÉFLEXION --> 
 ${currentAISummary?.questions_reflexion && currentAISummary.questions_reflexion.length > 0 ? ` 
 <div style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 20px; margin: 20px;"> 
@@ -1504,16 +1495,6 @@ ${currentAISummary?.questions_reflexion && currentAISummary.questions_reflexion.
  </div> 
  `).join('')} 
 </div> 
-` : ''}
-
-<!-- SECTION CONSEILS DE RÉVISION -->
-${currentAISummary?.conseils_revision ? `
-<div style="background: #d1ecf1; border: 2px solid #17a2b8; border-radius: 8px; padding: 20px; margin: 20px;">
-  <h4 style="color: #0c5460; font-size: 1.6em; text-align: center; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px;">💡 CONSEILS DE RÉVISION</h4>
-  <div style="padding: 20px; background: white; border-radius: 4px; line-height: 1.8; font-size: 15px;">
-    ${currentAISummary.conseils_revision}
-  </div>
-</div>
 ` : ''}
 
 <div class="footer-info">
