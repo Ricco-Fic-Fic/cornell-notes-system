@@ -1026,7 +1026,48 @@ function populateFormWithOCR(data) {
     updatePreview();
     updateButtonStates();
 }
+// Analyse des images supplémentaires avec Gemini Vision
+async function analyzeAdditionalImages() {
+    if (additionalImages.length === 0) {
+        console.log('Aucune image supplémentaire à analyser');
+        return null;
+    }
 
+    console.log(`Analyse de ${additionalImages.length} image(s) supplémentaire(s)...`);
+
+    try {
+        const response = await fetch('/api/gemini-vision', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                images: additionalImages.map(img => ({
+                    data: img.data,
+                    name: img.name
+                }))
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+
+        if (result.success && result.extractedData && result.extractedData.descriptions_visuelles) {
+            console.log('Descriptions visuelles extraites:', result.extractedData.descriptions_visuelles);
+            return result.extractedData.descriptions_visuelles;
+        } else {
+            console.log('Aucune description visuelle trouvée dans la réponse');
+            return null;
+        }
+
+    } catch (error) {
+        console.error('Erreur analyse images supplémentaires:', error);
+        return null;
+    }
+}
         // Enrichissement avec Gemini AI
         async function enrichWithGeminiAI() {
             updateCourseConfig();
