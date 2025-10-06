@@ -1122,8 +1122,11 @@ async function analyzeAdditionalImages() {
             console.log('🔍 Tentative d\'analyse des images supplémentaires...');
             const visualDescriptions = await analyzeAdditionalImages();
             console.log('📊 Résultat analyzeAdditionalImages:', visualDescriptions);
-            // NE PAS utiliser visualDescriptions pour l'instant
-        }
+            // Stocker les descriptions pour utilisation dans le PDF
+            if (visualDescriptions && visualDescriptions.length > 0) {
+                currentAISummary.descriptions_visuelles = visualDescriptions;
+                console.log('✅ Descriptions stockées dans currentAISummary');
+            }
 
     // Parser et appliquer l'enrichissement
     const enrichData = result.enrichment.enrichissement || result.enrichment;
