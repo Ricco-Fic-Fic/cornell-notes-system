@@ -1117,13 +1117,22 @@ async function analyzeAdditionalImages() {
                 
                 if (result.success && result.enrichment) {
     currentAISummary = result.enrichment;
-    // ÉTAPE 3 : Analyse des images supplémentaires (logging uniquement)
-        if (additionalImages.length > 0) {
-            console.log('🔍 Tentative d\'analyse des images supplémentaires...');
-            const visualDescriptions = await analyzeAdditionalImages();
-            console.log('📊 Résultat analyzeAdditionalImages:', visualDescriptions);
-            // NE PAS utiliser visualDescriptions pour l'instant
-        }
+    // SOUS-ÉTAPE 4.2 : Analyse et stockage dans variable globale
+if (additionalImages.length > 0) {
+    console.log('🔍 Analyse des images supplémentaires...');
+    const visualDescriptions = await analyzeAdditionalImages();
+    console.log('📊 Résultat analyzeAdditionalImages:', visualDescriptions);
+    
+    // Stocker dans variable globale (pas dans currentAISummary)
+    if (visualDescriptions && visualDescriptions.length > 0) {
+        window.visualDescriptionsGlobal = visualDescriptions;
+        console.log('✅ Descriptions stockées dans window.visualDescriptionsGlobal');
+        console.log('📝 Nombre de descriptions:', visualDescriptions.length);
+    } else {
+        window.visualDescriptionsGlobal = null;
+        console.log('ℹ️ Aucune description à stocker');
+    }
+}
 
     // Parser et appliquer l'enrichissement
     const enrichData = result.enrichment.enrichissement || result.enrichment;
