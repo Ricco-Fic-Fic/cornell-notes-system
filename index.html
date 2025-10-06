@@ -1117,7 +1117,14 @@ async function analyzeAdditionalImages() {
                 
                 if (result.success && result.enrichment) {
     currentAISummary = result.enrichment;
-    
+    // ÉTAPE 3 : Analyse des images supplémentaires (logging uniquement)
+        if (additionalImages.length > 0) {
+            console.log('🔍 Tentative d\'analyse des images supplémentaires...');
+            const visualDescriptions = await analyzeAdditionalImages();
+            console.log('📊 Résultat analyzeAdditionalImages:', visualDescriptions);
+            // NE PAS utiliser visualDescriptions pour l'instant
+        }
+
     // Parser et appliquer l'enrichissement
     const enrichData = result.enrichment.enrichissement || result.enrichment;
     
