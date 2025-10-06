@@ -1,1468 +1,1582 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cornell Notes System - Gemini AI</title>
-<style>
-* {
-margin: 0;
-padding: 0;
-box-sizing: border-box;
-}
-body {
-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-min-height: 100vh;
-line-height: 1.6;
-}
-.container {
-max-width: 1200px;
-margin: 0 auto;
-padding: 20px;
-}
-.header {
-background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-color: white;
-padding: 30px;
-border-radius: 20px;
-text-align: center;
-margin-bottom: 30px;
-box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-}
-.header h1 {
-font-size: 2.5em;
-margin-bottom: 10px;
-text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-}
-.status-bar {
-background: rgba(255,255,255,0.2);
-padding: 15px;
-border-radius: 10px;
-margin-top: 20px;
-backdrop-filter: blur(10px);
-}
-.status-indicator {
-display: flex;
-align-items: center;
-justify-content: center;
-gap: 10px;
-font-size: 1.1em;
-font-weight: bold;
-}
-.tabs {
-display: flex;
-background: rgba(255,255,255,0.1);
-border-radius: 15px;
-padding: 5px;
-margin-bottom: 30px;
-backdrop-filter: blur(10px);
-}
-.tab {
-flex: 1;
-padding: 15px 20px;
-background: transparent;
-border: none;
-color: white;
-cursor: pointer;
-border-radius: 10px;
-transition: all 0.3s ease;
-font-size: 1em;
-font-weight: 500;
-}
-.tab.active {
-background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-transform: translateY(-2px);
-}
-.tab-content {
-display: none;
-background: rgba(255,255,255,0.95);
-border-radius: 20px;
-padding: 30px;
-box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-backdrop-filter: blur(10px);
-}
-.tab-content.active {
-display: block;
-animation: fadeIn 0.5s ease;
-}
-@keyframes fadeIn {
-from { opacity: 0; transform: translateY(20px); }
-to { opacity: 1; transform: translateY(0); }
-}
-.form-section {
-background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
-padding: 25px;
-border-radius: 15px;
-margin-bottom: 25px;
-box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-}
-.form-section h3 {
-color: #2d3436;
-margin-bottom: 20px;
-font-size: 1.3em;
-display: flex;
-align-items: center;
-gap: 10px;
-}
-.form-grid {
-display: grid;
-grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-gap: 20px;
-margin-bottom: 20px;
-}
-}
-.form-group {
-margin-bottom: 20px;
-.form-group label {
-display: block;
-margin-bottom: 8px;
-font-weight: 600;
-color: #2d3436;
-font-size: 1em;
-}
-.form-group input,
-.form-group textarea,
-.form-group select {
-width: 100%;
-padding: 12px 15px;
-border: 2px solid #ddd;
-border-radius: 10px;
-font-size: 1em;
-transition: all 0.3s ease;
-background: rgba(255,255,255,0.9);
-}
-.form-group input:focus,
-.form-group textarea:focus,
-.form-group select:focus {
-outline: none;
-border-color: #f093fb;
-box-shadow: 0 0 0 3px rgba(240, 147, 251, 0.2);
-transform: translateY(-1px);
-}
-.form-group select {
-cursor: pointer;
-appearance: none;
-background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
-svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/
-%3E%3C/svg%3E");
-background-repeat: no-repeat;
-background-position: right 15px center;
-padding-right: 40px;
-}
-.upload-area {
-border: 3px dashed #74b9ff;
-border-radius: 15px;
-padding: 30px;
-text-align: center;
-background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-cursor: pointer;
-transition: all 0.3s ease;
-margin-bottom: 20px;
-}
-.upload-area:hover {
-border-color: #0984e3;
-background: linear-gradient(135deg, #bbdefb 0%, #90caf9 100%);
-transform: translateY(-2px);
-}
-.upload-area.dragover {
-border-color: #00b894;
-background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
-transform: scale(1.02);
-}
-.upload-icon {
-font-size: 3em;
-margin-bottom: 15px;
-color: #74b9ff;
-}
-.btn {
-background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
-color: white;
-border: none;
-padding: 15px 25px;
-border-radius: 10px;
-cursor: pointer;
-font-size: 1em;
-font-weight: 600;
-transition: all 0.3s ease;
-box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-text-transform: uppercase;
-letter-spacing: 0.5px;
-}
-.btn:hover {
-transform: translateY(-2px);
-box-shadow: 0 7px 20px rgba(0,0,0,0.3);
-}
-.btn:disabled {
-background: #bbb;
-cursor: not-allowed;
-transform: none;
-}
-}
-}
-}
-.btn-success {
-background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
-.btn-danger {
-background: linear-gradient(135deg, #e17055 0%, #d63031 100%);
-.btn-warning {
-background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
-.image-preview {
-display: grid;
-grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-gap: 15px;
-margin-top: 20px;
-}
-.image-item {
-position: relative;
-background: white;
-border-radius: 10px;
-overflow: hidden;
-box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-transition: transform 0.3s ease;
-}
-}
-.image-item:hover {
-transform: translateY(-5px);
-.image-item img {
-width: 100%;
-height: 150px;
-object-fit: cover;
-}
-.image-item .image-info {
-padding: 10px;
-font-size: 0.9em;
-color: #666;
-}
-.image-item .remove-btn {
-position: absolute;
-top: 5px;
-right: 5px;
-background: #e74c3c;
-color: white;
-border: none;
-border-radius: 50%;
-width: 25px;
-height: 25px;
-cursor: pointer;
-font-size: 12px;
-}
-.cornell-preview {
-background: white;
-border-radius: 15px;
-overflow: hidden;
-box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-margin-top: 20px;
-}
-.cornell-header {
-background: linear-gradient(135deg, #f7c948 0%, #f39c12 100%);
-padding: 20px;
-text-align: center;
-color: #2d3436;
-font-weight: bold;
-font-size: 1.2em;
-box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-.cornell-content {
-display: grid;
-grid-template-columns: 1fr 2fr;
-min-height: 400px;
-}
-.cornell-sidebar {
-background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
-padding: 20px;
-border-right: 3px solid #f39c12;
-}
-.cornell-notes {
-background: white;
-padding: 20px;
-}
-.cornell-section {
-margin-bottom: 20px;
-padding: 15px;
-background: rgba(247, 201, 72, 0.1);
-border-left: 4px solid #f7c948;
-border-radius: 5px;
-}
-.cornell-section h4 {
-color: #e67e22;
-margin-bottom: 10px;
-font-size: 1.1em;
-}
-.cornell-footer {
-background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
-padding: 40px;
-color: #1a4d2e;
-border-top: 3px solid #4a9d28;
-box-shadow: 0 -5px 15px rgba(0,0,0,0.15);
-}
-.cornell-footer h4 {
-margin-bottom: 25px;
-text-align: center;
-font-size: 1.6em;
-text-transform: uppercase;
-letter-spacing: 2px;
-font-weight: 700;
-}
-.cornell-footer > div {
-background: rgba(255, 255, 255, 0.2);
-padding: 30px;
-border-radius: 12px;
-font-size: 16px;
-line-height: 2;
-backdrop-filter: blur(10px);
-box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-}
-.status-message {
-padding: 15px;
-border-radius: 10px;
-margin: 15px 0;
-font-weight: 500;
-}
-.status-success {
-background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-color: #155724;
-border: 1px solid #c3e6cb;
-}
-.status-error {
-background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
-color: #721c24;
-border: 1px solid #f5c6cb;
-}
-.status-warning {
-background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
-color: #856404;
-border: 1px solid #ffeaa7;
-}
-.loading {
-display: flex;
-align-items: center;
-gap: 10px;
-padding: 15px;
-background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-border-radius: 10px;
-color: #1565c0;
-font-weight: 500;
-}
-.spinner {
-width: 20px;
-height: 20px;
-border: 2px solid #bbdefb;
-border-top: 2px solid #1565c0;
-border-radius: 50%;
-animation: spin 1s linear infinite;
-}
-@keyframes spin {
-0% { transform: rotate(0deg); }
-100% { transform: rotate(360deg); }
-}
-.export-section {
-background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
-padding: 25px;
-border-radius: 15px;
-text-align: center;
-}
-.export-section h3 {
-color: #2e7d32;
-margin-bottom: 20px;
-font-size: 1.4em;
-}
-.export-preview {
-background: white;
-padding: 20px;
-border-radius: 10px;
-margin-bottom: 20px;
-box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-text-align: left;
-}
-@media (max-width: 768px) {
-.cornell-content {
-grid-template-columns: 1fr;
-}
-.form-grid {
-grid-template-columns: 1fr;
-}
-}
-.image-preview {
-grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-}
-/* Nouveaux styles pour les images supplémentaires */
-.additional-images-section {
-background: linear-gradient(135deg, #e8f4f8 0%, #d1ecf1 100%);
-border: 2px solid #74b9ff;
-margin-top: 20px;
-}
-.section-divider {
-height: 3px;
-background: linear-gradient(90deg, #74b9ff 0%, #0984e3 100%);
-margin: 20px 0;
-border-radius: 2px;
-}
-.image-type-badge {
-position: absolute;
-top: 5px;
-left: 5px;
-background: rgba(0,0,0,0.7);
-color: white;
-padding: 2px 6px;
-border-radius: 3px;
-font-size: 10px;
-font-weight: bold;
-}
-.manuscript-badge {
-background: #e74c3c;
-}
-.additional-badge {
-background: #3498db;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cornell Notes System - Gemini AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .status-bar {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .tabs {
+            display: flex;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 5px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px 20px;
+            background: transparent;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transform: translateY(-2px);
+        }
+
+        .tab-content {
+            display: none;
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-section {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .form-section h3 {
+            color: #2d3436;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2d3436;
+            font-size: 1em;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.9);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #f093fb;
+            box-shadow: 0 0 0 3px rgba(240, 147, 251, 0.2);
+            transform: translateY(-1px);
+        }
+        
+        .form-group select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            padding-right: 40px;
+        }
+
+        .upload-area {
+            border: 3px dashed #74b9ff;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #0984e3;
+            background: linear-gradient(135deg, #bbdefb 0%, #90caf9 100%);
+            transform: translateY(-2px);
+        }
+
+        .upload-area.dragover {
+            border-color: #00b894;
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            color: #74b9ff;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn:disabled {
+            background: #bbb;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e17055 0%, #d63031 100%);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+        }
+
+        .image-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .image-item {
+            position: relative;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .image-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .image-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        .image-item .image-info {
+            padding: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .image-item .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .cornell-preview {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-top: 20px;
+        }
+
+        .cornell-header {
+            background: linear-gradient(135deg, #f7c948 0%, #f39c12 100%);
+            padding: 20px;
+            text-align: center;
+            color: #2d3436;
+            font-weight: bold;
+            font-size: 1.2em;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .cornell-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            min-height: 400px;
+        }
+
+        .cornell-sidebar {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            padding: 20px;
+            border-right: 3px solid #f39c12;
+        }
+
+        .cornell-notes {
+            background: white;
+            padding: 20px;
+        }
+
+        .cornell-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(247, 201, 72, 0.1);
+            border-left: 4px solid #f7c948;
+            border-radius: 5px;
+        }
+
+        .cornell-section h4 {
+            color: #e67e22;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .cornell-footer {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%); 
+            padding: 40px; 
+            color: #1a4d2e; 
+            border-top: 3px solid #4a9d28;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.15);
+        }
+
+        .cornell-footer h4 {
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 1.6em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        .cornell-footer > div {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 30px;
+            border-radius: 12px;
+            font-size: 16px;
+            line-height: 2;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+
+        .status-success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-warning {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 10px;
+            color: #1565c0;
+            font-weight: 500;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #bbdefb;
+            border-top: 2px solid #1565c0;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .export-section {
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .export-section h3 {
+            color: #2e7d32;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+        }
+
+        .export-preview {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: left;
+        }
+
+        @media (max-width: 768px) {
+            .cornell-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .image-preview {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+
+        /* Nouveaux styles pour les images supplémentaires */
+        .additional-images-section {
+            background: linear-gradient(135deg, #e8f4f8 0%, #d1ecf1 100%);
+            border: 2px solid #74b9ff;
+            margin-top: 20px;
+        }
+
+        .section-divider {
+            height: 3px;
+            background: linear-gradient(90deg, #74b9ff 0%, #0984e3 100%);
+            margin: 20px 0;
+            border-radius: 2px;
+        }
+
+        .image-type-badge {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .manuscript-badge {
+            background: #e74c3c;
+        }
+
+        .additional-badge {
+            background: #3498db;
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-<!-- Header -->
-<header class="header">
-<h1>📚 Cornell Notes System</h1>
-<p>Transformation intelligente de vos notes manuscrites avec Gemini AI</p>
-<div class="status-bar">
-<div class="status-indicator">
-<span>🤖 Gemini AI - Opérationnel</span>
-<span>•</span>
-<span>🔍 OCR Vision Activé</span>
-<span>•</span>
-<span>💰 Gratuit Illimité</span>
-</div>
-</div>
-</header>
-<!-- Tabs -->
-<div class="tabs">
-<button class="tab active" onclick="switchTab(1)">📤 Upload & Configuration</button>
-<button class="tab" onclick="switchTab(2)">📝 Structure Cornell</button>
-<button class="tab" onclick="switchTab(3)">🚀 Génération & Export</button>
-</div>
-<!-- Tab 1: Upload & Configuration -->
-<div id="tab1" class="tab-content active">
-<!-- Configuration Section -->
-<div class="form-section">
-<h3>⚙ Configuration du Document</h3>
-<div class="form-grid">
-<div class="form-group">
-<label for="date">📅 Date *</label>
-<input type="date" id="date" required>
-</div>
-<div class="form-group">
-<label for="subject">📚 Matière *</label>
-<select id="subject" required>
-<option value="">Sélectionner une matière</option>
-<option value="Mathématiques">Mathématiques</option>
-<option value="Physique">Physique</option>
-<option value="Chimie">Chimie</option>
-<option value="Biologie">Biologie</option>
-<option value="Histoire">Histoire</option>
-<option value="Géographie">Géographie</option>
-<option value="Philosophie">Philosophie</option>
-<option value="Économie">Économie</option>
-<option value="Français">Français</option>
-<option value="Anglais">Anglais</option>
-<option value="Autre">Autre</option>
-</select>
-</div>
-<div class="form-group">
-<label for="professor">👨🏫 Professeur *</label>
-<input type="text" id="professor" placeholder="Ex: Dr. Martin" required>
-</div>
-<div class="form-group">
-<label for="chapter">📖 Nom du Chapitre *</label>
-<input type="text" id="chapter" placeholder="Ex: Les équations différentielles"
-required>
-</div>
-</div>
-</div>
-<!-- Upload Section - Notes Manuscrites -->
-<div class="form-section">
-<h3>📝 Upload Notes Manuscrites</h3>
-<div class="upload-area" onclick="document.getElementById('fileInput').click()"
-ondragover="handleDragOver(event)"
-ondrop="handleDrop(event)"
-ondragenter="handleDragEnter(event)"
-ondragleave="handleDragLeave(event)">
-<div class="upload-icon">📄 </div>
-<h4>Glissez vos notes manuscrites ici</h4>
-<p>ou cliquez pour sélectionner des fichiers</p>
-<p><em>Formats acceptés: JPG, PNG, WEBP uniquement (max 5MB)</em></p>
-</div>
-<input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.webp,image/
-jpeg,image/png,image/webp" style="display: none;" onchange="handleFileSelect(event)">
-<div id="manuscriptImages" class="image-preview"></div>
-<div style="text-align: center; margin-top: 20px;">
-<button class="btn" onclick="analyzeWithGeminiVision()" id="analyzeBtn"
-disabled>
-🔍 Analyser avec Gemini Vision
-</button>
-</div>
-</div>
-<!-- Section Divider -->
-<div class="section-divider"></div>
-<div id="statusMessage"></div>
-<div class="section-divider"></div>
-<!-- Upload Section - Images/Schémas Supplémentaires -->
-<div class="form-section additional-images-section">
-<h3>🖼 Images & Schémas Supplémentaires</h3>
-<p style="margin-bottom: 15px; color: #2d3436; font-style: italic;">
-Ajoutez des schémas, graphiques ou images qui enrichiront votre résumé Cornell
-</p>
-<div class="upload-area"
-onclick="document.getElementById('additionalFileInput').click()"
-ondragover="handleDragOver(event)"
-ondrop="handleAdditionalDrop(event)"
-ondragenter="handleDragEnter(event)"
-ondragleave="handleDragLeave(event)">
-<div class="upload-icon">🎨 </div>
-<h4>Glissez vos schémas et images ici</h4>
-<p>ou cliquez pour sélectionner des fichiers</p>
-<p><em>Formats acceptés: JPG, PNG, WEBP, PDF (max 5MB chacun)</em></p>
-</div>
-<input type="file" id="additionalFileInput" multiple
-accept=".jpg,.jpeg,.png,.webp,.pdf" style="display: none;"
-onchange="handleAdditionalFileSelect(event)">
-<div id="additionalImages" class="image-preview"></div>
-</div>
-</div>
-<!-- Tab 2: Cornell Structure -->
-<div id="tab2" class="tab-content">
-<div class="form-section">
-<h3>📝 Structure Cornell Notes</h3>
-<div class="form-grid">
-<div class="form-group">
-<label for="keywords">🔑 Mots-clés</label>
-<textarea id="keywords" rows="4" placeholder="Mots-clés importants du
-cours..."></textarea>
-</div>
-<div class="form-group">
-<label for="formulas">📐 Formules</label>
-<textarea id="formulas" rows="4" placeholder="Formules et équations
-importantes..."></textarea>
-</div>
-<div class="form-group">
-<label for="authors">👥 Noms d'auteurs</label>
-<textarea id="authors" rows="3" placeholder="Auteurs, scientifiques
-mentionnés..."></textarea>
-</div>
-<div class="form-group">
-<label for="dates">📅 Dates importantes</label>
-<textarea id="dates" rows="3" placeholder="Dates clés, périodes
-historiques..."></textarea>
-</div>
-<div class="form-group">
-<label for="questions">❓ Questions & Doutes</label>
-<textarea id="questions" rows="3" placeholder="Questions à approfondir..."></
-textarea>
-</div>
-</div>
-<div class="form-group">
-<label for="mainNotes">📋 Notes principales</label>
-<textarea id="mainNotes" rows="8" placeholder="Contenu principal du cours,
-explications détaillées..."></textarea>
-</div>
-<div class="form-group">
-<label for="summary">📊 Résumé</label>
-<textarea id="summary" rows="4" placeholder="Résumé personnel des points
-clés..."></textarea>
-</div>
-</div>
-<!-- Cornell Preview -->
-<div class="cornell-preview" id="cornellPreview">
-<div class="cornell-header">
-<span id="previewDate">Date</span> |
-<span id="previewChapter">Nom du Chapitre</span> |
-<span id="previewSubject">Matière</span>
-</div>
-<div class="cornell-content">
-<div class="cornell-sidebar">
-<div class="cornell-section">
-<h4>🔑 Mots-clés</h4>
-<div id="previewKeywords">Mots-clés à extraire...</div>
-</div>
-<div class="cornell-section">
-<h4>📐 Formules</h4>
-<div id="previewFormulas">Formules importantes...</div>
-</div>
-<div class="cornell-section">
-<h4>👥 Auteurs</h4>
-disabled>
-<div id="previewAuthors">Noms d'auteurs...</div>
-</div>
-<div class="cornell-section">
-<h4>📅 Dates</h4>
-<div id="previewDates">Dates importantes...</div>
-</div>
-<div class="cornell-section">
-<h4>❓ Questions</h4>
-<div id="previewQuestions">Questions et doutes...</div>
-</div>
-</div>
-<div class="cornell-notes">
-<h4>📋 Notes principales</h4>
-<div id="previewMainNotes">Contenu principal du cours...</div>
-</div>
-</div>
-<div class="cornell-footer">
-<h4>📊 Résumé</h4>
-<div id="previewSummary">Résumé des points clés...</div>
-</div>
-</div>
-</div>
-<!-- Tab 3: Génération & Export -->
-<div id="tab3" class="tab-content">
-<div class="export-section">
-<h3>🚀 Génération Cornell avec Gemini AI</h3>
-<p>Utilisez l'intelligence artificielle pour enrichir et structurer vos notes</p>
-<div style="margin: 20px 0;">
-<button class="btn btn-success" onclick="enrichWithGeminiAI()" id="enrichBtn"
-🤖 Enrichir avec Gemini AI
-</button>
-</div>
-<div id="aiEnrichmentStatus"></div>
-</div>
-<div class="export-section">
-<h3>📄 Export Final</h3>
-<p>Téléchargez votre résumé Cornell au format PDF</p>
-<div class="export-preview" id="exportPreview">
-<h4>📋 Aperçu de l'export</h4>
-<p>Complétez les sections précédentes pour voir l'aperçu</p>
-</div>
-<div style="margin: 20px 0;">
-<button class="btn btn-warning" onclick="exportToPDF()" id="exportBtn"
-disabled>
-📤 Exporter en PDF
-</button>
-<button class="btn btn-danger" onclick="resetForm()" style="margin-left: 10px;">
-🔄 Nouveau Document
-</button>
-</div>
-</div>
-</div>
-</div>
-<script>
-// Variables globales
-let uploadedImages = [];
-let additionalImages = [];
-let currentAISummary = null;
-let isProcessing = false;
-// Configuration
-const courseConfig = {
-date: '',
-subject: '',
-professor: '',
-chapter: ''
-};
-// Initialisation
-document.addEventListener('DOMContentLoaded', function() {
-// Set today's date
-document.getElementById('date').valueAsDate = new Date();
-// Auto-update preview
-setupPreviewUpdates();
-showStatus('Système prêt. Commencez par configurer votre document.', 'success');
-});
-// Gestion des onglets
-function switchTab(tabNumber) {
-// Hide all tabs
-document.querySelectorAll('.tab-content').forEach(tab => {
-tab.classList.remove('active');
-});
-document.querySelectorAll('.tab').forEach(tab => {
-tab.classList.remove('active');
-});
-// Show selected tab
-document.getElementById(`tab${tabNumber}`).classList.add('active');
-document.querySelectorAll('.tab')[tabNumber - 1].classList.add('active');
-// Update buttons state
-updateButtonStates();
-}
-}
-// Gestion drag & drop
-function handleDragOver(event) {
-event.preventDefault();
-function handleDragEnter(event) {
-event.preventDefault();
-event.target.closest('.upload-area').classList.add('dragover');
-}
-function handleDragLeave(event) {
-event.preventDefault();
-event.target.closest('.upload-area').classList.remove('dragover');
-}
-function handleDrop(event) {
-event.preventDefault();
-event.target.closest('.upload-area').classList.remove('dragover');
-const files = Array.from(event.dataTransfer.files);
-processManuscriptFiles(files);
-}
-function handleAdditionalDrop(event) {
-event.preventDefault();
-event.target.closest('.upload-area').classList.remove('dragover');
-const files = Array.from(event.dataTransfer.files);
-processAdditionalFiles(files);
-}
-function handleFileSelect(event) {
-const files = Array.from(event.target.files);
-processManuscriptFiles(files);
-}
-function handleAdditionalFileSelect(event) {
-const files = Array.from(event.target.files);
-processAdditionalFiles(files);
-}
-// Traitement des fichiers manuscrits
-async function processManuscriptFiles(files) {
-showStatus('Traitement des images en cours...', 'loading');
-for (const file of files) {
-if (!validateFile(file)) continue;
-try {
-// Gemini Vision ne supporte que les images, pas les PDF
-if (file.type === 'application/pdf') {
-showStatus('Les PDF ne sont pas supportés pour l\'OCR. Veuillez convertir en
-images JPG/PNG/WEBP.', 'error');
-continue;
-}
-await processImage(file, 'manuscript');
-} catch (error) {
-console.error('Erreur traitement fichier:', error);
-showStatus(`Erreur lors du traitement de ${file.name}`, 'error');
-}
-}
-}
-updateImagePreviews();
-updateButtonStates();
-if (uploadedImages.length > 0) {
-showStatus(`${uploadedImages.length} image(s) manuscrite(s) chargée(s)`, 'success');
-}
-// Traitement des fichiers supplémentaires
-async function processAdditionalFiles(files) {
-showStatus('Traitement des images supplémentaires...', 'loading');
-for (const file of files) {
-if (!validateFile(file)) continue;
-try {
-} else {
-if (file.type === 'application/pdf') {
-await processPDF(file, 'additional');
-await processImage(file, 'additional');
-}
-} catch (error) {
-console.error('Erreur traitement fichier:', error);
-showStatus(`Erreur lors du traitement de ${file.name}`, 'error');
-}
-}
-updateImagePreviews();
-showStatus(`${additionalImages.length} image(s) supplémentaire(s) chargée(s)`, 'success');
-}
-function validateFile(file) {
-const maxSize = 5 * 1024 * 1024; // 5MB
-const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-if (file.size > maxSize) {
-showStatus(`${file.name} est trop volumineux (max 5MB)`, 'error');
-return false;
-}
-if (!allowedTypes.includes(file.type)) {
-showStatus(`Type de fichier non supporté: ${file.name}. Utilisez JPG, PNG ou WEBP
-uniquement.`, 'error');
-return false;
-}
-return true;
-}
-async function processImage(file, type) {
-return new Promise((resolve) => {
-const reader = new FileReader();
-reader.onload = (e) => {
-const imageData = {
-name: file.name,
-data: e.target.result,
-type: file.type,
-size: file.size,
-uploadType: type
-};
-if (type === 'manuscript') {
-uploadedImages.push(imageData);
-} else {
-additionalImages.push(imageData);
-}
-resolve();
-};
-reader.readAsDataURL(file);
-});
-}
-async function processPDF(file, type) {
-// For now, treat PDF as regular file - Gemini can handle PDF directly
-return processImage(file, type);
-}
-button>
-button>
-function updateImagePreviews() {
-// Update manuscript images
-const manuscriptContainer = document.getElementById('manuscriptImages');
-manuscriptContainer.innerHTML = uploadedImages.map((img, index) => `
-<div class="image-item">
-<div class="image-type-badge manuscript-badge">📝 Notes</div>
-<img src="${img.data}" alt="${img.name}">
-<div class="image-info">
-${img.name} (${(img.size / 1024).toFixed(1)}KB)
-</div>
-<button class="remove-btn" onclick="removeImage(${index}, 'manuscript')">×</
-</div>
-`).join('');
-// Update additional images
-const additionalContainer = document.getElementById('additionalImages');
-additionalContainer.innerHTML = additionalImages.map((img, index) => `
-<div class="image-item">
-<div class="image-type-badge additional-badge">🎨 Schéma</div>
-<img src="${img.data}" alt="${img.name}">
-<div class="image-info">
-${img.name} (${(img.size / 1024).toFixed(1)}KB)
-</div>
-<button class="remove-btn" onclick="removeImage(${index}, 'additional')">×</
-</div>
-`).join('');
-}
-function removeImage(index, type) {
-if (type === 'manuscript') {
-uploadedImages.splice(index, 1);
-} else {
-additionalImages.splice(index, 1);
-}
-updateImagePreviews();
-updateButtonStates();
-}
-// Analyse OCR avec Gemini Vision
-async function analyzeWithGeminiVision() {
-if (uploadedImages.length === 0) {
-showStatus('Aucune image à analyser', 'error');
-return;
-}
-if (isProcessing) {
-showStatus('Analyse en cours, veuillez patienter...', 'warning');
-return;
-}
-isProcessing = true;
-updateButtonStates();
-showStatus('Analyse OCR en cours avec Gemini Vision...', 'loading');
-try {
-const response = await fetch('/api/gemini-vision', {
-method: 'POST',
-headers: {
-'Content-Type': 'application/json',
-},
-body: JSON.stringify({
-images: uploadedImages.map(img => ({
-data: img.data,
-name: img.name
-}))
-})
-});
-}
-if (!response.ok) {
-throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-const result = await response.json();
-if (result.success && result.extractedData) {
-populateFormWithOCR(result.extractedData);
-showStatus('Analyse OCR terminée avec succès!', 'success');
-} else {
-throw new Error(result.error || 'Erreur lors de l\'analyse OCR');
-}
-} catch (error) {
-console.error('Erreur OCR:', error);
-showStatus(`Erreur OCR: ${error.message}`, 'error');
-} finally {
-isProcessing = false;
-updateButtonStates();
-}
-}
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>📚 Cornell Notes System</h1>
+            <p>Transformation intelligente de vos notes manuscrites avec Gemini AI</p>
+            <div class="status-bar">
+                <div class="status-indicator">
+                    <span>🤖 Gemini AI - Opérationnel</span>
+                    <span>•</span>
+                    <span>🔍 OCR Vision Activé</span>
+                    <span>•</span>
+                    <span>💰 Gratuit Illimité</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab(1)">📤 Upload & Configuration</button>
+            <button class="tab" onclick="switchTab(2)">📝 Structure Cornell</button>
+            <button class="tab" onclick="switchTab(3)">🚀 Génération & Export</button>
+        </div>
+
+        <!-- Tab 1: Upload & Configuration -->
+        <div id="tab1" class="tab-content active">
+            <!-- Configuration Section -->
+            <div class="form-section">
+                <h3>⚙️ Configuration du Document</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="date">📅 Date *</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">📚 Matière *</label>
+                        <select id="subject" required>
+                            <option value="">Sélectionner une matière</option>
+                            <option value="Mathématiques">Mathématiques</option>
+                            <option value="Physique">Physique</option>
+                            <option value="Chimie">Chimie</option>
+                            <option value="Biologie">Biologie</option>
+                            <option value="Histoire">Histoire</option>
+                            <option value="Géographie">Géographie</option>
+                            <option value="Philosophie">Philosophie</option>
+                            <option value="Économie">Économie</option>
+                            <option value="Français">Français</option>
+                            <option value="Anglais">Anglais</option>
+                            <option value="Autre">Autre</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="professor">👨‍🏫 Professeur *</label>
+                        <input type="text" id="professor" placeholder="Ex: Dr. Martin" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="chapter">📖 Nom du Chapitre *</label>
+                        <input type="text" id="chapter" placeholder="Ex: Les équations différentielles" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Section - Notes Manuscrites -->
+            <div class="form-section">
+                <h3>📝 Upload Notes Manuscrites</h3>
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()" 
+                     ondragover="handleDragOver(event)" 
+                     ondrop="handleDrop(event)" 
+                     ondragenter="handleDragEnter(event)" 
+                     ondragleave="handleDragLeave(event)">
+                    <div class="upload-icon">📄</div>
+                    <h4>Glissez vos notes manuscrites ici</h4>
+                    <p>ou cliquez pour sélectionner des fichiers</p>
+                    <p><em>Formats acceptés: JPG, PNG, WEBP uniquement (max 5MB)</em></p>
+                </div>
+                <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" style="display: none;" onchange="handleFileSelect(event)">
+                
+                <div id="manuscriptImages" class="image-preview"></div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn" onclick="analyzeWithGeminiVision()" id="analyzeBtn" disabled>
+                        🔍 Analyser avec Gemini Vision
+                    </button>
+                </div>
+            </div>
+
+            <!-- Section Divider -->
+            <div class="section-divider"></div>
+            <div id="statusMessage"></div>
+            <div class="section-divider"></div>
+
+            <!-- Upload Section - Images/Schémas Supplémentaires -->
+            <div class="form-section additional-images-section">
+                <h3>🖼️ Images & Schémas Supplémentaires</h3>
+                <p style="margin-bottom: 15px; color: #2d3436; font-style: italic;">
+                    Ajoutez des schémas, graphiques ou images qui enrichiront votre résumé Cornell
+                </p>
+                <div class="upload-area" onclick="document.getElementById('additionalFileInput').click()" 
+                     ondragover="handleDragOver(event)" 
+                     ondrop="handleAdditionalDrop(event)" 
+                     ondragenter="handleDragEnter(event)" 
+                     ondragleave="handleDragLeave(event)">
+                    <div class="upload-icon">🎨</div>
+                    <h4>Glissez vos schémas et images ici</h4>
+                    <p>ou cliquez pour sélectionner des fichiers</p>
+                    <p><em>Formats acceptés: JPG, PNG, WEBP, PDF (max 5MB chacun)</em></p>
+                </div>
+                <input type="file" id="additionalFileInput" multiple accept=".jpg,.jpeg,.png,.webp,.pdf" style="display: none;" onchange="handleAdditionalFileSelect(event)">
+                
+                <div id="additionalImages" class="image-preview"></div>
+            </div>
+
+        </div>
+
+        <!-- Tab 2: Cornell Structure -->
+        <div id="tab2" class="tab-content">
+            <div class="form-section">
+                <h3>📝 Structure Cornell Notes</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="keywords">🔑 Mots-clés</label>
+                        <textarea id="keywords" rows="4" placeholder="Mots-clés importants du cours..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="formulas">📐 Formules</label>
+                        <textarea id="formulas" rows="4" placeholder="Formules et équations importantes..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="authors">👥 Noms d'auteurs</label>
+                        <textarea id="authors" rows="3" placeholder="Auteurs, scientifiques mentionnés..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="dates">📅 Dates importantes</label>
+                        <textarea id="dates" rows="3" placeholder="Dates clés, périodes historiques..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="questions">❓ Questions & Doutes</label>
+                        <textarea id="questions" rows="3" placeholder="Questions à approfondir..."></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="mainNotes">📋 Notes principales</label>
+                    <textarea id="mainNotes" rows="8" placeholder="Contenu principal du cours, explications détaillées..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="summary">📊 Résumé</label>
+                    <textarea id="summary" rows="4" placeholder="Résumé personnel des points clés..."></textarea>
+                </div>
+            </div>
+
+            <!-- Cornell Preview -->
+            <div class="cornell-preview" id="cornellPreview">
+                <div class="cornell-header">
+                    <span id="previewDate">Date</span> | 
+                    <span id="previewChapter">Nom du Chapitre</span> | 
+                    <span id="previewSubject">Matière</span>
+                </div>
+                <div class="cornell-content">
+                    <div class="cornell-sidebar">
+                        <div class="cornell-section">
+                            <h4>🔑 Mots-clés</h4>
+                            <div id="previewKeywords">Mots-clés à extraire...</div>
+                        </div>
+                        <div class="cornell-section">
+                            <h4>📐 Formules</h4>
+                            <div id="previewFormulas">Formules importantes...</div>
+                        </div>
+                        <div class="cornell-section">
+                            <h4>👥 Auteurs</h4>
+                            <div id="previewAuthors">Noms d'auteurs...</div>
+                        </div>
+                        <div class="cornell-section">
+                            <h4>📅 Dates</h4>
+                            <div id="previewDates">Dates importantes...</div>
+                        </div>
+                        <div class="cornell-section">
+                            <h4>❓ Questions</h4>
+                            <div id="previewQuestions">Questions et doutes...</div>
+                        </div>
+                    </div>
+                    <div class="cornell-notes">
+                        <h4>📋 Notes principales</h4>
+                        <div id="previewMainNotes">Contenu principal du cours...</div>
+                    </div>
+                </div>
+                <div class="cornell-footer">
+                    <h4>📊 Résumé</h4>
+                    <div id="previewSummary">Résumé des points clés...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Génération & Export -->
+        <div id="tab3" class="tab-content">
+            <div class="export-section">
+                <h3>🚀 Génération Cornell avec Gemini AI</h3>
+                <p>Utilisez l'intelligence artificielle pour enrichir et structurer vos notes</p>
+                
+                <div style="margin: 20px 0;">
+                    <button class="btn btn-success" onclick="enrichWithGeminiAI()" id="enrichBtn" disabled>
+                        🤖 Enrichir avec Gemini AI
+                    </button>
+                </div>
+
+                <div id="aiEnrichmentStatus"></div>
+            </div>
+
+            <div class="export-section">
+                <h3>📄 Export Final</h3>
+                <p>Téléchargez votre résumé Cornell au format PDF</p>
+                
+                <div class="export-preview" id="exportPreview">
+                    <h4>📋 Aperçu de l'export</h4>
+                    <p>Complétez les sections précédentes pour voir l'aperçu</p>
+                </div>
+
+                <div style="margin: 20px 0;">
+                    <button class="btn btn-warning" onclick="exportToPDF()" id="exportBtn" disabled>
+                        📤 Exporter en PDF
+                    </button>
+                    <button class="btn btn-danger" onclick="resetForm()" style="margin-left: 10px;">
+                        🔄 Nouveau Document
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let uploadedImages = [];
+        let additionalImages = [];
+        let currentAISummary = null;
+        let isProcessing = false;
+
+        // Configuration
+        const courseConfig = {
+            date: '',
+            subject: '',
+            professor: '',
+            chapter: ''
+        };
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set today's date
+            document.getElementById('date').valueAsDate = new Date();
+            
+            // Auto-update preview
+            setupPreviewUpdates();
+            
+            showStatus('Système prêt. Commencez par configurer votre document.', 'success');
+        });
+
+        // Gestion des onglets
+        function switchTab(tabNumber) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(`tab${tabNumber}`).classList.add('active');
+            document.querySelectorAll('.tab')[tabNumber - 1].classList.add('active');
+
+            // Update buttons state
+            updateButtonStates();
+        }
+
+        // Gestion drag & drop
+        function handleDragOver(event) {
+            event.preventDefault();
+        }
+
+        function handleDragEnter(event) {
+            event.preventDefault();
+            event.target.closest('.upload-area').classList.add('dragover');
+        }
+
+        function handleDragLeave(event) {
+            event.preventDefault();
+            event.target.closest('.upload-area').classList.remove('dragover');
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            event.target.closest('.upload-area').classList.remove('dragover');
+            
+            const files = Array.from(event.dataTransfer.files);
+            processManuscriptFiles(files);
+        }
+
+        function handleAdditionalDrop(event) {
+            event.preventDefault();
+            event.target.closest('.upload-area').classList.remove('dragover');
+            
+            const files = Array.from(event.dataTransfer.files);
+            processAdditionalFiles(files);
+        }
+
+        function handleFileSelect(event) {
+            const files = Array.from(event.target.files);
+            processManuscriptFiles(files);
+        }
+
+        function handleAdditionalFileSelect(event) {
+            const files = Array.from(event.target.files);
+            processAdditionalFiles(files);
+        }
+
+        // Traitement des fichiers manuscrits
+        async function processManuscriptFiles(files) {
+            showStatus('Traitement des images en cours...', 'loading');
+
+            for (const file of files) {
+                if (!validateFile(file)) continue;
+
+                try {
+                    // Gemini Vision ne supporte que les images, pas les PDF
+                    if (file.type === 'application/pdf') {
+                        showStatus('Les PDF ne sont pas supportés pour l\'OCR. Veuillez convertir en images JPG/PNG/WEBP.', 'error');
+                        continue;
+                    }
+                    
+                    await processImage(file, 'manuscript');
+                } catch (error) {
+                    console.error('Erreur traitement fichier:', error);
+                    showStatus(`Erreur lors du traitement de ${file.name}`, 'error');
+                }
+            }
+
+            updateImagePreviews();
+            updateButtonStates();
+            
+            if (uploadedImages.length > 0) {
+                showStatus(`${uploadedImages.length} image(s) manuscrite(s) chargée(s)`, 'success');
+            }
+        }
+
+        // Traitement des fichiers supplémentaires
+        async function processAdditionalFiles(files) {
+            showStatus('Traitement des images supplémentaires...', 'loading');
+
+            for (const file of files) {
+                if (!validateFile(file)) continue;
+
+                try {
+                    if (file.type === 'application/pdf') {
+                        await processPDF(file, 'additional');
+                    } else {
+                        await processImage(file, 'additional');
+                    }
+                } catch (error) {
+                    console.error('Erreur traitement fichier:', error);
+                    showStatus(`Erreur lors du traitement de ${file.name}`, 'error');
+                }
+            }
+
+            updateImagePreviews();
+            showStatus(`${additionalImages.length} image(s) supplémentaire(s) chargée(s)`, 'success');
+        }
+
+        function validateFile(file) {
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+
+            if (file.size > maxSize) {
+                showStatus(`${file.name} est trop volumineux (max 5MB)`, 'error');
+                return false;
+            }
+
+            if (!allowedTypes.includes(file.type)) {
+                showStatus(`Type de fichier non supporté: ${file.name}. Utilisez JPG, PNG ou WEBP uniquement.`, 'error');
+                return false;
+            }
+
+            return true;
+        }
+
+        async function processImage(file, type) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const imageData = {
+                        name: file.name,
+                        data: e.target.result,
+                        type: file.type,
+                        size: file.size,
+                        uploadType: type
+                    };
+
+                    if (type === 'manuscript') {
+                        uploadedImages.push(imageData);
+                    } else {
+                        additionalImages.push(imageData);
+                    }
+                    resolve();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function processPDF(file, type) {
+            // For now, treat PDF as regular file - Gemini can handle PDF directly
+            return processImage(file, type);
+        }
+
+        function updateImagePreviews() {
+            // Update manuscript images
+            const manuscriptContainer = document.getElementById('manuscriptImages');
+            manuscriptContainer.innerHTML = uploadedImages.map((img, index) => `
+                <div class="image-item">
+                    <div class="image-type-badge manuscript-badge">📝 Notes</div>
+                    <img src="${img.data}" alt="${img.name}">
+                    <div class="image-info">
+                        ${img.name} (${(img.size / 1024).toFixed(1)}KB)
+                    </div>
+                    <button class="remove-btn" onclick="removeImage(${index}, 'manuscript')">×</button>
+                </div>
+            `).join('');
+
+            // Update additional images
+            const additionalContainer = document.getElementById('additionalImages');
+            additionalContainer.innerHTML = additionalImages.map((img, index) => `
+                <div class="image-item">
+                    <div class="image-type-badge additional-badge">🎨 Schéma</div>
+                    <img src="${img.data}" alt="${img.name}">
+                    <div class="image-info">
+                        ${img.name} (${(img.size / 1024).toFixed(1)}KB)
+                    </div>
+                    <button class="remove-btn" onclick="removeImage(${index}, 'additional')">×</button>
+                </div>
+            `).join('');
+        }
+
+        function removeImage(index, type) {
+            if (type === 'manuscript') {
+                uploadedImages.splice(index, 1);
+            } else {
+                additionalImages.splice(index, 1);
+            }
+            updateImagePreviews();
+            updateButtonStates();
+        }
+
+        // Analyse OCR avec Gemini Vision
+        async function analyzeWithGeminiVision() {
+            if (uploadedImages.length === 0) {
+                showStatus('Aucune image à analyser', 'error');
+                return;
+            }
+
+            if (isProcessing) {
+                showStatus('Analyse en cours, veuillez patienter...', 'warning');
+                return;
+            }
+
+            isProcessing = true;
+            updateButtonStates();
+            showStatus('Analyse OCR en cours avec Gemini Vision...', 'loading');
+
+            try {
+                const response = await fetch('/api/gemini-vision', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        images: uploadedImages.map(img => ({
+                            data: img.data,
+                            name: img.name
+                        }))
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.success && result.extractedData) {
+                    populateFormWithOCR(result.extractedData);
+                    showStatus('Analyse OCR terminée avec succès!', 'success');
+                } else {
+                    throw new Error(result.error || 'Erreur lors de l\'analyse OCR');
+                }
+
+            } catch (error) {
+                console.error('Erreur OCR:', error);
+                showStatus(`Erreur OCR: ${error.message}`, 'error');
+            } finally {
+                isProcessing = false;
+                updateButtonStates();
+            }
+        }
+
 function populateFormWithOCR(data) {
-// Populate form fields
-if (data.matiere) document.getElementById('subject').value = data.matiere;
-if (data.chapitre) document.getElementById('chapter').value = data.chapitre;
-if (data.professeur) document.getElementById('professor').value = data.professeur;
-// Populate Cornell sections
-if (data.mots_cles) document.getElementById('keywords').value = data.mots_cles.join(', ');
-if (data.formules) document.getElementById('formulas').value = data.formules.join('\n');
-if (data.auteurs) document.getElementById('authors').value = data.auteurs.join(', ');
-if (data.dates) document.getElementById('dates').value = data.dates.join(', ');
-if (data.contenu_principal) document.getElementById('mainNotes').value =
-data.contenu_principal;
-// Afficher le résumé d'extraction
-const extractionSummary = `
-<div style="background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-padding: 20px;
-border-radius: 10px;
-margin: 20px 0;
-border-left: 5px solid #28a745;">
-<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-<div style="background: #28a745;
-color: white;
-padding: 8px 15px;
-border-radius: 20px;
-font-weight: bold;
-font-size: 14px;">
-✓ OCR Complété
-</div>
-</div>
-<div style="color: #155724; font-size: 14px; line-height: 1.8;">
-<strong>Extraction réussie :</strong><br>
-→ ${data.mots_cles?.length || 0} mots-clés extraits<br>
-→ ${data.formules?.length || 0} formule(s) identifiée(s)<br>
-→ ${data.auteurs?.length || 0} auteur(s) détecté(s)<br>
-→ ${data.dates?.length || 0} date(s) trouvée(s)<br>
-→ Notes principales remplies (${data.contenu_principal?.length || 0} caractères)
-</div>
-</div>
-`;
-document.getElementById('statusMessage').innerHTML = extractionSummary;
-updatePreview();
-updateButtonStates();
+    // Populate form fields
+    if (data.matiere) document.getElementById('subject').value = data.matiere;
+    if (data.chapitre) document.getElementById('chapter').value = data.chapitre;
+    if (data.professeur) document.getElementById('professor').value = data.professeur;
+    
+    // Populate Cornell sections
+    if (data.mots_cles) document.getElementById('keywords').value = data.mots_cles.join(', ');
+    if (data.formules) document.getElementById('formulas').value = data.formules.join('\n');
+    if (data.auteurs) document.getElementById('authors').value = data.auteurs.join(', ');
+    if (data.dates) document.getElementById('dates').value = data.dates.join(', ');
+    if (data.contenu_principal) document.getElementById('mainNotes').value = data.contenu_principal;
+
+    // Afficher le résumé d'extraction
+    const extractionSummary = `
+        <div style="background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); 
+                    padding: 20px; 
+                    border-radius: 10px; 
+                    margin: 20px 0; 
+                    border-left: 5px solid #28a745;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                <div style="background: #28a745; 
+                            color: white; 
+                            padding: 8px 15px; 
+                            border-radius: 20px; 
+                            font-weight: bold; 
+                            font-size: 14px;">
+                    ✓ OCR Complété
+                </div>
+            </div>
+            <div style="color: #155724; font-size: 14px; line-height: 1.8;">
+                <strong>Extraction réussie :</strong><br>
+                → ${data.mots_cles?.length || 0} mots-clés extraits<br>
+                → ${data.formules?.length || 0} formule(s) identifiée(s)<br>
+                → ${data.auteurs?.length || 0} auteur(s) détecté(s)<br>
+                → ${data.dates?.length || 0} date(s) trouvée(s)<br>
+                → Notes principales remplies (${data.contenu_principal?.length || 0} caractères)
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('statusMessage').innerHTML = extractionSummary;
+
+    updatePreview();
+    updateButtonStates();
 }
-// Enrichissement avec Gemini AI
-async function enrichWithGeminiAI() {
-updateCourseConfig();
-if (!courseConfig.subject || !courseConfig.chapter) {
-showStatus('Veuillez compléter au minimum la matière et le chapitre', 'error');
-return;
+
+        // Enrichissement avec Gemini AI
+        async function enrichWithGeminiAI() {
+            updateCourseConfig();
+            
+            if (!courseConfig.subject || !courseConfig.chapter) {
+                showStatus('Veuillez compléter au minimum la matière et le chapitre', 'error');
+                return;
+            }
+
+            if (isProcessing) {
+                showStatus('Enrichissement en cours, veuillez patienter...', 'warning');
+                return;
+            }
+
+            isProcessing = true;
+            updateButtonStates();
+            showStatus('Enrichissement du contenu avec Gemini AI...', 'loading');
+
+            try {
+                const requestData = {
+                    courseDate: courseConfig.date,
+                    courseSubject: courseConfig.subject,
+                    courseChapter: courseConfig.chapter,
+                    courseProfessor: courseConfig.professor,
+                    keywords: document.getElementById('keywords').value,
+                    formulas: document.getElementById('formulas').value,
+                    authors: document.getElementById('authors').value,
+                    dates: document.getElementById('dates').value,
+                    doubts: document.getElementById('questions').value,
+                    mainNotes: document.getElementById('mainNotes').value,
+                    currentSummary: document.getElementById('summary').value
+                };
+
+                const response = await fetch('/api/gemini-proxy', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.success && result.enrichment) {
+    currentAISummary = result.enrichment;
+    
+    // Parser et appliquer l'enrichissement
+    const enrichData = result.enrichment.enrichissement || result.enrichment;
+    
+    // Mots-clés enrichis (limités à 5-7)
+    if (enrichData.mots_cles_enrichis) {
+        document.getElementById('keywords').value = enrichData.mots_cles_enrichis.join(', ');
+    }
+    
+    // Formules
+    if (enrichData.formules_identifiees) {
+        document.getElementById('formulas').value = enrichData.formules_identifiees.join('\n');
+    }
+    
+    // Auteurs
+    if (enrichData.auteurs_personnages) {
+        document.getElementById('authors').value = enrichData.auteurs_personnages.join(', ');
+    }
+    
+    // Dates
+    if (enrichData.dates_cles) {
+        document.getElementById('dates').value = enrichData.dates_cles.join(', ');
+    }
+    
+    // Questions générées (2-4 questions)
+    if (enrichData.questions_reflexion) {
+        document.getElementById('questions').value = enrichData.questions_reflexion.join('\n');
+    }
+    
+    // Notes principales améliorées avec structure
+    if (result.enrichment.notes_principales_ameliorees) {
+        document.getElementById('mainNotes').value = result.enrichment.notes_principales_ameliorees;
+    }
+    
+    // Résumé synthétisé
+    if (result.enrichment.resume_synthetise) {
+        document.getElementById('summary').value = result.enrichment.resume_synthetise;
+    }
+    
+    updatePreview();
+    updateExportPreview();
+    showStatus('Enrichissement terminé avec succès! Mots-clés limités, questions générées, notes structurées.', 'success');
+        } else {
+            throw new Error(result.error || 'Erreur lors de l\'enrichissement');
+        }
+
+            } catch (error) {
+                console.error('Erreur enrichissement:', error);
+                showStatus(`Erreur enrichissement: ${error.message}`, 'error');
+            } finally {
+                isProcessing = false;
+                updateButtonStates();
+            }
+        }
+
+        // Mise à jour de la configuration
+        function updateCourseConfig() {
+            courseConfig.date = document.getElementById('date').value;
+            courseConfig.subject = document.getElementById('subject').value;
+            courseConfig.professor = document.getElementById('professor').value;
+            courseConfig.chapter = document.getElementById('chapter').value;
+        }
+
+        // Mise à jour de l'aperçu
+        function setupPreviewUpdates() {
+            const fields = ['date', 'subject', 'professor', 'chapter', 'keywords', 'formulas', 'authors', 'dates', 'questions', 'mainNotes', 'summary'];
+            
+            fields.forEach(fieldId => {
+                const element = document.getElementById(fieldId);
+                if (element) {
+                    element.addEventListener('input', updatePreview);
+                }
+            });
+        }
+
+        function updatePreview() {
+            // Update header
+            document.getElementById('previewDate').textContent = document.getElementById('date').value || 'Date';
+            document.getElementById('previewSubject').textContent = document.getElementById('subject').value || 'Matière';
+            document.getElementById('previewChapter').textContent = document.getElementById('chapter').value || 'Nom du Chapitre';
+
+            // Update sections
+            document.getElementById('previewKeywords').textContent = document.getElementById('keywords').value || 'Mots-clés à extraire...';
+            document.getElementById('previewFormulas').textContent = document.getElementById('formulas').value || 'Formules importantes...';
+            document.getElementById('previewAuthors').textContent = document.getElementById('authors').value || 'Noms d\'auteurs...';
+            document.getElementById('previewDates').textContent = document.getElementById('dates').value || 'Dates importantes...';
+            document.getElementById('previewQuestions').textContent = document.getElementById('questions').value || 'Questions et doutes...';
+            document.getElementById('previewMainNotes').textContent = document.getElementById('mainNotes').value || 'Contenu principal du cours...';
+            document.getElementById('previewSummary').textContent = document.getElementById('summary').value || 'Résumé des points clés...';
+
+            updateButtonStates();
+        }
+
+        function updateExportPreview() {
+            if (!currentAISummary) return;
+
+            const preview = document.getElementById('exportPreview');
+            preview.innerHTML = `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h3 style="color: #f39c12; margin-bottom: 10px;">
+                        ${courseConfig.date} | ${courseConfig.chapter} | ${courseConfig.subject}
+                    </h3>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 20px;">
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #f39c12;">
+                        <h4 style="color: #e67e22; margin-bottom: 10px;">📋 Sections Cornell</h4>
+                        <p><strong>Mots-clés:</strong> ${document.getElementById('keywords').value.slice(0, 50)}...</p>
+                        <p><strong>Formules:</strong> ${document.getElementById('formulas').value.slice(0, 50)}...</p>
+                        <p><strong>Questions:</strong> ${document.getElementById('questions').value.slice(0, 50)}...</p>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                        <h4 style="color: #2d3436; margin-bottom: 10px;">🤖 Contenu enrichi par IA</h4>
+                        <p>${currentAISummary.resume_executif?.slice(0, 200)}...</p>
+                    </div>
+                </div>
+                
+                <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; text-align: center;">
+                    <h4 style="color: #2e7d32; margin-bottom: 10px;">📊 Contenu du PDF</h4>
+                    <p>✅ Structure Cornell authentique</p>
+                    <p>✅ ${uploadedImages.length} image(s) manuscrite(s) + ${additionalImages.length} schéma(s) supplémentaire(s)</p>
+                    <p>✅ Résumé enrichi par IA</p>
+                    <p>✅ Export optimisé pour révisions</p>
+                </div>
+            `;
+        }
+
+        // Export PDF
+        function exportToPDF() {
+            if (!currentAISummary) {
+                showStatus('Veuillez d\'abord enrichir le contenu avec l\'IA', 'error');
+                return;
+            }
+
+            updateCourseConfig();
+            
+            const fileName = `${courseConfig.date.replace(/-/g, '')}_${courseConfig.subject}_${courseConfig.chapter}.html`.replace(/[^a-zA-Z0-9._-]/g, '_');
+            
+            const htmlContent = generateEnhancedHTML();
+            
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showStatus(`✅ Export réussi: ${fileName}`, 'success');
+        }
+
+        function formatMarkdownToHTML(text) {
+    if (!text) return '';
+    
+    return text
+        // Convertir ### Titre en <h3>
+        .replace(/###\s+(.+)/g, '<h3 style="color: #e67e22; font-size: 1.2em; margin-top: 25px; margin-bottom: 15px; border-bottom: 2px solid #f39c12; padding-bottom: 8px;">$1</h3>')
+        // Convertir double saut de ligne en paragraphe
+        .split('\n\n')
+        .map(para => para.trim() ? `<p style="margin-bottom: 15px; text-align: justify;">${para}</p>` : '')
+        .join('');
 }
-if (isProcessing) {
-showStatus('Enrichissement en cours, veuillez patienter...', 'warning');
-return;
-}
-isProcessing = true;
-updateButtonStates();
-showStatus('Enrichissement du contenu avec Gemini AI...', 'loading');
-try {
-const requestData = {
-courseDate: courseConfig.date,
-courseSubject: courseConfig.subject,
-courseChapter: courseConfig.chapter,
-courseProfessor: courseConfig.professor,
-keywords: document.getElementById('keywords').value,
-formulas: document.getElementById('formulas').value,
-authors: document.getElementById('authors').value,
-dates: document.getElementById('dates').value,
-doubts: document.getElementById('questions').value,
-mainNotes: document.getElementById('mainNotes').value,
-currentSummary: document.getElementById('summary').value
-};
-const response = await fetch('/api/gemini-proxy', {
-method: 'POST',
-headers: {
-'Content-Type': 'application/json',
-},
-body: JSON.stringify(requestData)
-});
-}
-if (!response.ok) {
-throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-const result = await response.json();
-if (result.success && result.enrichment) {
-currentAISummary = result.enrichment;
-// Parser et appliquer l'enrichissement
-const enrichData = result.enrichment.enrichissement || result.enrichment;
-// Mots-clés enrichis (limités à 5-7)
-if (enrichData.mots_cles_enrichis) {
-document.getElementById('keywords').value = enrichData.mots_cles_enrichis.join(', ');
-}
-// Formules
-if (enrichData.formules_identifiees) {
-document.getElementById('formulas').value = enrichData.formules_identifiees.join('\n');
-}
-// Auteurs
-if (enrichData.auteurs_personnages) {
-document.getElementById('authors').value = enrichData.auteurs_personnages.join(', ');
-}
-// Dates
-if (enrichData.dates_cles) {
-document.getElementById('dates').value = enrichData.dates_cles.join(', ');
-}
-// Questions générées (2-4 questions)
-if (enrichData.questions_reflexion) {
-document.getElementById('questions').value = enrichData.questions_reflexion.join('\n');
-}
-// Notes principales améliorées avec structure
-if (result.enrichment.notes_principales_ameliorees) {
-document.getElementById('mainNotes').value =
-result.enrichment.notes_principales_ameliorees;
-}
-// Résumé synthétisé
-if (result.enrichment.resume_synthetise) {
-document.getElementById('summary').value = result.enrichment.resume_synthetise;
-}
-updatePreview();
-updateExportPreview();
-showStatus('Enrichissement terminé avec succès! Mots-clés limités, questions générées, notes
-structurées.', 'success');
-} else {
-throw new Error(result.error || 'Erreur lors de l\'enrichissement');
-}
-} catch (error) {
-console.error('Erreur enrichissement:', error);
-showStatus(`Erreur enrichissement: ${error.message}`, 'error');
-} finally {
-isProcessing = false;
-updateButtonStates();
-}
-}
-// Mise à jour de la configuration
-function updateCourseConfig() {
-courseConfig.date = document.getElementById('date').value;
-courseConfig.subject = document.getElementById('subject').value;
-courseConfig.professor = document.getElementById('professor').value;
-courseConfig.chapter = document.getElementById('chapter').value;
-}
-// Mise à jour de l'aperçu
-function setupPreviewUpdates() {
-const fields = ['date', 'subject', 'professor', 'chapter', 'keywords', 'formulas', 'authors',
-'dates', 'questions', 'mainNotes', 'summary'];
-fields.forEach(fieldId => {
-const element = document.getElementById(fieldId);
-if (element) {
-element.addEventListener('input', updatePreview);
-}
-});
-}
-function updatePreview() {
-// Update header
-document.getElementById('previewDate').textContent =
-document.getElementById('date').value || 'Date';
-document.getElementById('previewSubject').textContent =
-document.getElementById('subject').value || 'Matière';
-document.getElementById('previewChapter').textContent =
-document.getElementById('chapter').value || 'Nom du Chapitre';
-// Update sections
-document.getElementById('previewKeywords').textContent =
-document.getElementById('keywords').value || 'Mots-clés à extraire...';
-document.getElementById('previewFormulas').textContent =
-document.getElementById('formulas').value || 'Formules importantes...';
-document.getElementById('previewAuthors').textContent =
-document.getElementById('authors').value || 'Noms d\'auteurs...';
-document.getElementById('previewDates').textContent =
-document.getElementById('dates').value || 'Dates importantes...';
-document.getElementById('previewQuestions').textContent =
-document.getElementById('questions').value || 'Questions et doutes...';
-document.getElementById('previewMainNotes').textContent =
-document.getElementById('mainNotes').value || 'Contenu principal du cours...';
-document.getElementById('previewSummary').textContent =
-document.getElementById('summary').value || 'Résumé des points clés...';
-updateButtonStates();
-}
-function updateExportPreview() {
-if (!currentAISummary) return;
-const preview = document.getElementById('exportPreview');
-preview.innerHTML = `
-<div style="text-align: center; margin-bottom: 20px;">
-<h3 style="color: #f39c12; margin-bottom: 10px;">
-${courseConfig.date} | ${courseConfig.chapter} | ${courseConfig.subject}
-</h3>
-</div>
-<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom:
-20px;">
-<div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px
-solid #f39c12;">
-<h4 style="color: #e67e22; margin-bottom: 10px;">📋 Sections Cornell</h4>
-<p><strong>Mots-clés:</strong> $
-{document.getElementById('keywords').value.slice(0, 50)}...</p>
-<p><strong>Formules:</strong> $
-{document.getElementById('formulas').value.slice(0, 50)}...</p>
-<p><strong>Questions:</strong> $
-{document.getElementById('questions').value.slice(0, 50)}...</p>
-</div>
-<div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-<h4 style="color: #2d3436; margin-bottom: 10px;">🤖 Contenu enrichi par IA</
-h4>
-<p>${currentAISummary.resume_executif?.slice(0, 200)}...</p>
-</div>
-</div>
-<div style="background: #e8f5e8; padding: 15px; border-radius: 8px; text-align:
-center;">
-<h4 style="color: #2e7d32; margin-bottom: 10px;">📊 Contenu du PDF</h4>
-<p>✅ Structure Cornell authentique</p>
-<p>✅ ${uploadedImages.length} image(s) manuscrite(s) + $
-{additionalImages.length} schéma(s) supplémentaire(s)</p>
-<p>✅ Résumé enrichi par IA</p>
-<p>✅ Export optimisé pour révisions</p>
-</div>
-`;
-}
-// Export PDF
-function exportToPDF() {
-if (!currentAISummary) {
-showStatus('Veuillez d\'abord enrichir le contenu avec l\'IA', 'error');
-return;
-}
-updateCourseConfig();
-const fileName = `${courseConfig.date.replace(/-/g, '')}_${courseConfig.subject}_$
-{courseConfig.chapter}.html`.replace(/[^a-zA-Z0-9._-]/g, '_');
-const htmlContent = generateEnhancedHTML();
-const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-const url = URL.createObjectURL(blob);
-const a = document.createElement('a');
-a.href = url;
-a.download = fileName;
-document.body.appendChild(a);
-a.click();
-document.body.removeChild(a);
-URL.revokeObjectURL(url);
-showStatus(`✅ Export réussi: ${fileName}`, 'success');
-}
-function formatMarkdownToHTML(text) {
-if (!text) return '';
-return text
-// Convertir ### Titre en <h3>
-.replace(/###\s+(.+)/g, '<h3 style="color: #e67e22; font-size: 1.2em; margin-top: 25px;
-margin-bottom: 15px; border-bottom: 2px solid #f39c12; padding-bottom: 8px;">$1</h3>')
-// Convertir double saut de ligne en paragraphe
-.split('\n\n')
-.map(para => para.trim() ? `<p style="margin-bottom: 15px; text-align: justify;">${para}</p>`
-: '')
-}
-.join('');
-function generateEnhancedHTML() {
-return `<!DOCTYPE html>
+        
+        function generateEnhancedHTML() {
+            return `<!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cornell Notes - ${courseConfig.subject} - ${courseConfig.chapter}</title>
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-font-family: 'Georgia', 'Times New Roman', serif;
-line-height: 1.6;
-color: #2d3436;
-background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
-min-height: 100vh;
-padding: 20px;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cornell Notes - ${courseConfig.subject} - ${courseConfig.chapter}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Georgia', 'Times New Roman', serif; 
+            line-height: 1.6; 
+            color: #2d3436;
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .cornell-container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            background: white; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        .cornell-header { 
+            background: linear-gradient(135deg, #f7c948 0%, #f39c12 100%); 
+            padding: 25px; 
+            text-align: center; 
+            color: #2d3436; 
+            font-size: 1.3em; 
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            border-bottom: 3px solid #e67e22;
+        }
+        .cornell-content { 
+            display: grid; 
+            grid-template-columns: 1fr 2fr; 
+            min-height: 600px; 
+        }
+        .cornell-sidebar { 
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); 
+            padding: 25px; 
+            border-right: 4px solid #f39c12;
+        }
+        .cornell-notes { 
+            background: white; 
+            padding: 25px; 
+        }
+        .cornell-section { 
+            margin-bottom: 25px; 
+            padding: 18px; 
+            background: rgba(247, 201, 72, 0.15); 
+            border-left: 5px solid #f7c948; 
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .cornell-section h4 { 
+            color: #e67e22; 
+            margin-bottom: 12px; 
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+       .cornell-footer { 
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+    padding: 40px; 
+    color: white; 
+    border-top: 3px solid #5a67d8;
+    box-shadow: 0 -5px 15px rgba(0,0,0,0.15);
 }
-.cornell-container {
-max-width: 1000px;
-margin: 0 auto;
-background: white;
-box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-border-radius: 15px;
-overflow: hidden;
-}
-.cornell-header {
-background: linear-gradient(135deg, #f7c948 0%, #f39c12 100%);
-padding: 25px;
-text-align: center;
-color: #2d3436;
-font-size: 1.3em;
-font-weight: bold;
-text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-border-bottom: 3px solid #e67e22;
-}
-.cornell-content {
-display: grid;
-grid-template-columns: 1fr 2fr;
-min-height: 600px;
-}
-.cornell-sidebar {
-background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
-padding: 25px;
-border-right: 4px solid #f39c12;
-}
-}
-.cornell-notes {
-background: white;
-padding: 25px;
-.cornell-section {
-margin-bottom: 25px;
-padding: 18px;
-background: rgba(247, 201, 72, 0.15);
-border-left: 5px solid #f7c948;
-border-radius: 8px;
-box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-.cornell-section h4 {
-color: #e67e22;
-margin-bottom: 12px;
-font-size: 1.1em;
-text-transform: uppercase;
-letter-spacing: 0.5px;
-}
-.cornell-footer {
-background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-padding: 40px;
-color: white;
-border-top: 3px solid #5a67d8;
-box-shadow: 0 -5px 15px rgba(0,0,0,0.15);
-}
-.cornell-footer h4 {
-margin-bottom: 25px;
-text-align: center;
-font-size: 1.6em;
-text-transform: uppercase;
-letter-spacing: 2px;
-font-weight: 700;
+.cornell-footer h4 { 
+    margin-bottom: 25px; 
+    text-align: center; 
+    font-size: 1.6em;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 700;
 }
 .cornell-footer > div {
-background: rgba(255, 255, 255, 0.2);
-padding: 30px;
-border-radius: 12px;
-font-size: 16px;
-line-height: 2;
-backdrop-filter: blur(10px);
-box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    background: rgba(255, 255, 255, 0.2);
+    padding: 30px;
+    border-radius: 12px;
+    font-size: 16px;
+    line-height: 2;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
 }
-.image-gallery {
-display: grid;
-grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-gap: 20px;
-margin: 20px 0;
-}
-.image-container {
-background: white;
-border-radius: 10px;
-overflow: hidden;
-box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-border: 2px solid #f39c12;
-}
-.image-container img {
-width: 100%;
-height: 250px;
-object-fit: contain;
-background: #f8f9fa;
-}
-.image-caption {
-padding: 12px;
-background: linear-gradient(135deg, #f7c948 0%, #f39c12 100%);
-color: #2d3436;
-font-weight: bold;
-text-align: center;
-}
-.ai-content {
-background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-padding: 20px;
-border-radius: 10px;
-margin: 15px 0;
-border-left: 5px solid #2196f3;
-}
-.ai-badge {
-background: #2196f3;
-color: white;
-padding: 5px 10px;
-border-radius: 15px;
-font-size: 0.8em;
-font-weight: bold;
-display: inline-block;
-margin-bottom: 10px;
-}
-.footer-info {
-background: #2d3436;
-color: white;
-padding: 15px;
-text-align: center;
-font-size: 0.9em;
-}
-@media print {
-body { background: white; padding: 0; }
-.cornell-container { box-shadow: none; }
-}
-</style>
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .image-container {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: 2px solid #f39c12;
+        }
+        .image-container img {
+            width: 100%;
+            height: 250px;
+            object-fit: contain;
+            background: #f8f9fa;
+        }
+        .image-caption {
+            padding: 12px;
+            background: linear-gradient(135deg, #f7c948 0%, #f39c12 100%);
+            color: #2d3436;
+            font-weight: bold;
+            text-align: center;
+        }
+        .ai-content {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 5px solid #2196f3;
+        }
+        .ai-badge {
+            background: #2196f3;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        .footer-info {
+            background: #2d3436;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+        @media print {
+            body { background: white; padding: 0; }
+            .cornell-container { box-shadow: none; }
+        }
+    </style>
 </head>
 <body>
-<div class="cornell-container">
-<div class="cornell-header">
-👨🏫 Prof: ${courseConfig.professor} | 📅 ${new
-Date(courseConfig.date).toLocaleDateString('fr-CH', {day: '2-digit', month: '2-digit', year: '2-
-digit'})} | 📖 ${courseConfig.chapter} | 📚 ${courseConfig.subject}
-</div>
-<div class="cornell-content">
-<div class="cornell-sidebar">
-<div class="cornell-section">
-<h4>🔑 Mots-clés</h4>
-<ul style="list-style: none; padding-left: 0;">$
-{document.getElementById('keywords').value.split(',').slice(0, 7).map(function(kw) { return '<li
-style="margin-bottom: 5px;"><span style="color: #e67e22; font-weight: bold; font-size: 1.2em;
-margin-right: 8px;">•</span>' + kw.trim() + '</li>'; }).join('') || '<li>Aucun mot-clé</li>'}</ul>
-</div>
-<div class="cornell-section">
-<h4>📐 Formules</h4>
-<div>${document.getElementById('formulas').value || 'Aucune formule'}</div>
-</div>
-<div class="cornell-section">
-<h4>👥 Auteurs</h4>
-<div>${document.getElementById('authors').value || 'Aucun auteur'}</div>
-</div>
-<div class="cornell-section">
-<h4>📅 Dates</h4>
-<div>${document.getElementById('dates').value.split(',').map(d => `<span
-style="color: #e67e22; font-weight: bold; font-size: 1.2em; margin-right: 8px;">◆</span>$
-{d.trim()}`).join('<br>') || 'Aucune date'}</div>
-</div>
-<div class="cornell-section">
-<h4>❓ Questions</h4>
-<div>${currentAISummary?.questions_reflexion ?
-currentAISummary.questions_reflexion.map(q => `<span style="color: #e67e22; font-weight:
-bold; font-size: 1.2em; margin-right: 8px;">▪</span>${q.trim()}`).join('<br>') :
-(document.getElementById('questions').value ?
-document.getElementById('questions').value.split('\n').filter(q => q.trim()).map(q => `<span
-style="color: #e67e22; font-weight: bold; font-size: 1.2em; margin-right: 8px;">▪</span>$
-{q.trim()}`).join('<br>') : 'Aucune question')}</div>
-</div>
-<div class="cornell-section" style="background: white; border: 2px solid #f7c948; box-
-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-<h4>💡 Conseils de Révision</h4>
-<div style="line-height: 1.8;">${currentAISummary?.conseils_revision || 'Relire les
-notes principales et identifier les concepts clés'}</div>
-</div>
-</div>
-<div class="cornell-notes">
-<h4>📝 Notes principales</h4>
-<div>${formatMarkdownToHTML(currentAISummary?.notes_principales_ameliorees ||
-document.getElementById('mainNotes').value) || 'Aucune note'}</div>
-${currentAISummary?.descriptions_visuelles &&
-currentAISummary.descriptions_visuelles.length > 0 ? `
-<div style="background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border: 3px
-solid #ffa726; border-radius: 10px; padding: 25px; margin: 25px 0; box-shadow: 0 5px 15px
-rgba(0,0,0,0.1);">
-<h4 style="color: #e65100; font-size: 1.4em; margin-bottom: 20px; text-align: center;
-text-transform: uppercase; letter-spacing: 1px;">
-📊 DESCRIPTION DES GRAPHIQUES ET SCHÉMAS
-</h4>
-${currentAISummary.descriptions_visuelles.map((visual, index) => `
-<div style="background: white; border-left: 5px solid #ffa726; border-radius: 8px; padding:
-20px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-<span style="background: #ffa726; color: white; padding: 5px 12px; border-radius: 15px;
-font-weight: bold; font-size: 0.85em;">
-${visual.type === 'graphique' ? '📈 ' : visual.type === 'schema' ? '🎨 ' : visual.type ===
-'tableau' ? '📋 ' : '📊 '} ${visual.type.toUpperCase()}
-</span>
-<h5 style="color: #e65100; margin: 0; font-size: 1.1em;">${visual.titre}</h5>
-</div>
-<div style="color: #424242; line-height: 1.8; font-size: 15px;">
-${visual.description}
-</div>
-</div>
-`).join('')}
-</div>
+    <div class="cornell-container">
+        <div class="cornell-header">
+            👨‍🏫 Prof: ${courseConfig.professor} | 📅 ${new Date(courseConfig.date).toLocaleDateString('fr-CH', {day: '2-digit', month: '2-digit', year: '2-digit'})} | 📖 ${courseConfig.chapter} | 📚 ${courseConfig.subject}
+        </div>
+        
+        <div class="cornell-content">
+            <div class="cornell-sidebar">
+                <div class="cornell-section">
+                    <h4>🔑 Mots-clés</h4>
+                    <ul style="list-style: none; padding-left: 0;">${document.getElementById('keywords').value.split(',').slice(0, 7).map(function(kw) { return '<li style="margin-bottom: 5px;"><span style="color: #e67e22; font-weight: bold; font-size: 1.2em; margin-right: 8px;">•</span>' + kw.trim() + '</li>'; }).join('') || '<li>Aucun mot-clé</li>'}</ul>
+                </div>
+                <div class="cornell-section">
+                    <h4>📐 Formules</h4>
+                    <div>${document.getElementById('formulas').value || 'Aucune formule'}</div>
+                </div>
+                <div class="cornell-section">
+                    <h4>👥 Auteurs</h4>
+                    <div>${document.getElementById('authors').value || 'Aucun auteur'}</div>
+                </div>
+                <div class="cornell-section">
+                    <h4>📅 Dates</h4>
+                    <div>${document.getElementById('dates').value.split(',').map(d => `<span style="color: #e67e22; font-weight: bold; font-size: 1.2em; margin-right: 8px;">◆</span>${d.trim()}`).join('<br>') || 'Aucune date'}</div>
+                </div>
+                <div class="cornell-section"> 
+                     <h4>❓ Questions</h4> 
+                     <div>${currentAISummary?.questions_reflexion ? currentAISummary.questions_reflexion.map(q => `<span style="color: #e67e22; font-weight: bold; font-size: 1.2em; margin-right: 8px;">▪</span>${q.trim()}`).join('<br>') : (document.getElementById('questions').value ? document.getElementById('questions').value.split('\n').filter(q => q.trim()).map(q => `<span style="color: #e67e22; font-weight: bold; font-size: 1.2em; margin-right: 8px;">▪</span>${q.trim()}`).join('<br>') : 'Aucune question')}</div> 
+                </div>
+
+                <div class="cornell-section" style="background: white; border: 2px solid #f7c948; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"> 
+                     <h4>💡 Conseils de Révision</h4> 
+                     <div style="line-height: 1.8;">${currentAISummary?.conseils_revision || 'Relire les notes principales et identifier les concepts clés'}</div> 
+                </div>
+                </div>
+            
+               <div class="cornell-notes">
+                  <h4>📝 Notes principales</h4>
+                  <div>${formatMarkdownToHTML(currentAISummary?.notes_principales_ameliorees || document.getElementById('mainNotes').value) || 'Aucune note'}</div>
+
+              ${currentAISummary?.descriptions_visuelles && currentAISummary.descriptions_visuelles.length > 0 ? `
+              <div style="background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border: 3px solid #ffa726; border-radius: 10px; padding: 25px; margin: 25px 0; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                <h4 style="color: #e65100; font-size: 1.4em; margin-bottom: 20px; text-align: center; text-transform: uppercase; letter-spacing: 1px;">
+              📊 DESCRIPTION DES GRAPHIQUES ET SCHÉMAS
+    </h4>
+    ${currentAISummary.descriptions_visuelles.map((visual, index) => `
+      <div style="background: white; border-left: 5px solid #ffa726; border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+          <span style="background: #ffa726; color: white; padding: 5px 12px; border-radius: 15px; font-weight: bold; font-size: 0.85em;">
+            ${visual.type === 'graphique' ? '📈' : visual.type === 'schema' ? '🎨' : visual.type === 'tableau' ? '📋' : '📊'} ${visual.type.toUpperCase()}
+          </span>
+          <h5 style="color: #e65100; margin: 0; font-size: 1.1em;">${visual.titre}</h5>
+        </div>
+        <div style="color: #424242; line-height: 1.8; font-size: 15px;">
+          ${visual.description}
+        </div>
+      </div>
+    `).join('')}
+  </div>
+  ` : ''}
+
+  ${currentAISummary?.definitions_importantes ? `
+  <div class="ai-content">
+    <div class="ai-badge">📚 IA - Définitions importantes</div>
+    ${currentAISummary.definitions_importantes.map(def => `<p><strong>${def.terme}:</strong> ${def.definition}</p>`).join('')}
+  </div>
+  ` : ''}
+
+  ${currentAISummary?.formules_detaillees ? `
+  <div class="ai-content">
+    <div class="ai-badge">🧮 IA - Formules détaillées</div>
+    ${currentAISummary.formules_detaillees.map(form => `<p><strong>${form.formule}:</strong> ${form.explication}</p>`).join('')}
+  </div>
+  ` : ''}
+
+${additionalImages.length > 0 ? ` 
+<h4 style="margin-top: 30px; color: #e67e22;">📊 Schémas et Graphiques</h4> 
+<div class="image-gallery"> 
+ ${additionalImages.map((img, index) => ` 
+ <div class="image-container"> 
+ <img src="${img.data}" alt="${img.name}"> 
+ <div class="image-caption">📊 Schéma ${index + 1}</div> 
+ </div> 
+ `).join('')} 
+</div> 
+` : ''} 
+
+<!-- RÉSUMÉ après les schémas --> 
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; padding: 25px; margin: 25px 0; border: 3px solid #5a67d8;"> 
+ <h4 style="color: white; font-size: 1.4em; text-align: center; margin-bottom: 15px; text-transform: uppercase;">📊 RÉSUMÉ</h4> 
+ <div style="color: white; line-height: 1.8; font-size: 15px;"> 
+ ${currentAISummary?.resume_synthetise || document.getElementById('summary').value || 'Aucun résumé'} 
+ </div> 
+</div> 
+</div> 
+</div> 
+ 
+<!-- SECTION QUESTIONS DE RÉFLEXION --> 
+${currentAISummary?.questions_reflexion && currentAISummary.questions_reflexion.length > 0 ? ` 
+<div style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 20px; margin: 20px;"> 
+ <h4 style="color: #856404; font-size: 1.6em; text-align: center; margin-bottom: 15px;">❓ QUESTIONS DE RÉFLEXION</h4> 
+ ${currentAISummary.questions_reflexion.map((q, index) => ` 
+ <div style="margin-bottom: 12px; padding: 15px; background: white; border-left: 4px solid #ffc107;"> 
+ <strong>Question ${index + 1}:</strong> ${q} 
+ </div> 
+ `).join('')} 
+</div> 
 ` : ''}
-${currentAISummary?.definitions_importantes ? `
-<div class="ai-content">
-<div class="ai-badge">📚 IA - Définitions importantes</div>
-${currentAISummary.definitions_importantes.map(def => `<p><strong>${def.terme}:</strong>
-${def.definition}</p>`).join('')}
-</div>
-` : ''}
-${currentAISummary?.formules_detaillees ? `
-<div class="ai-content">
-<div class="ai-badge">🧮 IA - Formules détaillées</div>
-${currentAISummary.formules_detaillees.map(form => `<p><strong>${form.formule}:</strong>
-${form.explication}</p>`).join('')}
-</div>
-` : ''}
-${additionalImages.length > 0 ? `
-<h4 style="margin-top: 30px; color: #e67e22;">📊 <div class="image-gallery">
-${additionalImages.map((img, index) => `
-<div class="image-container">
-<img src="${img.data}" alt="${img.name}">
-<div class="image-caption">📊 Schéma ${index + 1}</div>
-</div>
-`).join('')}
-</div>
-` : ''}
-Schémas et Graphiques</h4>
-<!-- RÉSUMÉ après les schémas -->
-<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius:
-10px; padding: 25px; margin: 25px 0; border: 3px solid #5a67d8;">
-<h4 style="color: white; font-size: 1.4em; text-align: center; margin-bottom: 15px; text-transform:
-uppercase;">📊 RÉSUMÉ</h4>
-<div style="color: white; line-height: 1.8; font-size: 15px;">
-${currentAISummary?.resume_synthetise || document.getElementById('summary').value || 'Aucun
-résumé'}
-</div>
-</div>
-</div>
-</div>
-<!-- SECTION QUESTIONS DE RÉFLEXION -->
-${currentAISummary?.questions_reflexion && currentAISummary.questions_reflexion.length > 0 ? `
-<div style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 20px;
-margin: 20px;">
-<h4 style="color: #856404; font-size: 1.6em; text-align: center; margin-bottom: 15px;">❓
-QUESTIONS DE RÉFLEXION</h4>
-${currentAISummary.questions_reflexion.map((q, index) => `
-<div style="margin-bottom: 12px; padding: 15px; background: white; border-left: 4px solid
-#ffc107;">
-<strong>Question ${index + 1}:</strong> ${q}
-</div>
-`).join('')}
-</div>
-` : ''}
+
 <div class="footer-info">
-📄 Cornell Notes System - Généré le ${new Date().toLocaleDateString('fr-FR')} |
-👨🏫 Prof: ${courseConfig.professor} |
-${additionalImages.length > 0 ? `📊 ${additionalImages.length} schéma(s) | ` : ''}
-🤖 Enrichi par Gemini AI
-</div>
-</div>
+            📄 Cornell Notes System - Généré le ${new Date().toLocaleDateString('fr-FR')} | 
+            👨‍🏫 Prof: ${courseConfig.professor} | 
+            ${additionalImages.length > 0 ? `📊 ${additionalImages.length} schéma(s) | ` : ''}
+            🤖 Enrichi par Gemini AI
+        </div>
+    </div>
 </body>
 </html>`;
-}
-// Gestion des boutons
-function updateButtonStates() {
-const hasManuscriptImages = uploadedImages.length > 0;
-const hasBasicInfo = document.getElementById('subject').value &&
-document.getElementById('chapter').value;
-document.getElementById('analyzeBtn').disabled = !hasManuscriptImages || isProcessing;
-document.getElementById('enrichBtn').disabled = !hasBasicInfo || isProcessing;
-document.getElementById('exportBtn').disabled = !currentAISummary || isProcessing;
-}
-// Affichage des statuts
-function showStatus(message, type = 'info') {
-const statusDiv = document.getElementById('statusMessage');
-const aiStatusDiv = document.getElementById('aiEnrichmentStatus');
-let className = 'status-message ';
-let icon = '';
-switch(type) {
-case 'success':
-className += 'status-success';
-icon = '✅ ';
-break;
-case 'error':
-className += 'status-error';
-icon = '❌ ';
-break;
-case 'warning':
-className += 'status-warning';
-icon = '⚠ ';
-break;
-case 'loading':
-className = 'loading';
-icon = '<div class="spinner"></div>';
-break;
-default:
-className += 'status-success';
-icon = 'ℹ ';
-}
-const html = type === 'loading' ?
-`${icon}<span>${message}</span>` :
-`${icon}${message}`;
-if (statusDiv) statusDiv.innerHTML = `<div class="${className}">${html}</div>`;
-if (aiStatusDiv) aiStatusDiv.innerHTML = `<div class="${className}">${html}</div>`;
-}
-// Reset du formulaire
-function resetForm() {
-if (confirm('Êtes-vous sûr de vouloir tout réinitialiser ?')) {
-uploadedImages = [];
-additionalImages = [];
-currentAISummary = null;
-isProcessing = false;
-document.querySelectorAll('input, textarea').forEach(field => {
-if (field.type !== 'date') {
-field.value = '';
-}
-});
-document.getElementById('date').valueAsDate = new Date();
-updateImagePreviews();
-updatePreview();
-updateButtonStates();
-switchTab(1);
-showStatus('Formulaire réinitialisé', 'success');
-}
-}
-</script>
+        }
+
+        // Gestion des boutons
+        function updateButtonStates() {
+            const hasManuscriptImages = uploadedImages.length > 0;
+            const hasBasicInfo = document.getElementById('subject').value && document.getElementById('chapter').value;
+            
+            document.getElementById('analyzeBtn').disabled = !hasManuscriptImages || isProcessing;
+            document.getElementById('enrichBtn').disabled = !hasBasicInfo || isProcessing;
+            document.getElementById('exportBtn').disabled = !currentAISummary || isProcessing;
+        }
+
+        // Affichage des statuts
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('statusMessage');
+            const aiStatusDiv = document.getElementById('aiEnrichmentStatus');
+            
+            let className = 'status-message ';
+            let icon = '';
+            
+            switch(type) {
+                case 'success':
+                    className += 'status-success';
+                    icon = '✅ ';
+                    break;
+                case 'error':
+                    className += 'status-error';
+                    icon = '❌ ';
+                    break;
+                case 'warning':
+                    className += 'status-warning';
+                    icon = '⚠️ ';
+                    break;
+                case 'loading':
+                    className = 'loading';
+                    icon = '<div class="spinner"></div>';
+                    break;
+                default:
+                    className += 'status-success';
+                    icon = 'ℹ️ ';
+            }
+            
+            const html = type === 'loading' ? 
+                `${icon}<span>${message}</span>` : 
+                `${icon}${message}`;
+            
+            if (statusDiv) statusDiv.innerHTML = `<div class="${className}">${html}</div>`;
+            if (aiStatusDiv) aiStatusDiv.innerHTML = `<div class="${className}">${html}</div>`;
+        }
+
+        // Reset du formulaire
+        function resetForm() {
+            if (confirm('Êtes-vous sûr de vouloir tout réinitialiser ?')) {
+                uploadedImages = [];
+                additionalImages = [];
+                currentAISummary = null;
+                isProcessing = false;
+                
+                document.querySelectorAll('input, textarea').forEach(field => {
+                    if (field.type !== 'date') {
+                        field.value = '';
+                    }
+                });
+                
+                document.getElementById('date').valueAsDate = new Date();
+                
+                updateImagePreviews();
+                updatePreview();
+                updateButtonStates();
+                switchTab(1);
+                
+                showStatus('Formulaire réinitialisé', 'success');
+            }
+        }
+    </script>
 </body>
 </html>
