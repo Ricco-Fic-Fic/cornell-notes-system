@@ -1482,26 +1482,26 @@ if (additionalImages.length > 0) {
                   <h4>📝 Notes principales</h4>
                   <div>${formatMarkdownToHTML(currentAISummary?.notes_principales_ameliorees || document.getElementById('mainNotes').value) || 'Aucune note'}</div>
 
-              ${currentAISummary?.descriptions_visuelles && currentAISummary.descriptions_visuelles.length > 0 ? `
-              <div style="background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border: 3px solid #ffa726; border-radius: 10px; padding: 25px; margin: 25px 0; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
-                <h4 style="color: #e65100; font-size: 1.4em; margin-bottom: 20px; text-align: center; text-transform: uppercase; letter-spacing: 1px;">
-              📊 DESCRIPTION DES GRAPHIQUES ET SCHÉMAS
+              ${window.visualDescriptionsGlobal && window.visualDescriptionsGlobal.length > 0 ? `
+<div style="background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border: 3px solid #ffa726; border-radius: 10px; padding: 25px; margin: 25px 0; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+    <h4 style="color: #e65100; font-size: 1.4em; margin-bottom: 20px; text-align: center; text-transform: uppercase; letter-spacing: 1px;">
+        📊 DESCRIPTION DES GRAPHIQUES ET SCHÉMAS
     </h4>
-    ${currentAISummary.descriptions_visuelles.map((visual, index) => `
-      <div style="background: white; border-left: 5px solid #ffa726; border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-          <span style="background: #ffa726; color: white; padding: 5px 12px; border-radius: 15px; font-weight: bold; font-size: 0.85em;">
-            ${visual.type === 'graphique' ? '📈' : visual.type === 'schema' ? '🎨' : visual.type === 'tableau' ? '📋' : '📊'} ${visual.type.toUpperCase()}
-          </span>
-          <h5 style="color: #e65100; margin: 0; font-size: 1.1em;">${visual.titre}</h5>
+    ${window.visualDescriptionsGlobal.map((visual, index) => `
+        <div style="background: white; border-left: 5px solid #ffa726; border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                <span style="background: #ffa726; color: white; padding: 5px 12px; border-radius: 15px; font-weight: bold; font-size: 0.85em;">
+                    ${visual.type === 'graphique' ? '📈' : visual.type === 'schema' ? '🔧' : visual.type === 'tableau' ? '📋' : '📊'} ${visual.type.toUpperCase()}
+                </span>
+                <h5 style="color: #e65100; margin: 0; font-size: 1.1em;">${visual.titre}</h5>
+            </div>
+            <div style="color: #424242; line-height: 1.8; font-size: 15px;">
+                ${visual.description}
+            </div>
         </div>
-        <div style="color: #424242; line-height: 1.8; font-size: 15px;">
-          ${visual.description}
-        </div>
-      </div>
     `).join('')}
-  </div>
-  ` : ''}
+</div>
+` : ''}
 
   ${currentAISummary?.definitions_importantes ? `
   <div class="ai-content">
